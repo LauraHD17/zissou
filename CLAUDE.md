@@ -55,9 +55,16 @@ npm run dev
 
 1. **Depth into SignalK** — high value given the centerboard + shallow-draft profile. Requires upgrading the standalone depth finder to one with NMEA 0183 output, then wiring into the Pi via a USB-serial adapter. Unlocks a depth readout in StatusBar and a configurable shallow-water alarm.
 2. **Boat heading** — GPS COG is not heading (differ when drifting/anchored/against current). Needs a compass/AHRS. Matters for accurate chart orientation at slow speeds.
-3. **Kiosk autostart on Pi** — `chromium --kiosk` via systemd.
-4. **Engine telemetry** (RPM, coolant temp, fuel) — requires NMEA 2000 bus + engine gateway. Not planned.
-5. **Wind** — low priority for a power boat. Possible if cruising in exposed water and sea state prediction matters.
+3. **Self-host fonts** — currently loading Zalando Sans Expanded + Roboto Mono from Google Fonts CDN (`index.html`). The boat won't always have internet; before Pi install, switch to `@fontsource/zalando-sans-expanded` + `@fontsource/roboto-mono` (or equivalent) so fonts ship in the bundle.
+4. **Kiosk autostart on Pi** — `chromium --kiosk` via systemd.
+5. **Engine telemetry** (RPM, coolant temp, fuel) — requires NMEA 2000 bus + engine gateway. Not planned.
+6. **Wind** — low priority for a power boat. Possible if cruising in exposed water and sea state prediction matters.
+
+## Typography
+
+- **Zalando Sans Expanded** (sans) — primary family for headings, labels, button text, vessel names (600–700); body text (400–500); large display numerics like speed/heading (700–800 with `font-variant-numeric: tabular-nums`).
+- **Roboto Mono** — reserved for coordinates, distance values, and any readout where numeric width consistency matters (lat/lon in StatusBar, raw-facts line in AIS rows).
+- CSS variables: `--font-sans`, `--font-mono`. Always reference the variables, never hardcode the family.
 
 ## Status
 

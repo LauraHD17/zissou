@@ -32,8 +32,8 @@ export function StatusBar({ activePage, onPageChange }: StatusBarProps) {
       </div>
 
       <div className="statusbar__metrics">
-        <Metric label="Lat" value={formatLat(self?.position?.latitude)} />
-        <Metric label="Lon" value={formatLon(self?.position?.longitude)} />
+        <Metric label="Lat" value={formatLat(self?.position?.latitude)} mono />
+        <Metric label="Lon" value={formatLon(self?.position?.longitude)} mono />
         <Metric label="Speed" value={speed} />
         <Metric
           label="Heading"
@@ -60,11 +60,13 @@ function FixIndicator({ hasFix, isStale }: { hasFix: boolean; isStale: boolean }
   return <span className={`fix-indicator fix-indicator--${state}`}>{label}</span>;
 }
 
-function Metric({ label, value }: { label: string; value: React.ReactNode }) {
+function Metric({ label, value, mono }: { label: string; value: React.ReactNode; mono?: boolean }) {
   return (
     <span className="statusbar__metric">
       <span className="statusbar__metric-label">{label}</span>
-      <span className="statusbar__metric-value">{value}</span>
+      <span className={`statusbar__metric-value${mono ? ' statusbar__metric-value--mono' : ''}`}>
+        {value}
+      </span>
     </span>
   );
 }
