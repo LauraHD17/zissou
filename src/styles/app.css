@@ -248,6 +248,56 @@ html, body, #root {
 
 /* ── AIS list (sand cards on navy) ────────────────────────────────────── */
 
+/* Filter bar (above the list) */
+.ais-filter-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 12px;
+  flex-wrap: wrap;
+}
+
+.ais-filter-toggle {
+  display: inline-flex;
+  gap: 4px;
+  padding: 3px;
+  background: rgba(240, 235, 224, 0.08);
+  border: 1px solid var(--border-on-navy);
+  border-radius: 8px;
+}
+
+.ais-filter-btn {
+  background: transparent;
+  color: var(--text-primary);
+  border: none;
+  padding: 10px 16px;
+  min-height: 44px;
+  min-width: 64px;
+  font-family: var(--font-sans);
+  font-weight: 600;
+  font-size: 13px;
+  letter-spacing: 0.02em;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+.ais-filter-btn:hover:not(.ais-filter-btn--active) {
+  background: rgba(240, 235, 224, 0.06);
+}
+
+.ais-filter-btn--active {
+  background: var(--surface-sand);
+  color: var(--text-on-card);
+}
+
+.ais-filter-count {
+  font-family: var(--font-sans);
+  font-weight: 500;
+  font-size: 13px;
+  color: var(--text-dim);
+}
+
 .ais-list {
   list-style: none;
   margin: 0;
