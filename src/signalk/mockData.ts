@@ -4,17 +4,24 @@ import type { SignalKDelta } from './types';
 // if the UI is only tested against clean data it will fall over on first contact
 // with real bay traffic. Each archetype below reproduces a failure mode seen in
 // the wild.
+//
+// IMPORTANT: values emitted here follow the SignalK v1 spec —
+//   speedOverGround: m/s
+//   courseOverGroundTrue / headingTrue: radians
+//   position: decimal degrees
+// All conversion to display units happens in src/utils/formatters.ts.
 
 type Emit = (delta: SignalKDelta) => void;
 
-const SELF_START = { latitude: 41.505, longitude: -71.315 }; // generic NE coastal
+const SELF_START = { latitude: 41.505, longitude: -71.315 };
+
+const DEG = (d: number) => (d * Math.PI) / 180;
+const KN_TO_MS = 0.514444;
 
 export function startMockStream(emit: Emit): () => void {
   const handles: ReturnType<typeof setInterval>[] = [];
   const timeouts: ReturnType<typeof setTimeout>[] = [];
 
-  // Emit initial "static" info (names, MMSIs, ship types) once, immediately.
-  // Position/SOG/COG start flowing on their own intervals below.
   timeouts.push(setTimeout(() => emitInitialMetadata(emit), 50));
 
   handles.push(setInterval(() => emitSelf(emit), 1000));
@@ -26,11 +33,7 @@ export function startMockStream(emit: Emit): () => void {
   handles.push(setInterval(() => emitVeryFar(emit), 4000));
   handles.push(setInterval(() => emitWildCoords(emit), 5000));
 
-  // Stuck / stale: reports once, never again. The UI must flag it as stale.
   timeouts.push(setTimeout(() => emitStuckVessel(emit), 200));
-
-  // "Name but no position yet" — never emits position. The UI must not crash
-  // when asked to draw a vessel with no coordinates.
   timeouts.push(setTimeout(() => emitPositionlessVessel(emit), 300));
 
   return () => {
@@ -41,15 +44,19 @@ export function startMockStream(emit: Emit): () => void {
 
 // ── Archetypes ──────────────────────────────────────────────────────────────
 
-const selfState = { ...SELF_START, heading: 90, sog: 4.2 };
+const selfState = {
+  ...SELF_START,
+  heading: DEG(90),  // east, radians
+  sogMs: 4.2 * KN_TO_MS,
+};
 
 function emitSelf(emit: Emit) {
-  // Wobble: heading drifts, SOG jitters, position advances.
-  selfState.heading = (selfState.heading + (Math.random() - 0.5) * 4 + 360) % 360;
-  selfState.sog = Math.max(0, selfState.sog + (Math.random() - 0.5) * 0.3);
-  const advance = metersToDegrees(selfState.sog * 0.514 * 1, selfState.latitude);
-  selfState.latitude += advance.lat * Math.cos(rad(selfState.heading));
-  selfState.longitude += advance.lon * Math.sin(rad(selfState.heading));
+  const twoPi = Math.PI * 2;
+  selfState.heading = (selfState.heading + (Math.random() - 0.5) * DEG(4) + twoPi) % twoPi;
+  selfState.sogMs = Math.max(0, selfState.sogMs + (Math.random() - 0.5) * 0.15);
+  const advance = metersToDegrees(selfState.sogMs, selfState.latitude);
+  selfState.latitude += advance.lat * Math.cos(selfState.heading);
+  selfState.longitude += advance.lon * Math.sin(selfState.heading);
 
   emit({
     context: 'vessels.self',
@@ -59,7 +66,7 @@ function emitSelf(emit: Emit) {
         values: [
           { path: 'name', value: 'Sisu' },
           { path: 'navigation.position', value: { latitude: selfState.latitude, longitude: selfState.longitude } },
-          { path: 'navigation.speedOverGround', value: selfState.sog },
+          { path: 'navigation.speedOverGround', value: selfState.sogMs },
           { path: 'navigation.courseOverGroundTrue', value: selfState.heading },
         ],
       },
@@ -67,12 +74,17 @@ function emitSelf(emit: Emit) {
   });
 }
 
-const freighterState = { latitude: 41.58, longitude: -71.24, cog: 230, sog: 12.8 };
+const freighterState = {
+  latitude: 41.58,
+  longitude: -71.24,
+  cog: DEG(230),
+  sogMs: 12.8 * KN_TO_MS,
+};
 
 function emitCleanFreighter(emit: Emit) {
-  const advance = metersToDegrees(freighterState.sog * 0.514 * 2, freighterState.latitude);
-  freighterState.latitude += advance.lat * Math.cos(rad(freighterState.cog));
-  freighterState.longitude += advance.lon * Math.sin(rad(freighterState.cog));
+  const advance = metersToDegrees(freighterState.sogMs * 2, freighterState.latitude);
+  freighterState.latitude += advance.lat * Math.cos(freighterState.cog);
+  freighterState.longitude += advance.lon * Math.sin(freighterState.cog);
 
   emit({
     context: 'vessels.urn:mrn:imo:mmsi:366999712',
@@ -81,7 +93,7 @@ function emitCleanFreighter(emit: Emit) {
         timestamp: new Date().toISOString(),
         values: [
           { path: 'navigation.position', value: { latitude: freighterState.latitude, longitude: freighterState.longitude } },
-          { path: 'navigation.speedOverGround', value: freighterState.sog + (Math.random() - 0.5) * 0.4 },
+          { path: 'navigation.speedOverGround', value: freighterState.sogMs + (Math.random() - 0.5) * 0.2 },
           { path: 'navigation.courseOverGroundTrue', value: freighterState.cog },
           { path: 'navigation.state', value: 'underway' },
         ],
@@ -91,7 +103,6 @@ function emitCleanFreighter(emit: Emit) {
 }
 
 function emitAnchoredFisher(emit: Emit) {
-  // Anchored: SOG=0, no COG reported. Position drifts a few meters from swing.
   const jitter = (Math.random() - 0.5) * 0.00003;
   emit({
     context: 'vessels.urn:mrn:imo:mmsi:338112233',
@@ -109,14 +120,17 @@ function emitAnchoredFisher(emit: Emit) {
   });
 }
 
-const mmsiOnlyState = { latitude: 41.54, longitude: -71.28, cog: 45, sog: 7.5 };
+const mmsiOnlyState = {
+  latitude: 41.54,
+  longitude: -71.28,
+  cog: DEG(45),
+  sogMs: 7.5 * KN_TO_MS,
+};
 
 function emitMMSIOnly(emit: Emit) {
-  // No name — this vessel never transmitted a static report (or we missed it).
-  // Class B units often go minutes before sending static data.
-  const advance = metersToDegrees(mmsiOnlyState.sog * 0.514 * 1.5, mmsiOnlyState.latitude);
-  mmsiOnlyState.latitude += advance.lat * Math.cos(rad(mmsiOnlyState.cog));
-  mmsiOnlyState.longitude += advance.lon * Math.sin(rad(mmsiOnlyState.cog));
+  const advance = metersToDegrees(mmsiOnlyState.sogMs * 1.5, mmsiOnlyState.latitude);
+  mmsiOnlyState.latitude += advance.lat * Math.cos(mmsiOnlyState.cog);
+  mmsiOnlyState.longitude += advance.lon * Math.sin(mmsiOnlyState.cog);
 
   emit({
     context: 'vessels.urn:mrn:imo:mmsi:367000123',
@@ -125,7 +139,7 @@ function emitMMSIOnly(emit: Emit) {
         timestamp: new Date().toISOString(),
         values: [
           { path: 'navigation.position', value: { latitude: mmsiOnlyState.latitude, longitude: mmsiOnlyState.longitude } },
-          { path: 'navigation.speedOverGround', value: mmsiOnlyState.sog },
+          { path: 'navigation.speedOverGround', value: mmsiOnlyState.sogMs },
           { path: 'navigation.courseOverGroundTrue', value: mmsiOnlyState.cog },
         ],
       },
@@ -133,15 +147,20 @@ function emitMMSIOnly(emit: Emit) {
   });
 }
 
-const fastErraticState = { latitude: 41.51, longitude: -71.29, cog: 120, sog: 28 };
+const fastErraticState = {
+  latitude: 41.51,
+  longitude: -71.29,
+  cog: DEG(120),
+  sogMs: 28 * KN_TO_MS,
+};
 
 function emitFastErratic(emit: Emit) {
-  // Recreational power boat, bad GPS smoothing: COG jumps around, SOG spikes.
-  fastErraticState.cog = (fastErraticState.cog + (Math.random() - 0.5) * 40 + 360) % 360;
-  fastErraticState.sog = Math.max(0, 25 + (Math.random() - 0.5) * 12);
-  const advance = metersToDegrees(fastErraticState.sog * 0.514 * 0.8, fastErraticState.latitude);
-  fastErraticState.latitude += advance.lat * Math.cos(rad(fastErraticState.cog));
-  fastErraticState.longitude += advance.lon * Math.sin(rad(fastErraticState.cog));
+  const twoPi = Math.PI * 2;
+  fastErraticState.cog = (fastErraticState.cog + (Math.random() - 0.5) * DEG(40) + twoPi) % twoPi;
+  fastErraticState.sogMs = Math.max(0, (25 + (Math.random() - 0.5) * 12) * KN_TO_MS);
+  const advance = metersToDegrees(fastErraticState.sogMs * 0.8, fastErraticState.latitude);
+  fastErraticState.latitude += advance.lat * Math.cos(fastErraticState.cog);
+  fastErraticState.longitude += advance.lon * Math.sin(fastErraticState.cog);
 
   emit({
     context: 'vessels.urn:mrn:imo:mmsi:338555777',
@@ -150,7 +169,7 @@ function emitFastErratic(emit: Emit) {
         timestamp: new Date().toISOString(),
         values: [
           { path: 'navigation.position', value: { latitude: fastErraticState.latitude, longitude: fastErraticState.longitude } },
-          { path: 'navigation.speedOverGround', value: fastErraticState.sog },
+          { path: 'navigation.speedOverGround', value: fastErraticState.sogMs },
           { path: 'navigation.courseOverGroundTrue', value: fastErraticState.cog },
         ],
       },
@@ -159,7 +178,6 @@ function emitFastErratic(emit: Emit) {
 }
 
 function emitVeryClose(emit: Emit) {
-  // ~200m off our bow — proximity alert territory.
   const t = Date.now() / 10000;
   emit({
     context: 'vessels.urn:mrn:imo:mmsi:338444111',
@@ -174,8 +192,8 @@ function emitVeryClose(emit: Emit) {
               longitude: selfState.longitude + 0.0018 * Math.sin(t),
             },
           },
-          { path: 'navigation.speedOverGround', value: 2.1 },
-          { path: 'navigation.courseOverGroundTrue', value: (Date.now() / 200) % 360 },
+          { path: 'navigation.speedOverGround', value: 2.1 * KN_TO_MS },
+          { path: 'navigation.courseOverGroundTrue', value: ((Date.now() / 200) % 360) * (Math.PI / 180) },
         ],
       },
     ],
@@ -183,7 +201,6 @@ function emitVeryClose(emit: Emit) {
 }
 
 function emitVeryFar(emit: Emit) {
-  // ~15nm away, at edge of AIS range.
   emit({
     context: 'vessels.urn:mrn:imo:mmsi:538008192',
     updates: [
@@ -191,8 +208,8 @@ function emitVeryFar(emit: Emit) {
         timestamp: new Date().toISOString(),
         values: [
           { path: 'navigation.position', value: { latitude: 41.74, longitude: -71.12 } },
-          { path: 'navigation.speedOverGround', value: 14.2 },
-          { path: 'navigation.courseOverGroundTrue', value: 190 },
+          { path: 'navigation.speedOverGround', value: 14.2 * KN_TO_MS },
+          { path: 'navigation.courseOverGroundTrue', value: DEG(190) },
         ],
       },
     ],
@@ -200,8 +217,8 @@ function emitVeryFar(emit: Emit) {
 }
 
 function emitWildCoords(emit: Emit) {
-  // Garbage position — sometimes a receiver emits a bogus frame.
-  // The UI must filter or flag this rather than placing a dot at 0,0.
+  // Garbage frame — receiver emitted null-island coords and passed the AIS 511
+  // "not available" sentinel through for COG, plus an impossible SOG.
   emit({
     context: 'vessels.urn:mrn:imo:mmsi:111222333',
     updates: [
@@ -210,7 +227,7 @@ function emitWildCoords(emit: Emit) {
         values: [
           { path: 'navigation.position', value: { latitude: 0, longitude: 0 } },
           { path: 'navigation.speedOverGround', value: 999 },
-          { path: 'navigation.courseOverGroundTrue', value: 511 }, // 511 = "not available" in AIS
+          { path: 'navigation.courseOverGroundTrue', value: DEG(511) },
         ],
       },
     ],
@@ -218,7 +235,6 @@ function emitWildCoords(emit: Emit) {
 }
 
 function emitStuckVessel(emit: Emit) {
-  // Reports once, with a timestamp already 12 minutes in the past, then goes silent.
   const twelveMinAgo = new Date(Date.now() - 12 * 60 * 1000).toISOString();
   emit({
     context: 'vessels.urn:mrn:imo:mmsi:367888999',
@@ -227,8 +243,8 @@ function emitStuckVessel(emit: Emit) {
         timestamp: twelveMinAgo,
         values: [
           { path: 'navigation.position', value: { latitude: 41.52, longitude: -71.35 } },
-          { path: 'navigation.speedOverGround', value: 0.2 },
-          { path: 'navigation.courseOverGroundTrue', value: 88 },
+          { path: 'navigation.speedOverGround', value: 0.2 * KN_TO_MS },
+          { path: 'navigation.courseOverGroundTrue', value: DEG(88) },
         ],
       },
     ],
@@ -236,8 +252,6 @@ function emitStuckVessel(emit: Emit) {
 }
 
 function emitPositionlessVessel(emit: Emit) {
-  // Static data only — no position ever transmitted. Tests list rendering when
-  // we know the vessel exists but can't place it on a chart.
   emit({
     context: 'vessels.urn:mrn:imo:mmsi:319199000',
     updates: [
@@ -273,18 +287,13 @@ function emitInitialMetadata(emit: Emit) {
     context: 'vessels.urn:mrn:imo:mmsi:538008192',
     updates: [{ values: [{ path: 'name', value: 'STAR ANTARES' }, { path: 'design.aisShipType', value: 80 }] }],
   });
-  // 367000123 (MMSI-only) and 111222333 (wild) intentionally get no name.
 }
 
 // ── helpers ──────────────────────────────────────────────────────────────
 
-function rad(deg: number) {
-  return (deg * Math.PI) / 180;
-}
-
 function metersToDegrees(meters: number, lat: number) {
   return {
     lat: meters / 111_320,
-    lon: meters / (111_320 * Math.cos(rad(lat))),
+    lon: meters / (111_320 * Math.cos((lat * Math.PI) / 180)),
   };
 }

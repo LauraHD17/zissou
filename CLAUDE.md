@@ -31,8 +31,13 @@ public/
 ## Principles
 
 - **Mock data must be messy.** Real AIS is noisy: vessels with no name, no course, stale timestamps, missing fields, implausible coordinates. If the mock only produces clean data, the UI breaks on first contact with real bay traffic. The mock generator in `src/signalk/mockData.ts` intentionally produces a variety of broken/partial vessel states.
+- **Plain-language UI.** Primary text is narrative ("5 miles to your northeast, moving away at 13 knots (15 mph)") rather than numeric/jargon readouts. Raw numbers stay visible but secondary. Bearings are relative to own heading (bow/port/starboard/stern) when known. Distance in yards under 0.25 nm, statute miles otherwise. Speed shown as knots with MPH translation in parentheses.
 - **Ship thin.** v1 is ChartPage + AISPage. No InstrumentsPage until there are instruments. Position/SOG/COG go in StatusBar.
 - **Don't bundle chart tiles.** MBTiles are gigabytes. On the Pi, serve from disk via SignalK's chart plugin or a tiny local tile server. `public/charts/` is a placeholder, not a delivery path.
+
+## Data units on the wire
+
+SignalK streams SI units: `navigation.speedOverGround` is **meters per second**, angles in radians or degrees depending on path (COG/heading can vary — SignalK v1 spec says radians, but many plugins emit degrees; we normalize on ingest). The store holds raw SignalK values; conversion to display units (knots, mph, statute miles, compass degrees) happens only in formatters at the render layer.
 
 ## Running
 
