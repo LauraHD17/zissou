@@ -91,6 +91,21 @@ Palette lives in `:root` of `src/styles/app.css`. Always reference variables, ne
 
 **Pattern: navy app chrome + sand information cards.** Any readable data payload (AIS rows, instrument cards, route entries) goes on sand. Status/chrome/navigation (StatusBar, tabs, chart canvas bezel) stays on navy. Active tabs flip to sand fill to signal "you are reading this content."
 
+## Accessibility — WCAG 2.2 AAA
+
+This project targets **WCAG 2.2 Level AAA**. Apply by default — don't ship UI changes that knowingly violate it.
+
+Key constraints AAA imposes that bite hardest in this UI:
+- **Contrast 7:1** for normal text, 4.5:1 for large (≥18pt regular / 14pt bold). Verify every new text-on-surface pairing in the navy/sand palette.
+- **Touch targets ≥44×44 CSS px** (AAA, stricter than AA's 24×24). Tabs, buttons, any clickable row.
+- **Focus indicator ≥2px perimeter, 3:1 contrast change**, fully visible (not obscured by sticky StatusBar). Currently `--focus-ring` amber 2px via `:focus-visible`.
+- **No `user-scalable=no`** in viewport meta — kiosk pinch-zoom must work for low-vision use.
+- **Plain language at lower-secondary reading level** (AAA 3.1.5) — already aligned with the "plain-language UI" principle above.
+- **Motion/animation can be disabled** — respect `prefers-reduced-motion` for the heading-glyph rotation transition and any future map animations.
+- **Semantic landmarks** — `<main>`, `<nav>`, `<header>` etc., not raw `<div>` chrome.
+
+Run `/wcag` to audit before any visible release.
+
 ## Status
 
 Scaffolded: SignalK client, mock generator, `useSignalK` hook, AISList component, AISPage.
