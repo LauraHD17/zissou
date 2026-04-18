@@ -39,8 +39,8 @@ export function StatusBar({ activePage, onPageChange }: StatusBarProps) {
           label="Heading"
           value={
             <>
-              {headingValid && <HeadingGlyph cogRad={self!.cog!} />}
               <span>{headingText}</span>
+              {headingValid && <HeadingGlyph cogRad={self!.cog!} />}
             </>
           }
         />
