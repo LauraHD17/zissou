@@ -113,6 +113,15 @@ html, body, #root {
   font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
   font-size: 14px;
   white-space: nowrap;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.heading-glyph {
+  color: var(--accent);
+  flex-shrink: 0;
+  transition: transform 0.3s ease-out;
 }
 
 .statusbar__tabs {

@@ -20,9 +20,9 @@ export function StatusBar({ activePage, onPageChange }: StatusBarProps) {
   const speed = self?.sog != null && self.sog >= 0 && self.sog < 60
     ? formatSpeedKnMph(self.sog)
     : '—';
-  const heading = self?.cog != null && self.cog >= 0 && self.cog <= Math.PI * 2
-    ? formatCompassBearing(self.cog)
-    : '—';
+  const headingValid =
+    self?.cog != null && self.cog >= 0 && self.cog <= Math.PI * 2 && !isStale && hasFix;
+  const headingText = headingValid ? formatCompassBearing(self!.cog!) : '—';
 
   return (
     <div className="statusbar">
@@ -35,7 +35,15 @@ export function StatusBar({ activePage, onPageChange }: StatusBarProps) {
         <Metric label="Lat" value={formatLat(self?.position?.latitude)} />
         <Metric label="Lon" value={formatLon(self?.position?.longitude)} />
         <Metric label="Speed" value={speed} />
-        <Metric label="Heading" value={heading} />
+        <Metric
+          label="Heading"
+          value={
+            <>
+              {headingValid && <HeadingGlyph cogRad={self!.cog!} />}
+              <span>{headingText}</span>
+            </>
+          }
+        />
       </div>
 
       <nav className="statusbar__tabs">
@@ -52,12 +60,28 @@ function FixIndicator({ hasFix, isStale }: { hasFix: boolean; isStale: boolean }
   return <span className={`fix-indicator fix-indicator--${state}`}>{label}</span>;
 }
 
-function Metric({ label, value }: { label: string; value: string }) {
+function Metric({ label, value }: { label: string; value: React.ReactNode }) {
   return (
     <span className="statusbar__metric">
       <span className="statusbar__metric-label">{label}</span>
       <span className="statusbar__metric-value">{value}</span>
     </span>
+  );
+}
+
+function HeadingGlyph({ cogRad }: { cogRad: number }) {
+  const deg = (cogRad * 180) / Math.PI;
+  return (
+    <svg
+      className="heading-glyph"
+      width="14"
+      height="14"
+      viewBox="0 0 14 14"
+      style={{ transform: `rotate(${deg}deg)` }}
+      aria-hidden="true"
+    >
+      <path d="M 7 1 L 11.5 12.5 L 7 9.5 L 2.5 12.5 Z" fill="currentColor" />
+    </svg>
   );
 }
 
