@@ -6,7 +6,8 @@ import type { Position, Vessel } from '../signalk/types';
 const MS_TO_KN = 1.9438444924;
 const MS_TO_MPH = 2.2369362921;
 const NM_TO_MILES = 1.15077945;
-const NM_TO_YARDS = 2025.3718;
+const NM_TO_METERS = 1852;
+const METERS_TO_YARDS = 1.0936133;
 
 // ── Speed ──────────────────────────────────────────────────────────────────
 
@@ -29,20 +30,22 @@ export function msToMph(metersPerSec: number): number {
 
 // ── Distance ───────────────────────────────────────────────────────────────
 
-/** Plain-English distance. Yards under ~450 yd, tenths of miles under 1 mi, whole miles above. */
+/**
+ * Distance in the marine-canonical unit with a plain-English translation in parens.
+ *   < 1 nm : "650 meters (711 yards)"
+ *   ≥ 1 nm : "3.2 nautical miles (3.7 miles)"
+ * Mirrors the knots/mph pattern — canonical unit primary, translation secondary.
+ */
 export function formatDistance(nauticalMiles: number): string {
-  if (nauticalMiles < 0.25) {
-    const yards = Math.round(nauticalMiles * NM_TO_YARDS);
-    return `${yards} yards`;
+  if (nauticalMiles < 1) {
+    const meters = Math.round(nauticalMiles * NM_TO_METERS);
+    const yards = Math.round(meters * METERS_TO_YARDS);
+    return `${meters} meters (${yards} yards)`;
   }
   const miles = nauticalMiles * NM_TO_MILES;
-  if (miles < 1) {
-    return `${miles.toFixed(1)} miles`;
-  }
-  if (miles < 10) {
-    return `${miles.toFixed(1)} miles`;
-  }
-  return `${Math.round(miles)} miles`;
+  const nm = nauticalMiles < 10 ? nauticalMiles.toFixed(1) : String(Math.round(nauticalMiles));
+  const mi = miles < 10 ? miles.toFixed(1) : String(Math.round(miles));
+  return `${nm} nautical miles (${mi} miles)`;
 }
 
 // ── Bearings ───────────────────────────────────────────────────────────────
@@ -125,7 +128,8 @@ export function bearingRadians(from: Position, to: Position): number {
 // ── Plain-language vessel summary ──────────────────────────────────────────
 
 export interface VesselNarrative {
-  summary: string;
+  location: string;
+  movement: string | null;
   qualifier: string | null;
   rawFacts: string;
 }
@@ -138,25 +142,28 @@ export function buildVesselNarrative(
   const STALE_MS = 5 * 60 * 1000;
   const isStale = now - vessel.lastUpdated > STALE_MS;
   const rawFacts = buildRawFacts(vessel);
+  const staleLine = isStale ? staleQualifier(now - vessel.lastUpdated) : null;
 
   if (!vessel.position) {
     return {
-      summary: 'Position unknown — static-only report',
-      qualifier: isStale ? staleQualifier(now - vessel.lastUpdated) : null,
+      location: 'Position unknown — static-only report',
+      movement: null,
+      qualifier: staleLine,
       rawFacts,
     };
   }
 
   if (!isPlausiblePosition(vessel.position)) {
     return {
-      summary: 'Reported position is invalid — ignoring',
+      location: 'Reported position is invalid — ignoring',
+      movement: null,
       qualifier: 'Likely a broken AIS transmitter',
       rawFacts,
     };
   }
 
   const selfPos = self?.position;
-  let locationPhrase: string;
+  let location: string;
   if (selfPos) {
     const dist = haversineNm(selfPos, vessel.position);
     const absBearing = bearingRadians(selfPos, vessel.position);
@@ -164,17 +171,14 @@ export function buildVesselNarrative(
       self?.cog != null && self.cog <= Math.PI * 2
         ? formatRelativeBearing(absBearing - self.cog)
         : formatAbsoluteBearing(absBearing);
-    locationPhrase = `${formatDistance(dist)} ${direction}`;
+    location = capitalize(`${formatDistance(dist)} ${direction}`);
   } else {
-    locationPhrase = 'position unknown from here';
+    location = 'Position unknown from here';
   }
 
-  const movementPhrase = describeMovement(vessel, selfPos);
-  const summary = `${capitalize(locationPhrase)}, ${movementPhrase}`;
+  const movement = capitalize(describeMovement(vessel, selfPos));
 
-  const qualifier = isStale ? staleQualifier(now - vessel.lastUpdated) : null;
-
-  return { summary, qualifier, rawFacts };
+  return { location, movement, qualifier: staleLine, rawFacts };
 }
 
 function describeMovement(vessel: Vessel, selfPos: Position | undefined): string {

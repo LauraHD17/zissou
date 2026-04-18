@@ -200,10 +200,17 @@ html, body, #root {
   letter-spacing: 0.01em;
 }
 
-.ais-row__summary {
+.ais-row__location {
   font-size: 15px;
   line-height: 1.4;
   color: var(--text);
+}
+
+.ais-row__movement {
+  font-size: 14px;
+  line-height: 1.4;
+  color: var(--text);
+  opacity: 0.88;
 }
 
 .ais-row__qualifier {

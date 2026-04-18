@@ -39,7 +39,10 @@ export function AISList() {
       {rows.map(({ vessel, narrative, isStale }) => (
         <li key={vessel.context} className={`ais-row${isStale ? ' ais-row--stale' : ''}`}>
           <div className="ais-row__name">{displayName(vessel)}</div>
-          <div className="ais-row__summary">{narrative.summary}</div>
+          <div className="ais-row__location">{narrative.location}</div>
+          {narrative.movement && (
+            <div className="ais-row__movement">{narrative.movement}</div>
+          )}
           {narrative.qualifier && (
             <div className="ais-row__qualifier">{narrative.qualifier}</div>
           )}
