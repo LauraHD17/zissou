@@ -91,7 +91,7 @@ Palette lives in `:root` of `src/styles/app.css`. Always reference variables, ne
 
 **Pattern: navy app chrome + sand information cards.** Any readable data payload (AIS rows, instrument cards, route entries) goes on sand. Status/chrome/navigation (StatusBar, tabs, chart canvas bezel) stays on navy. Active tabs flip to sand fill to signal "you are reading this content."
 
-**Card aesthetic — hard rectangles.** Data cards on sand use `border: 1px solid var(--bg-navy)`, `border-radius: 0`, no `box-shadow`, no transitions or hover effects. The look is deliberately datasheet/chart-plotter, not material/iOS. Interactive chrome (tabs, filter toggles, future buttons) keeps rounded corners — they're UI controls, not data.
+**Hard rectangles everywhere.** Every surface — data cards, tabs, filter toggles, fix indicators, future buttons — uses `border-radius: 0`. No box-shadows, no transitions, no hover lifts. The look is deliberately datasheet/chart-plotter, not material/iOS. Data cards specifically use `border: 1px solid var(--bg-navy)`. Don't introduce rounded corners on new elements; they break the aesthetic.
 
 ## Accessibility — WCAG 2.2 AAA
 

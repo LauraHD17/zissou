@@ -122,7 +122,7 @@ html, body, #root {
   text-transform: uppercase;
   letter-spacing: 0.08em;
   padding: 3px 7px;
-  border-radius: 3px;
+  border-radius: 0;
   border: 1px solid transparent;
 }
 
@@ -206,7 +206,7 @@ html, body, #root {
   font-size: 14px;
   font-weight: 600;
   letter-spacing: 0.02em;
-  border-radius: 6px;
+  border-radius: 0;
   cursor: pointer;
   min-width: 64px;
   min-height: 44px;       /* WCAG 2.5.5 AAA — 44×44 minimum */
@@ -264,7 +264,7 @@ html, body, #root {
   padding: 3px;
   background: rgba(240, 235, 224, 0.08);
   border: 1px solid var(--border-on-navy);
-  border-radius: 8px;
+  border-radius: 0;
 }
 
 .ais-filter-btn {
@@ -278,7 +278,7 @@ html, body, #root {
   font-weight: 600;
   font-size: 13px;
   letter-spacing: 0.02em;
-  border-radius: 5px;
+  border-radius: 0;
   cursor: pointer;
 }
 
