@@ -47,7 +47,7 @@ export function AISList() {
   const hiddenCount = allRows.length - visibleRows.length;
 
   return (
-    <>
+    <div className="ais-panel">
       <FilterBar filter={filter} onChange={setFilter} hiddenCount={hiddenCount} />
       {visibleRows.length === 0 ? (
         <div className="ais-empty">
@@ -72,7 +72,7 @@ export function AISList() {
           ))}
         </ul>
       )}
-    </>
+    </div>
   );
 }
 
