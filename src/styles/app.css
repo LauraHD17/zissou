@@ -301,10 +301,11 @@ html, body, #root {
 .ais-list {
   list-style: none;
   margin: 0;
-  padding: 0;
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 16px;
+  padding: 16px;
+  background: var(--bg-navy);
 }
 
 .ais-empty {
@@ -318,13 +319,12 @@ html, body, #root {
 .ais-row {
   background: var(--surface-sand);
   color: var(--text-on-card);
-  border: 1px solid var(--border-on-card);
-  border-radius: 10px;
-  padding: 14px 16px;
+  border: 1px solid var(--bg-navy);
+  border-radius: 0;
+  padding: 16px;
   display: flex;
   flex-direction: column;
   gap: 6px;
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.25);
 }
 
 .ais-row--stale {
@@ -363,7 +363,7 @@ html, body, #root {
   background: rgba(232, 184, 77, 0.22);
   border-left: 3px solid var(--alert-amber);
   padding: 4px 8px;
-  border-radius: 2px;
+  border-radius: 0;
 }
 
 .ais-row__raw {
