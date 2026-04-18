@@ -1,17 +1,33 @@
 :root {
-  --bg: #0b1116;
-  --surface: #131c24;
-  --surface-2: #182431;
-  --surface-stale: #1a1a1a;
-  --border: #223140;
-  --text: #e5eef5;
-  --text-dim: #7a8a98;
-  --accent: #5ab0ff;
+  /* Base */
+  --bg-navy: #142038;
+  --surface-sand: #F0EBE0;
+  --text-primary: #F0EBE0;
+  --text-on-card: #142038;
+
+  /* Functional */
+  --boat-icon: #FF6B35;
+  --vessel-name: #0F0298;
+  --alert-amber: #E8B84D;
+  --waypoint: #6B9080;
+
+  /* Interactive */
+  --focus-ring: #E8B84D;
+
+  /* Derived tones */
+  --text-dim: rgba(240, 235, 224, 0.60);
+  --text-on-card-dim: rgba(20, 32, 56, 0.58);
+  --border-on-navy: rgba(240, 235, 224, 0.12);
+  --border-on-card: rgba(20, 32, 56, 0.14);
+
+  /* Status (keep universal green/red signals distinct from brand palette) */
   --ok: #4fbf7a;
-  --warn: #d98030;
   --danger: #e05a5a;
+
+  /* Typography */
   --font-sans: 'Zalando Sans Expanded', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
   --font-mono: 'Roboto Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
+
   font-family: var(--font-sans);
   font-weight: 500;
   color-scheme: dark;
@@ -25,8 +41,13 @@ html, body, #root {
   margin: 0;
   padding: 0;
   height: 100%;
-  background: var(--bg);
-  color: var(--text);
+  background: var(--bg-navy);
+  color: var(--text-primary);
+}
+
+:focus-visible {
+  outline: 2px solid var(--focus-ring);
+  outline-offset: 2px;
 }
 
 .app {
@@ -40,15 +61,15 @@ html, body, #root {
   overflow-y: auto;
 }
 
-/* ── StatusBar ─────────────────────────────────────────────────────────── */
+/* ── StatusBar (sits on navy) ─────────────────────────────────────────── */
 
 .statusbar {
   display: flex;
   align-items: center;
   gap: 24px;
   padding: 10px 16px;
-  background: var(--surface-2);
-  border-bottom: 1px solid var(--border);
+  background: var(--bg-navy);
+  border-bottom: 1px solid var(--border-on-navy);
   flex-wrap: wrap;
 }
 
@@ -63,6 +84,7 @@ html, body, #root {
   font-weight: 700;
   font-size: 15px;
   letter-spacing: 0.02em;
+  color: var(--text-primary);
 }
 
 .fix-indicator {
@@ -78,20 +100,20 @@ html, body, #root {
 
 .fix-indicator--ok {
   color: var(--ok);
-  background: rgba(79, 191, 122, 0.12);
-  border-color: rgba(79, 191, 122, 0.35);
+  background: rgba(79, 191, 122, 0.14);
+  border-color: rgba(79, 191, 122, 0.38);
 }
 
 .fix-indicator--stale {
-  color: var(--warn);
-  background: rgba(217, 128, 48, 0.12);
-  border-color: rgba(217, 128, 48, 0.35);
+  color: var(--alert-amber);
+  background: rgba(232, 184, 77, 0.16);
+  border-color: rgba(232, 184, 77, 0.40);
 }
 
 .fix-indicator--no-fix {
   color: var(--danger);
-  background: rgba(224, 90, 90, 0.12);
-  border-color: rgba(224, 90, 90, 0.35);
+  background: rgba(224, 90, 90, 0.14);
+  border-color: rgba(224, 90, 90, 0.38);
 }
 
 .statusbar__metrics {
@@ -126,6 +148,7 @@ html, body, #root {
   align-items: center;
   gap: 6px;
   font-variant-numeric: tabular-nums;
+  color: var(--text-primary);
 }
 
 .statusbar__metric-value--mono {
@@ -134,8 +157,9 @@ html, body, #root {
   font-size: 13px;
 }
 
+/* The heading glyph represents our own boat — safety orange. */
 .heading-glyph {
-  color: var(--accent);
+  color: var(--boat-icon);
   flex-shrink: 0;
   transition: transform 0.3s ease-out;
 }
@@ -147,8 +171,8 @@ html, body, #root {
 
 .tab {
   background: transparent;
-  border: 1px solid var(--border);
-  color: var(--text-dim);
+  border: 1px solid var(--border-on-navy);
+  color: var(--text-primary);
   padding: 8px 16px;
   font-family: var(--font-sans);
   font-size: 13px;
@@ -160,17 +184,16 @@ html, body, #root {
 }
 
 .tab:hover {
-  color: var(--text);
-  border-color: #334858;
+  border-color: rgba(240, 235, 224, 0.28);
 }
 
 .tab--active {
-  background: var(--accent);
-  color: #0b1116;
-  border-color: var(--accent);
+  background: var(--surface-sand);
+  color: var(--text-on-card);
+  border-color: var(--surface-sand);
 }
 
-/* ── Pages ─────────────────────────────────────────────────────────────── */
+/* ── Pages ────────────────────────────────────────────────────────────── */
 
 .page {
   max-width: 720px;
@@ -188,12 +211,12 @@ html, body, #root {
 
 .chart-placeholder h2 {
   margin: 0 0 8px;
-  color: var(--text);
+  color: var(--text-primary);
   font-family: var(--font-sans);
   font-weight: 700;
 }
 
-/* ── AIS list ──────────────────────────────────────────────────────────── */
+/* ── AIS list (sand cards on navy) ────────────────────────────────────── */
 
 .ais-list {
   list-style: none;
@@ -201,7 +224,7 @@ html, body, #root {
   padding: 0;
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 10px;
 }
 
 .ais-empty {
@@ -213,18 +236,19 @@ html, body, #root {
 }
 
 .ais-row {
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: 8px;
+  background: var(--surface-sand);
+  color: var(--text-on-card);
+  border: 1px solid var(--border-on-card);
+  border-radius: 10px;
   padding: 14px 16px;
   display: flex;
   flex-direction: column;
   gap: 6px;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.25);
 }
 
 .ais-row--stale {
-  background: var(--surface-stale);
-  opacity: 0.7;
+  opacity: 0.55;
 }
 
 .ais-row__name {
@@ -232,6 +256,7 @@ html, body, #root {
   font-weight: 700;
   font-size: 15px;
   letter-spacing: 0.01em;
+  color: var(--vessel-name);
 }
 
 .ais-row__location {
@@ -239,7 +264,7 @@ html, body, #root {
   font-weight: 500;
   font-size: 15px;
   line-height: 1.4;
-  color: var(--text);
+  color: var(--text-on-card);
 }
 
 .ais-row__movement {
@@ -247,22 +272,26 @@ html, body, #root {
   font-weight: 400;
   font-size: 14px;
   line-height: 1.4;
-  color: var(--text);
-  opacity: 0.88;
+  color: var(--text-on-card);
+  opacity: 0.82;
 }
 
 .ais-row__qualifier {
   font-family: var(--font-sans);
-  font-weight: 500;
+  font-weight: 600;
   font-size: 13px;
-  color: var(--warn);
+  color: var(--alert-amber);
+  background: rgba(232, 184, 77, 0.12);
+  border-left: 3px solid var(--alert-amber);
+  padding: 4px 8px;
+  border-radius: 2px;
 }
 
 .ais-row__raw {
   font-family: var(--font-mono);
   font-weight: 400;
   font-size: 11px;
-  color: var(--text-dim);
+  color: var(--text-on-card-dim);
   margin-top: 2px;
   letter-spacing: 0.02em;
 }

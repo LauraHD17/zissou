@@ -66,6 +66,31 @@ npm run dev
 - **Roboto Mono** — reserved for coordinates, distance values, and any readout where numeric width consistency matters (lat/lon in StatusBar, raw-facts line in AIS rows).
 - CSS variables: `--font-sans`, `--font-mono`. Always reference the variables, never hardcode the family.
 
+## Design system — colors
+
+Palette lives in `:root` of `src/styles/app.css`. Always reference variables, never hardcode hex values.
+
+**Base surfaces**
+- `--bg-navy` `#142038` — deep navy. Body bg, StatusBar.
+- `--surface-sand` `#F0EBE0` — sand. AIS rows and any "card" surface sitting on navy.
+
+**Text**
+- `--text-primary` `#F0EBE0` — cream, used on navy surfaces.
+- `--text-on-card` `#142038` — navy, used on sand surfaces.
+- `--text-dim` / `--text-on-card-dim` — 60%-ish opacity variants for secondary labels.
+
+**Functional / semantic**
+- `--boat-icon` `#FF6B35` — safety orange. Reserved for **our own vessel** (heading glyph, own-ship marker on chart). Don't use for anything else.
+- `--vessel-name` `#0F0298` — electric blue. Used **only** for AIS vessel names.
+- `--alert-amber` `#E8B84D` — amber. Stale/caution indicators, qualifier lines, `GPS stale` fix indicator.
+- `--waypoint` `#6B9080` — sage. Reserved for future waypoints / route markers.
+- `--ok` `#4fbf7a` / `--danger` `#e05a5a` — universal green/red signals for system status (GPS OK / no fix). Distinct from the brand palette; don't repurpose.
+
+**Interactive**
+- `--focus-ring` `#E8B84D` — amber, 2px, applied via `:focus-visible`.
+
+**Pattern: navy app chrome + sand information cards.** Any readable data payload (AIS rows, instrument cards, route entries) goes on sand. Status/chrome/navigation (StatusBar, tabs, chart canvas bezel) stays on navy. Active tabs flip to sand fill to signal "you are reading this content."
+
 ## Status
 
 Scaffolded: SignalK client, mock generator, `useSignalK` hook, AISList component, AISPage.
