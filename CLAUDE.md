@@ -22,11 +22,22 @@ Navigation UI for a Raspberry Pi 4 running on a 1978 Sisu 22 (diesel inboard, ce
 src/
 ├── signalk/         # WebSocket client, React hook, mock data
 ├── components/      # Presentational (AISList, Gauge, StatusBar, ...)
-├── pages/           # Route-level views (AISPage, ChartPage later)
+├── pages/           # Route-level views (AISPage, ChartPage)
+├── utils/           # Pure helpers (formatters, geometry)
 └── styles/
 public/
 └── charts/          # DO NOT put MBTiles here — serve from disk on Pi
 ```
+
+## Layout
+
+Three view modes, toggled from the StatusBar:
+
+- **Split (default)** — AIS list at 30% width on the left, Chart at 70% on the right. Designed for a 7–10" Pi touchscreen (1024×600 typical). AIS column clamps `min-width: 260px` / `max-width: 400px` so cards stay readable.
+- **AIS only** — full-width AIS list, max 720px centered.
+- **Chart only** — full-width chart.
+
+In split mode, the AIS list renders with `compact={true}` → applies `.ais-panel--compact`, which drops the dense raw-facts mono line and tightens typography for the narrow lane. The full row design returns in AIS-only mode where there's room for it. Both columns always render in the DOM; CSS `display: none` controls visibility per mode so component state (filter, scroll) survives toggling.
 
 ## Principles
 

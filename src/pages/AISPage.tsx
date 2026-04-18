@@ -1,10 +1,10 @@
 import { AISList } from '../components/AISList';
 
-export function AISPage() {
+export function AISPage({ compact = false }: { compact?: boolean }) {
   return (
-    <div className="page page--ais">
+    <>
       <h1 className="sr-only">AIS targets</h1>
-      <AISList />
-    </div>
+      <AISList compact={compact} />
+    </>
   );
 }

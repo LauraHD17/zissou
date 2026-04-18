@@ -1,18 +1,22 @@
 import { useState } from 'react';
-import { StatusBar, type PageKey } from './components/StatusBar';
+import { StatusBar, type ViewMode } from './components/StatusBar';
 import { AISPage } from './pages/AISPage';
 import { ChartPage } from './pages/ChartPage';
 import './styles/app.css';
 
 export function App() {
-  const [page, setPage] = useState<PageKey>('ais');
+  const [view, setView] = useState<ViewMode>('split');
 
   return (
     <div className="app">
-      <StatusBar activePage={page} onPageChange={setPage} />
-      <main className="app__main">
-        {page === 'ais' && <AISPage />}
-        {page === 'chart' && <ChartPage />}
+      <StatusBar activeView={view} onViewChange={setView} />
+      <main className={`app__main app__main--${view}`}>
+        <div className="ais-column">
+          <AISPage compact={view === 'split'} />
+        </div>
+        <div className="chart-column">
+          <ChartPage />
+        </div>
       </main>
     </div>
   );

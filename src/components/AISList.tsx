@@ -15,7 +15,7 @@ interface Row {
   hasValidPosition: boolean;
 }
 
-export function AISList() {
+export function AISList({ compact = false }: { compact?: boolean } = {}) {
   const targets = useAISTargets();
   const self = useSelf();
   const now = useNow(5000);
@@ -47,7 +47,7 @@ export function AISList() {
   const hiddenCount = allRows.length - visibleRows.length;
 
   return (
-    <div className="ais-panel">
+    <div className={`ais-panel${compact ? ' ais-panel--compact' : ''}`}>
       <FilterBar filter={filter} onChange={setFilter} hiddenCount={hiddenCount} />
       {visibleRows.length === 0 ? (
         <div className="ais-empty">

@@ -86,7 +86,45 @@ html, body, #root {
 
 .app__main {
   flex: 1;
+  display: flex;
+  overflow: hidden;
+  min-height: 0;
+}
+
+.ais-column,
+.chart-column {
   overflow-y: auto;
+  min-height: 0;
+}
+
+/* Split: 30% AIS / 70% chart */
+.app__main--split .ais-column {
+  width: 30%;
+  min-width: 260px;
+  max-width: 400px;
+  border-right: 1px solid var(--border-on-navy);
+  flex-shrink: 0;
+}
+.app__main--split .chart-column {
+  flex: 1;
+}
+
+/* AIS only */
+.app__main--ais .ais-column {
+  flex: 1;
+  max-width: 720px;
+  margin: 0 auto;
+}
+.app__main--ais .chart-column {
+  display: none;
+}
+
+/* Chart only */
+.app__main--chart .chart-column {
+  flex: 1;
+}
+.app__main--chart .ais-column {
+  display: none;
 }
 
 /* ── StatusBar (sits on navy) ─────────────────────────────────────────── */
@@ -222,15 +260,14 @@ html, body, #root {
   border-color: var(--surface-sand);
 }
 
-/* ── Pages ────────────────────────────────────────────────────────────── */
-
-.page {
-  max-width: 720px;
-  margin: 0 auto;
-  padding: 16px;
-}
+/* ── Chart placeholder (fills its column) ─────────────────────────────── */
 
 .chart-placeholder {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
   padding: 48px 24px;
   text-align: center;
   color: var(--text-dim);
@@ -301,6 +338,33 @@ html, body, #root {
 .ais-panel {
   background: var(--bg-navy);
   padding: 16px;
+}
+
+/* Compact variant — used in split-view 30% column. Trades raw-facts and
+   typography density for fitting in a narrow lane. */
+.ais-panel--compact .ais-row {
+  padding: 12px;
+  gap: 4px;
+}
+
+.ais-panel--compact .ais-row__name {
+  font-size: 14px;
+}
+
+.ais-panel--compact .ais-row__location {
+  font-size: 13px;
+}
+
+.ais-panel--compact .ais-row__movement {
+  font-size: 12px;
+}
+
+.ais-panel--compact .ais-row__qualifier {
+  font-size: 12px;
+}
+
+.ais-panel--compact .ais-row__raw {
+  display: none;
 }
 
 .ais-list {

@@ -4,14 +4,14 @@ import { formatCompassBearing, formatLat, formatLon, formatSpeedKnMph } from '..
 
 const STALE_MS = 30_000;
 
-export type PageKey = 'ais' | 'chart';
+export type ViewMode = 'split' | 'ais' | 'chart';
 
 interface StatusBarProps {
-  activePage: PageKey;
-  onPageChange: (page: PageKey) => void;
+  activeView: ViewMode;
+  onViewChange: (v: ViewMode) => void;
 }
 
-export function StatusBar({ activePage, onPageChange }: StatusBarProps) {
+export function StatusBar({ activeView, onViewChange }: StatusBarProps) {
   const self = useSelf();
   const now = useNow(1000);
   const hasFix = self?.position != null;
@@ -46,9 +46,10 @@ export function StatusBar({ activePage, onPageChange }: StatusBarProps) {
         />
       </div>
 
-      <nav className="statusbar__tabs" aria-label="Pages">
-        <TabButton active={activePage === 'ais'} onClick={() => onPageChange('ais')}>AIS</TabButton>
-        <TabButton active={activePage === 'chart'} onClick={() => onPageChange('chart')}>Chart</TabButton>
+      <nav className="statusbar__tabs" aria-label="View">
+        <TabButton active={activeView === 'split'} onClick={() => onViewChange('split')}>Split</TabButton>
+        <TabButton active={activeView === 'ais'} onClick={() => onViewChange('ais')}>AIS</TabButton>
+        <TabButton active={activeView === 'chart'} onClick={() => onViewChange('chart')}>Chart</TabButton>
       </nav>
     </header>
   );
@@ -93,7 +94,7 @@ function TabButton({ active, onClick, children }: { active: boolean; onClick: ()
       type="button"
       className={`tab${active ? ' tab--active' : ''}`}
       onClick={onClick}
-      aria-current={active ? 'page' : undefined}
+      aria-pressed={active}
     >
       {children}
     </button>
