@@ -25,7 +25,7 @@ export function StatusBar({ activePage, onPageChange }: StatusBarProps) {
   const headingText = headingValid ? formatCompassBearing(self!.cog!) : '—';
 
   return (
-    <div className="statusbar">
+    <header className="statusbar">
       <div className="statusbar__left">
         <span className="statusbar__vessel">{self?.name ?? '—'}</span>
         <FixIndicator hasFix={hasFix} isStale={isStale} />
@@ -46,11 +46,11 @@ export function StatusBar({ activePage, onPageChange }: StatusBarProps) {
         />
       </div>
 
-      <nav className="statusbar__tabs">
+      <nav className="statusbar__tabs" aria-label="Pages">
         <TabButton active={activePage === 'ais'} onClick={() => onPageChange('ais')}>AIS</TabButton>
         <TabButton active={activePage === 'chart'} onClick={() => onPageChange('chart')}>Chart</TabButton>
       </nav>
-    </div>
+    </header>
   );
 }
 
@@ -89,7 +89,12 @@ function HeadingGlyph({ cogRad }: { cogRad: number }) {
 
 function TabButton({ active, onClick, children }: { active: boolean; onClick: () => void; children: React.ReactNode }) {
   return (
-    <button type="button" className={`tab${active ? ' tab--active' : ''}`} onClick={onClick}>
+    <button
+      type="button"
+      className={`tab${active ? ' tab--active' : ''}`}
+      onClick={onClick}
+      aria-current={active ? 'page' : undefined}
+    >
       {children}
     </button>
   );
