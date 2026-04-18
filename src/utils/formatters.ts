@@ -67,17 +67,41 @@ export function formatRelativeBearing(relativeRad: number): string {
 
 /** Absolute compass bearing → cardinal phrase. Used when own heading is unknown. */
 export function formatAbsoluteBearing(radians: number): string {
+  const octant = compassOctant(radians);
+  const phrase: Record<string, string> = {
+    N: 'to your north',
+    NE: 'to your northeast',
+    E: 'to your east',
+    SE: 'to your southeast',
+    S: 'to your south',
+    SW: 'to your southwest',
+    W: 'to your west',
+    NW: 'to your northwest',
+  };
+  return phrase[octant];
+}
+
+/** 8-point compass octant (N, NE, E, SE, S, SW, W, NW) from radians. */
+export function compassOctant(radians: number): string {
   const twoPi = Math.PI * 2;
   const r = ((radians % twoPi) + twoPi) % twoPi;
   const deg = (r * 180) / Math.PI;
-  if (deg >= 337.5 || deg < 22.5) return 'to your north';
-  if (deg < 67.5) return 'to your northeast';
-  if (deg < 112.5) return 'to your east';
-  if (deg < 157.5) return 'to your southeast';
-  if (deg < 202.5) return 'to your south';
-  if (deg < 247.5) return 'to your southwest';
-  if (deg < 292.5) return 'to your west';
-  return 'to your northwest';
+  if (deg >= 337.5 || deg < 22.5) return 'N';
+  if (deg < 67.5) return 'NE';
+  if (deg < 112.5) return 'E';
+  if (deg < 157.5) return 'SE';
+  if (deg < 202.5) return 'S';
+  if (deg < 247.5) return 'SW';
+  if (deg < 292.5) return 'W';
+  return 'NW';
+}
+
+/** Marine-style bearing: "090° E" — 3-digit zero-padded with compass octant. */
+export function formatCompassBearing(radians: number): string {
+  const twoPi = Math.PI * 2;
+  const r = ((radians % twoPi) + twoPi) % twoPi;
+  const deg = Math.round((r * 180) / Math.PI) % 360;
+  return `${String(deg).padStart(3, '0')}° ${compassOctant(radians)}`;
 }
 
 // ── Position ───────────────────────────────────────────────────────────────
@@ -231,8 +255,7 @@ function buildRawFacts(vessel: Vessel): string {
     parts.push(`SOG ${kn.toFixed(1)} kn`);
   }
   if (vessel.cog != null && vessel.cog >= 0 && vessel.cog <= Math.PI * 2) {
-    const deg = (vessel.cog * 180) / Math.PI;
-    parts.push(`COG ${Math.round(deg)}°`);
+    parts.push(`COG ${formatCompassBearing(vessel.cog)}`);
   }
   if (vessel.position) {
     parts.push(`${formatLat(vessel.position.latitude)} ${formatLon(vessel.position.longitude)}`);

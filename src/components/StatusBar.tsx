@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useSelf } from '../signalk/useSignalK';
-import { formatLat, formatLon, formatSpeedKnMph } from '../utils/formatters';
+import { formatCompassBearing, formatLat, formatLon, formatSpeedKnMph } from '../utils/formatters';
 
 const STALE_MS = 30_000;
 
@@ -21,7 +21,7 @@ export function StatusBar({ activePage, onPageChange }: StatusBarProps) {
     ? formatSpeedKnMph(self.sog)
     : '—';
   const heading = self?.cog != null && self.cog >= 0 && self.cog <= Math.PI * 2
-    ? `${Math.round((self.cog * 180) / Math.PI)}°`
+    ? formatCompassBearing(self.cog)
     : '—';
 
   return (
