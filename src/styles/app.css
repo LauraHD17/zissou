@@ -324,28 +324,8 @@ html, body, #root {
   background: var(--bg-navy);
 }
 
-/* Override Leaflet's rounded white controls to match the brutalist aesthetic */
-.leaflet-bar {
-  border-radius: 0 !important;
-  border: 1px solid var(--bg-navy) !important;
-  box-shadow: none !important;
-}
-
-.leaflet-bar a,
-.leaflet-bar a:hover {
-  border-radius: 0 !important;
-  background: var(--surface-sand) !important;
-  color: var(--text-on-card) !important;
-  border-bottom: 1px solid var(--bg-navy) !important;
-  font-family: var(--font-sans) !important;
-  font-weight: 700 !important;
-}
-
-.leaflet-bar a:last-child {
-  border-bottom: none !important;
-}
-
-.leaflet-control-attribution {
+/* MapLibre attribution override — brutalist navy strip with amber links */
+.maplibregl-ctrl-attrib {
   background: rgba(20, 32, 56, 0.85) !important;
   color: var(--text-primary) !important;
   font-family: var(--font-sans) !important;
@@ -354,8 +334,12 @@ html, body, #root {
   border-radius: 0 !important;
 }
 
-.leaflet-control-attribution a {
+.maplibregl-ctrl-attrib a {
   color: var(--alert-amber) !important;
+}
+
+.maplibregl-ctrl-attrib-button {
+  display: none !important;
 }
 
 /* Own-ship marker (triple design: pulse ring + triangle + heading vector).

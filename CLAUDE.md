@@ -48,19 +48,23 @@ In split mode, the AIS list renders with `compact={true}` → applies `.ais-pane
 
 ## Chart (`src/components/ChartCanvas.tsx`)
 
-Leaflet via `react-leaflet@^4` (v5 requires React 19; we're on 18). Renders a tile map with own-ship marker + AIS target markers + auto-recenter.
+**MapLibre GL** (raw `maplibre-gl`, no React wrapper — react-map-gl v7 conflicts with maplibre-gl v5 peer dep). Vector tiles + custom style for marine palette.
 
-**Tile source:** OpenStreetMap CDN for laptop dev. Production on the Pi switches to NOAA raster MBTiles served by a local tile server (deferred — needs Pi setup). Note: OSM doesn't show marine depth contours / chart features; production-only concern.
+**Tile source (dev):** OpenFreeMap (`https://tiles.openfreemap.org/styles/positron`) — free, no API key, OpenMapTiles vector schema. We load their hosted positron style as the baseline (so we inherit their correctly-versioned tile URLs) and apply paint-property overrides on `style.load` via `applyMarineStyle()` in `src/chart/marineStyle.ts`. Resilient to OpenFreeMap's tile versioning since we never hardcode tile URLs.
 
-**Own-ship marker (triple design):** divIcon SVG with three layered elements — (1) 40px orange (`--boat-icon`) triangle with 2px yellow-green (`--ownship-accent`) outline, rotates with COG; (2) yellow-green pulsing ring at 50% opacity, animates from 40px → 56px over 2s on infinite loop (replaced by static halo when `prefers-reduced-motion`); (3) heading vector — yellow-green polyline extending from triangle in COG direction, length = 1 minute of travel at current SOG. The pulse is the **only** animated UI element on the entire interface (per design principle).
+**Tile source (Pi production):** NOAA raster MBTiles served from a local tile server (deferred — needs Pi setup). Marine Mode swaps to MBTiles when ready; this is a one-line style URL change. Real depth contours, buoys, navaids come for free with NOAA charts.
 
-**AIS markers:** divIcon SVG, colored by threat band (`--surface-sand` monitor / `--alert-amber` caution / `--alert-red` danger). Targets with COG render as oriented chevrons; targets without (e.g. anchored) render as circles. Stale targets get 0.55 opacity.
+**Marine palette overrides** (in `marineStyle.ts`): water → `#547A9E` slate blue, land/background → `#F0EBE0` sand, coastline (`water_outline` layer) → `#142038` navy, minor roads / buildings / POI labels hidden, major roads & place labels dimmed gray. Best-effort tinting — silently no-ops on layers that don't exist (positron schema can shift).
 
-**Auto-recenter:** `<AutoRecenter>` calls `map.setView()` whenever own-ship position updates. v1 always recenters — no free-pan mode yet (deferred; needs a "user has manually panned" detection + a "Recenter" button).
+**Own-ship marker (triple design):** built via `createElementNS` (no `innerHTML` — XSS-safe even though our values are numeric). 40px orange (`--boat-icon`) triangle with 2px yellow-green (`--ownship-accent`) outline (rotates with COG); yellow-green pulsing ring 40 → 56px over 2s (the **only** animation in the UI; static halo under `prefers-reduced-motion`); heading vector rendered as a GeoJSON `LineString` source + `line` layer (color `#CCFF00`, weight 2).
 
-**Resize handling:** `<ResizeObserverBridge>` watches the map container and calls `map.invalidateSize()` when CSS `display: none` toggling (mode switches between split / chart-only) changes the visible size. Without this Leaflet caches the wrong size and tiles don't fill correctly after a mode toggle.
+**AIS markers:** `maplibregl.Marker` with DOM elements. Threat band drives className (`ais-target-marker--monitor/caution/danger`); targets with COG render as oriented chevrons, anchored vessels as circles. Stale → 0.55 opacity. Markers tracked by `vessel.context` in a ref-map; lifecycle handled in a `useEffect` that adds/updates/removes per render.
 
-**Leaflet UI overrides:** in `app.css` — zoom controls and attribution restyled to match the brutalist aesthetic (hard rectangles, sand fill, navy text). Don't unset these or the chart breaks the design language.
+**Auto-recenter:** `map.setCenter()` on every own-ship position change. v1 — free-pan and explicit "Recenter" button deferred.
+
+**Resize handling:** `ResizeObserver` on the chart container calls `map.resize()` when CSS `display: none` toggling (split/chart-only mode switches) changes the visible size. MapLibre's built-in window resize listener doesn't catch display toggles.
+
+**MapLibre UI overrides:** in `app.css` — `.maplibregl-ctrl-attrib` restyled to a navy strip with amber links to match the brutalist aesthetic. The default attribution-collapse button is hidden (we always show full attribution since it's tiny anyway).
 
 ## StatusBar — clock, sun, tide
 

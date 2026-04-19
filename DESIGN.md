@@ -97,13 +97,14 @@ No hover lifts, no entry animations, no tab transitions. Adding motion to a new 
 - **Aesthetic:** 1px solid navy border, no shadow, hard rectangle.
 
 ### Chart (`src/components/ChartCanvas.tsx`, rendered by `src/pages/ChartPage.tsx`)
-- **Library:** Leaflet via `react-leaflet@^4` (v5 needs React 19; we're on 18).
-- **Tiles:** OpenStreetMap CDN for laptop dev; NOAA raster MBTiles via local tile server on Pi (deferred).
-- **Own-ship marker (triple design):** 40px orange triangle with 2px yellow-green outline (rotates with COG); yellow-green pulsing ring (40 → 56px over 2s, the only animation in the entire UI); yellow-green heading-vector polyline showing 1 minute of predicted travel at current SOG. Replaced by static halo under `prefers-reduced-motion`.
-- **AIS markers:** divIcon SVG, colored by threat band — sand (monitor), amber (caution), red (danger). Targets with COG render as oriented chevrons; without (anchored) as circles. Stale → 0.55 opacity.
-- **Auto-recenter:** map snaps to own-ship on every position update. v1 — free-pan and recenter button deferred.
-- **Resize handling:** ResizeObserver on the map container calls `invalidateSize()` so view-mode toggling (which uses `display:none`) doesn't leave stale tile sizes.
-- **Leaflet UI:** zoom controls and attribution restyled for the brutalist aesthetic (hard rectangles, sand fill, navy text). See `app.css` `.leaflet-bar` / `.leaflet-control-attribution`.
+- **Library:** raw `maplibre-gl` (no React wrapper). Vector tiles, custom marine palette.
+- **Tile source:** OpenFreeMap (free, no API key) hosted positron style as baseline. `src/chart/marineStyle.ts` applies paint overrides on `style.load` to render water as slate blue (`#547A9E`), land/background as sand, coastlines as navy, minor roads/buildings/POI labels hidden. NOAA raster MBTiles take over on Pi when set up.
+- **Own-ship marker (triple design):** 40px orange triangle with 2px yellow-green outline (rotates with COG); yellow-green pulsing ring (40 → 56px over 2s, the only animation in the entire UI); yellow-green heading vector rendered as a GeoJSON line layer (1 minute of predicted travel at current SOG). Static halo under `prefers-reduced-motion`. DOM built via `createElementNS` to avoid `innerHTML` (XSS-safe).
+- **AIS markers:** `maplibregl.Marker` with DOM elements, colored by threat band — sand (monitor), amber (caution), red (danger). Targets with COG render as oriented chevrons; without (anchored) as circles. Stale → 0.55 opacity. Tracked by `vessel.context` in a ref-map for lifecycle.
+- **Heading vector:** GeoJSON source + line layer rather than DOM polyline — scales geographically with zoom.
+- **Auto-recenter:** map.setCenter on every position update. v1 — free-pan and recenter button deferred.
+- **Resize handling:** ResizeObserver on the chart container calls `map.resize()` when CSS `display:none` toggling (split/chart-only mode switches) changes visible size.
+- **MapLibre UI:** attribution control restyled (navy strip + amber links); default attribution-collapse button hidden. See `app.css` `.maplibregl-ctrl-attrib`.
 
 ### View modes (in `src/App.tsx`)
 - `split` (default), `ais`, `chart`. CSS `display:none` controls visibility — both columns always in DOM so state survives toggling.
