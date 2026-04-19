@@ -5,3 +5,7 @@ dist
 .DS_Store
 *.log
 .vite
+
+# NOAA chart PMTiles — regenerated via scripts/build-charts.sh
+# Too large for git; rebuild from NOAA data when needed.
+public/charts/*.pmtiles

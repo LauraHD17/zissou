@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import maplibregl from 'maplibre-gl';
 import 'maplibre-gl/dist/maplibre-gl.css';
+import { Protocol } from 'pmtiles';
 
 import { useAISTargets, useSelf } from '../signalk/useSignalK';
 import { computeThreatBand, isPlausiblePosition, projectPosition } from '../utils/formatters';
@@ -8,6 +9,17 @@ import type { Vessel } from '../signalk/types';
 import { BASE_STYLE_URL, applyMarineStyle } from '../chart/marineStyle';
 
 type ChartMode = 'marine' | 'harbor';
+
+// Register the pmtiles:// protocol with MapLibre once per page so vector sources
+// pointed at a .pmtiles URL resolve correctly. Idempotent — safe to call more
+// than once thanks to the guard.
+let pmtilesProtocolRegistered = false;
+function ensurePmtilesProtocol() {
+  if (pmtilesProtocolRegistered) return;
+  const protocol = new Protocol();
+  maplibregl.addProtocol('pmtiles', protocol.tile);
+  pmtilesProtocolRegistered = true;
+}
 
 const FALLBACK_CENTER: [number, number] = [-68.8, 44.4]; // [lng, lat] mid-coast Maine
 const DEFAULT_ZOOM = 12;
@@ -42,6 +54,8 @@ export function ChartCanvas() {
 
   useEffect(() => {
     if (!containerRef.current) return;
+
+    ensurePmtilesProtocol();
 
     const initialCenter: [number, number] =
       self?.position && isPlausiblePosition(self.position)

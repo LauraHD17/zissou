@@ -50,9 +50,13 @@ In split mode, the AIS list renders with `compact={true}` → applies `.ais-pane
 
 **MapLibre GL** (raw `maplibre-gl`, no React wrapper — react-map-gl v7 conflicts with maplibre-gl v5 peer dep). Vector tiles + custom style for marine palette.
 
-**Tile source (dev):** OpenFreeMap (`https://tiles.openfreemap.org/styles/positron`) — free, no API key, OpenMapTiles vector schema. We load their hosted positron style as the baseline (so we inherit their correctly-versioned tile URLs) and apply paint-property overrides on `style.load` via `applyMarineStyle()` in `src/chart/marineStyle.ts`. Resilient to OpenFreeMap's tile versioning since we never hardcode tile URLs.
+**Tile sources:**
+- **Base (land/water/roads)**: OpenFreeMap positron vector tiles + marine palette overrides in `src/chart/marineStyle.ts` (water → slate blue, land → sand, coastline → navy, minor roads/buildings hidden). Free, no API key, resilient to OpenFreeMap tile versioning.
+- **NOAA chart overlay (depth contours, buoys, lights, wrecks)**: self-hosted PMTiles file at `/charts/<region>.pmtiles`. Single-file format, no tile server — MapLibre reads it directly via the `pmtiles` npm package. Built from NOAA ENC data by `scripts/build-charts.sh` — see `docs/charts.md` for the pipeline (requires GDAL + tippecanoe locally, one-time setup). PMTiles file is gitignored; regenerate from NOAA data as needed. Same file deployed to the Pi.
 
-**Tile source (Pi production):** NOAA raster MBTiles served from a local tile server (deferred — needs Pi setup). Marine Mode swaps to MBTiles when ready; this is a one-line style URL change. Real depth contours, buoys, navaids come for free with NOAA charts.
+**Depth contour styling** — depths are meters in NOAA ENC (`VALDCO` attribute). Colored via `step` expression: `#FF3B1A` for < 1.83m (6ft), `#FFD700` for 1.83–6.10m, `#6FECB0` for > 6.10m (20ft+). Labels along the line in matching color with sand halo.
+
+**Graceful degradation** — if the PMTiles file isn't present (e.g. fresh clone before running the build script), the NOAA source fails silently and only the tinted base tiles render. App still works, just no depth data until the script runs.
 
 **Marine palette overrides** (in `marineStyle.ts`): water → `#547A9E` slate blue, land/background → `#F0EBE0` sand, coastline (`water_outline` layer) → `#142038` navy, minor roads / buildings / POI labels hidden, major roads & place labels dimmed gray. Best-effort tinting — silently no-ops on layers that don't exist (positron schema can shift).
 
@@ -168,4 +172,4 @@ Run `/wcag` to audit before any visible release.
 
 **Built:** SignalK client + reconnecting WebSocket; messy mock generator (9 vessel archetypes); `useSignalK` / `useSelf` / `useAISTargets` hooks; AISPage with `<h1 sr-only>`; ChartPage with Leaflet (OSM tiles) + own-ship marker + AIS threat-banded markers + auto-recenter + resize-on-mode-toggle; StatusBar with vessel name + GPS pill + clock/sun/tide cluster (centered with metric value gap) + lat/lon/speed/heading + 3-mode tabs; AISList with All/Active filter, plain-language narrative rows, threat banding (monitor/caution/danger), stale-row dim-sand surface, compact variant for split mode; navy/sand brutalist palette with WCAG 2.2 AAA contrast verified; Zalando Sans Expanded + Roboto Mono via Google Fonts; split-view layout (default 30/70 AIS/chart) with mode toggle; reduced-motion + sr-only utilities; semantic landmarks + aria.
 
-**Not yet built:** waypoints / Go-To routing (next), saved waypoints UI, anchor watch, ETA, night-vision mode, MOB button, real tide harmonic data (currently M2 stub), free-pan + recenter button on chart, NOAA MBTiles serving on Pi, depth/heading/wind sensors, kiosk autostart, self-hosted fonts, real-Pi smoke test.
+**Not yet built:** waypoints / Go-To routing (next), saved waypoints UI, anchor watch, ETA, night-vision mode, MOB button, real tide harmonic data (currently M2 stub), free-pan + recenter on chart, depth/heading/wind sensors, kiosk autostart, self-hosted fonts, real-Pi smoke test. **NOAA chart pipeline is scaffolded** but the PMTiles file must be generated locally — install GDAL + tippecanoe, run `./scripts/build-charts.sh maine`. See `docs/charts.md`.

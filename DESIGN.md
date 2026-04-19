@@ -98,7 +98,9 @@ No hover lifts, no entry animations, no tab transitions. Adding motion to a new 
 
 ### Chart (`src/components/ChartCanvas.tsx`, rendered by `src/pages/ChartPage.tsx`)
 - **Library:** raw `maplibre-gl` (no React wrapper). Vector tiles, custom marine palette.
-- **Tile source:** OpenFreeMap (free, no API key) hosted positron style as baseline. `src/chart/marineStyle.ts` applies paint overrides on `style.load` to render water as slate blue (`#547A9E`), land/background as sand, coastlines as navy, minor roads/buildings/POI labels hidden. NOAA raster MBTiles take over on Pi when set up.
+- **Tile sources:** Two-layer composite. Base = OpenFreeMap positron vector tiles + marine palette overrides (`marineStyle.ts`) for water/land/roads/labels. Overlay = NOAA ENC data converted to a self-hosted PMTiles file at `/charts/<region>.pmtiles`, providing depth contours, buoys, lights, wrecks. Built via `scripts/build-charts.sh` — see `docs/charts.md`. Same PMTiles file deploys to the Pi.
+- **Depth contours:** colored by `VALDCO` (meters): `#FF3B1A` shallow (<1.83m / 6ft), `#FFD700` moderate (1.83–6.10m / 6–20ft), `#6FECB0` deep (>6.10m / 20ft+). Labels along the line in matching color, 11px, sand halo.
+- **NOAA features:** buoys (BOYLAT, BOYSAW) as amber circles with navy stroke; lights as amber rings; wrecks/obstructions as deep-red dots.
 - **Own-ship marker (triple design):** 40px orange triangle with 2px yellow-green outline (rotates with COG); yellow-green pulsing ring (40 → 56px over 2s, the only animation in the entire UI); yellow-green heading vector rendered as a GeoJSON line layer (1 minute of predicted travel at current SOG). Static halo under `prefers-reduced-motion`. DOM built via `createElementNS` to avoid `innerHTML` (XSS-safe).
 - **AIS markers:** `maplibregl.Marker` with DOM elements, colored by threat band — sand (monitor), amber (caution), red (danger). Targets with COG render as oriented chevrons; without (anchored) as circles. Stale → 0.55 opacity. Tracked by `vessel.context` in a ref-map for lifecycle.
 - **Heading vector:** GeoJSON source + line layer rather than DOM polyline — scales geographically with zoom.

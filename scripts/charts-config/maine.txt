@@ -1,0 +1,37 @@
+# NOAA ENC cells for Maine coast coverage.
+# Format: one cell ID per line. Comments with #. Blank lines allowed.
+#
+# To find more cells covering your area:
+#   https://nauticalcharts.noaa.gov/charts/noaa-enc.html  (ENC catalog + viewer)
+# NOAA cells are named <usage-band><producer><cell>M. Band 5 (US5*) = harbor
+# scale, highest detail — best for navigation. Band 4 (US4*) = approach scale,
+# larger area, less detail. Most cells below are harbor-scale.
+#
+# If the build script reports "download failed" for a cell, it may have been
+# renamed or retired — check the NOAA catalog and update this file.
+#
+# Starter list covers major Maine cruising areas (Penobscot Bay, Mt Desert,
+# Casco Bay, etc.). Verify coverage against your actual cruising plans and
+# add or remove as needed.
+
+# Penobscot Bay region (primary cruising area)
+US5ME23M
+US5ME24M
+US5ME25M
+
+# Mount Desert / Bar Harbor / Acadia
+US5ME11M
+US5ME20M
+
+# Eastern Maine coast (Jonesport, Cutler, Eastport)
+US5ME01M
+US5ME02M
+
+# Western Maine / Casco Bay / Portland area
+US5ME31M
+US5ME32M
+
+# Approach-scale fallback (wider, lower detail) — useful if a harbor-scale
+# cell above fails; covers general Maine coast at ~1:90k.
+US4ME01M
+US4ME02M
