@@ -1,8 +1,10 @@
+import { ChartCanvas } from '../components/ChartCanvas';
+
 export function ChartPage() {
   return (
-    <div className="chart-placeholder">
-      <h1>Chart</h1>
-      <p>Leaflet + NOAA raster tiles coming next.</p>
-    </div>
+    <>
+      <h1 className="sr-only">Chart</h1>
+      <ChartCanvas />
+    </>
   );
 }

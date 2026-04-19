@@ -95,9 +95,14 @@ No hover lifts, no entry animations, no tab transitions. Adding motion to a new 
 - **Lines (top → bottom):** [optional threat pill] → vessel name → location narrative → movement narrative → [qualifier (amber, if stale)] → raw facts (mono).
 - **Aesthetic:** 1px solid navy border, no shadow, hard rectangle.
 
-### Chart placeholder (`src/pages/ChartPage.tsx`)
-- Centered "Chart" h1 + "Leaflet + NOAA raster tiles coming next" text.
-- To be replaced by actual map.
+### Chart (`src/components/ChartCanvas.tsx`, rendered by `src/pages/ChartPage.tsx`)
+- **Library:** Leaflet via `react-leaflet@^4` (v5 needs React 19; we're on 18).
+- **Tiles:** OpenStreetMap CDN for laptop dev; NOAA raster MBTiles via local tile server on Pi (deferred).
+- **Own-ship marker:** divIcon SVG triangle, `--boat-icon` orange, navy stroke, rotates with COG (smooth transition, disabled under `prefers-reduced-motion`).
+- **AIS markers:** divIcon SVG, colored by threat band — sand (monitor), amber (caution), red (danger). Targets with COG render as oriented chevrons; without (anchored) as circles. Stale → 0.55 opacity.
+- **Auto-recenter:** map snaps to own-ship on every position update. v1 — free-pan and recenter button deferred.
+- **Resize handling:** ResizeObserver on the map container calls `invalidateSize()` so view-mode toggling (which uses `display:none`) doesn't leave stale tile sizes.
+- **Leaflet UI:** zoom controls and attribution restyled for the brutalist aesthetic (hard rectangles, sand fill, navy text). See `app.css` `.leaflet-bar` / `.leaflet-control-attribution`.
 
 ### View modes (in `src/App.tsx`)
 - `split` (default), `ais`, `chart`. CSS `display:none` controls visibility — both columns always in DOM so state survives toggling.

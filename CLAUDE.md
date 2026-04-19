@@ -46,6 +46,22 @@ In split mode, the AIS list renders with `compact={true}` → applies `.ais-pane
 - **Ship thin.** v1 is ChartPage + AISPage. No InstrumentsPage until there are instruments. Position/SOG/COG go in StatusBar.
 - **Don't bundle chart tiles.** MBTiles are gigabytes. On the Pi, serve from disk via SignalK's chart plugin or a tiny local tile server. `public/charts/` is a placeholder, not a delivery path.
 
+## Chart (`src/components/ChartCanvas.tsx`)
+
+Leaflet via `react-leaflet@^4` (v5 requires React 19; we're on 18). Renders a tile map with own-ship marker + AIS target markers + auto-recenter.
+
+**Tile source:** OpenStreetMap CDN for laptop dev. Production on the Pi switches to NOAA raster MBTiles served by a local tile server (deferred — needs Pi setup). Note: OSM doesn't show marine depth contours / chart features; production-only concern.
+
+**Own-ship marker:** divIcon SVG triangle in `--boat-icon` orange, navy stroke, rotates with COG (smooth `transition: transform 0.3s` — disabled under `prefers-reduced-motion`).
+
+**AIS markers:** divIcon SVG, colored by threat band (`--surface-sand` monitor / `--alert-amber` caution / `--alert-red` danger). Targets with COG render as oriented chevrons; targets without (e.g. anchored) render as circles. Stale targets get 0.55 opacity.
+
+**Auto-recenter:** `<AutoRecenter>` calls `map.setView()` whenever own-ship position updates. v1 always recenters — no free-pan mode yet (deferred; needs a "user has manually panned" detection + a "Recenter" button).
+
+**Resize handling:** `<ResizeObserverBridge>` watches the map container and calls `map.invalidateSize()` when CSS `display: none` toggling (mode switches between split / chart-only) changes the visible size. Without this Leaflet caches the wrong size and tiles don't fill correctly after a mode toggle.
+
+**Leaflet UI overrides:** in `app.css` — zoom controls and attribution restyled to match the brutalist aesthetic (hard rectangles, sand fill, navy text). Don't unset these or the chart breaks the design language.
+
 ## StatusBar — clock, sun, tide
 
 The StatusBar's left section includes a glanceable time + sun + tide cluster (inlined in `src/components/StatusBar.tsx` as the `ClockSunTide` sub-component). Format: `2:32 PM · ☀↘ 7:47 PM · 〰↗ High 4:15 PM`.
@@ -145,6 +161,6 @@ Run `/wcag` to audit before any visible release.
 
 ## Status
 
-**Built:** SignalK client + reconnecting WebSocket; messy mock generator (9 vessel archetypes); `useSignalK` / `useSelf` / `useAISTargets` hooks; AISPage with `<h1 sr-only>`; ChartPage placeholder; StatusBar with vessel name + GPS pill + Almanac (clock + sun + tide stub) + lat/lon/speed/heading + 3-mode tabs; AISList with All/Active filter, plain-language narrative rows, threat banding (monitor/caution/danger), stale-row dim-sand surface, compact variant for split mode; navy/sand brutalist palette with WCAG 2.2 AAA contrast verified; Zalando Sans Expanded + Roboto Mono via Google Fonts; split-view layout (default 30/70 AIS/chart) with mode toggle; reduced-motion + sr-only utilities; semantic landmarks + aria.
+**Built:** SignalK client + reconnecting WebSocket; messy mock generator (9 vessel archetypes); `useSignalK` / `useSelf` / `useAISTargets` hooks; AISPage with `<h1 sr-only>`; ChartPage with Leaflet (OSM tiles) + own-ship marker + AIS threat-banded markers + auto-recenter + resize-on-mode-toggle; StatusBar with vessel name + GPS pill + clock/sun/tide cluster (centered with metric value gap) + lat/lon/speed/heading + 3-mode tabs; AISList with All/Active filter, plain-language narrative rows, threat banding (monitor/caution/danger), stale-row dim-sand surface, compact variant for split mode; navy/sand brutalist palette with WCAG 2.2 AAA contrast verified; Zalando Sans Expanded + Roboto Mono via Google Fonts; split-view layout (default 30/70 AIS/chart) with mode toggle; reduced-motion + sr-only utilities; semantic landmarks + aria.
 
-**Not yet built:** Leaflet integration in ChartPage (next), own-ship marker, AIS markers on chart, real tide harmonic data (currently M2 stub), waypoints / Go-To routing, anchor watch, ETA, night-vision mode, MOB button, MBTiles serving on Pi, depth/heading/wind sensors, kiosk autostart, self-hosted fonts, real-Pi smoke test.
+**Not yet built:** waypoints / Go-To routing (next), saved waypoints UI, anchor watch, ETA, night-vision mode, MOB button, real tide harmonic data (currently M2 stub), free-pan + recenter button on chart, NOAA MBTiles serving on Pi, depth/heading/wind sensors, kiosk autostart, self-hosted fonts, real-Pi smoke test.
