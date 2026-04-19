@@ -25,7 +25,8 @@ export const BASE_STYLE_URL = 'https://tiles.openfreemap.org/styles/positron';
 // Built by scripts/build-charts.sh — see docs/charts.md for regen instructions.
 // If the file isn't present, the NOAA source will fail silently and only the
 // OpenFreeMap base tiles render (no depth contours / buoys).
-const NOAA_PMTILES_URL = 'pmtiles:///charts/maine.pmtiles';
+// To switch regions, regenerate with the desired bundle and update this URL.
+const NOAA_PMTILES_URL = 'pmtiles:///charts/northeast.pmtiles';
 
 const COLORS = {
   water: '#547A9E',
