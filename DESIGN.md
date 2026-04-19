@@ -56,12 +56,14 @@ Font sources: Google Fonts CDN during dev. Self-hosting via `@fontsource/*` is r
 
 ### Spacing & Grid
 
-- Base unit: 4px (informal — not a strict scale).
+- **Base unit: 8px.** Scale: 4, 8, 12, 16, 24, 32, 48, 64.
 - AIS panel padding: 16px.
 - AIS card padding: 16px (12px in compact split mode).
-- AIS card gap: 16px.
+- AIS card gap: 16px (full width cards, stacked vertically — no horizontal grid, like lines on a page / Kindle list).
 - StatusBar padding: 10px / 16px.
-- Tab/button min-height: 44px (AAA target size).
+- Tab/button min-height: 44px (AAA target size). Map control buttons: 48×48px.
+- Map control stack gap: 8px between buttons, 16px from chart edges.
+- Scale bar: 16px from chart edges.
 
 ### Motion
 
@@ -119,7 +121,7 @@ No hover lifts, no entry animations, no tab transitions. Adding motion to a new 
 - **AIS only:** centered, max-width 720px.
 - **Chart only:** full width.
 
-Decision deferred from audit: chart-on-right vs chart-on-left. Currently right; revisit once Leaflet is in place and we can A/B at the helm.
+Decision deferred from audit: chart-on-right vs chart-on-left. Currently right; revisit once we can A/B the working chart at the helm.
 
 ## Key Screens
 
@@ -135,6 +137,54 @@ Decision deferred from audit: chart-on-right vs chart-on-left. Currently right; 
 ### Chart only
 - **Purpose:** Maximum chart real estate for navigation in tight or unfamiliar waters.
 - **Entry:** Toggle from StatusBar.
+
+## Roadmap — specced, not yet built
+
+Features with operator-approved specs that haven't been implemented. When picking up any of these, read the current spec here first.
+
+### AIS marker slide-up panel
+- **Trigger:** tap any AIS marker on chart.
+- **Behavior:** chart dims with semi-transparent navy overlay (40% opacity). Sand panel slides up from bottom. Panel height: 1/3 viewport.
+- **Dismiss:** tap outside or swipe down.
+- **Content:** same as AIS card (name, location narrative, movement, raw facts) plus a headline narrative line.
+- **Aesthetic:** `#F0EBE0` sand bg, 1px top navy border, no border-radius, 16px padding.
+- **Motion:** 250ms cubic-bezier(0.4, 0, 0.2, 1) slide; 200ms overlay fade. Respect `prefers-reduced-motion`.
+
+### Waypoints & navigation
+- **Temporary Go-To destination:**
+  - Entry: dedicated "drop pin" button (prevents accidental chart-tap triggers) or coordinate entry dialog.
+  - Display: 2px amber line from own-ship to destination; bearing/distance widget top-right below StatusBar, `→ 087° · 2.3 nm`, Roboto Mono 16px cream on navy pill.
+  - Math: haversine for distance, great-circle bearing (already in `formatters.ts` as `haversineNm`, `bearingRadians`).
+- **Saved waypoints:**
+  - Schema: `{ id, lat, lon, label, category: 'mooring'|'anchorage'|'hazard'|'poi', notes, created }`.
+  - Icons by category, all amber `#E8B84D`, 24×24px min.
+  - Tap waypoint → popup: Set as Destination / Edit / Delete.
+  - Storage: SignalK waypoints API on Pi; local JSON for laptop dev.
+- **Recent destinations:** last 10 (even unsaved); label or lat/lon + timestamp; tap to re-set.
+
+### Anchor watch
+- Drop Anchor button → set radius (50/75/100 ft presets) → amber circle drawn on chart.
+- Alarm: flashing red border on entire UI + configurable audio + "Anchor drag detected" notification, if GPS leaves radius.
+- Reset: Clear Anchor button.
+
+### MOB (Man Overboard)
+- Guarded trigger: two-tap or hold-to-confirm (TBD).
+- Red bg, white text, protected from accidental trigger.
+- Action: instant waypoint drop at current position, auto-navigate to it, 32px red ⚠ marker labeled "MOB", bearing/distance widget updates continuously.
+
+### Night vision mode
+- Auto-trigger at sunset (via `suncalc`) or manual toggle.
+- Red-spectrum palette: bg `#0D0000`, text `#CC7766`, water `#1A0808`, land `#2D1010`, boat-fill `#FF4422`, boat-outline `#FFAA44`, depth-shallow `#FF6644`, depth-moderate `#FFBB44`, depth-deep `#88CC88`.
+- Brightness filter 30–50%. Pulsing ring disabled or slowed to 4s.
+
+### Chart polish (deferred from current build)
+- Free-pan mode (disables auto-recenter while user is panning; explicit Recenter button re-enables).
+- Tap AIS marker on chart → opens the slide-up panel (see above).
+- OpenSeaMap raster overlay as optional Marine-mode supplement for dev (buoys/lights where NOAA isn't available).
+
+### Chart tile production (on the Pi)
+- Self-host the built PMTiles on the Pi via nginx / Caddy / `npm run preview` — static file, no tile server needed.
+- Automate chart regen: cron or manual `./scripts/build-charts.sh` when new NOAA editions drop (~quarterly).
 
 ## Research & Evidence
 
@@ -155,10 +205,25 @@ Target: **WCAG 2.2 Level AAA** (not just AA). See CLAUDE.md "Accessibility — W
 - [ ] **Filter toggle location** (m3 from audit) — keep above list or move to StatusBar?
 - [ ] **Vessel-name electric blue affordance** (m1 from audit) — reads as link. Either commit to tappable detail panel or shift hue.
 - [ ] **Touch-target size for marine use** (m2 from audit) — bump tabs from 44px to 56–64px for wet/gloved hands?
-- [ ] **Threat marker styling on chart** when Leaflet lands — how to visualize danger/caution targets on the map.
-- [ ] **Vessel mark / monogram** for own-boat icon — give the app a brand element using `--boat-icon` orange.
+- [ ] **Vessel mark / monogram** for own-boat icon — give the app a brand element using `--boat-icon` orange, reusable as favicon.
+- [ ] **Roboto Mono glyphs on chart labels** — depth-contour labels currently use Noto Sans (OpenFreeMap default glyph endpoint). Roboto Mono would match the rest of the mono-typeface usage but requires hosting our own font glyphs.
 
 ## Design Change Log
+
+### 2026-04-19 — Own-ship triple design
+- **Was:** 28px orange triangle with navy stroke, no pulse, no heading vector.
+- **Now:** 40px orange triangle with 2px yellow-green (`--ownship-accent` `#CCFF00`) outline; yellow-green pulsing ring (40 → 56px over 2s, infinite loop — the only UI animation); yellow-green heading-vector line showing 1-minute predicted travel at current SOG.
+- **Why:** Own-ship needs to be unmissable on any map background and convey movement intent without mental math.
+
+### 2026-04-19 — Chart library: Leaflet → MapLibre GL
+- **Was:** Leaflet + OSM raster tiles.
+- **Now:** raw `maplibre-gl` (no React wrapper) + OpenFreeMap vector tiles + marine-palette overrides in `src/chart/marineStyle.ts`.
+- **Why:** Raster OSM tiles can't be restyled to the spec (slate-blue water, sand land). MapLibre reads vector tiles and lets us restyle per-layer on `style.load`.
+
+### 2026-04-19 — NOAA chart pipeline (depth contours, buoys, lights)
+- **Was:** No real chart features (just OSM-tinted base).
+- **Now:** NOAA ENC data compiled to a self-hosted PMTiles file at `/charts/<region>.pmtiles`. Built via `scripts/build-charts.sh` from NOAA's pre-bundled regional ZIPs (maine, nh, ma, etc.). Depth contours colored by `VALDCO` per spec: `#FF3B1A` < 1.83m (6ft) / `#FFD700` 1.83–6.10m / `#6FECB0` > 6.10m (20ft+).
+- **Why:** Real marine navigation needs real depth data. PMTiles (single-file, no tile server) is drop-dead simple to ship to the Pi — same file, different path.
 
 ### 2026-04-18 — Threat-banding color extension
 - **Was:** Status colors were `--ok #4fbf7a`, `--danger #e05a5a`. Single red used for all "bad" states.
