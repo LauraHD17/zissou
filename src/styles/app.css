@@ -30,6 +30,10 @@
   /* Threat band — deep red for fills on sand cards (cream text on it ≥7:1) */
   --alert-red: #A02418;
 
+  /* Own-ship secondary accent — tennis-ball yellow-green. Used only for
+     the own-ship outline, pulsing ring, and heading vector. Not for AIS or UI. */
+  --ownship-accent: #CCFF00;
+
   /* Typography */
   --font-sans: 'Zalando Sans Expanded', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
   --font-mono: 'Roboto Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
@@ -56,7 +60,9 @@ html, body, #root {
   outline-offset: 2px;
 }
 
-/* WCAG 2.3.3 — respect users who prefer reduced motion. */
+/* WCAG 2.3.3 — respect users who prefer reduced motion.
+   Note: the own-ship pulse is the ONLY animated element in the UI by design.
+   Reduced motion replaces it with a static halo (still visible, no movement). */
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,
@@ -66,8 +72,14 @@ html, body, #root {
     transition-duration: 0.01ms !important;
     scroll-behavior: auto !important;
   }
-  .own-ship-marker svg {
+  .own-ship-marker__triangle {
     transition: none !important;
+  }
+  .own-ship-marker__pulse {
+    animation: none !important;
+    /* Static halo as a subtle non-animated "you are here" marker */
+    opacity: 0.35;
+    transform: scale(1.15);
   }
 }
 
@@ -346,18 +358,57 @@ html, body, #root {
   color: var(--alert-amber) !important;
 }
 
-/* Own-ship marker (safety orange triangle, oriented to COG) */
+/* Own-ship marker (triple design: pulse ring + triangle + heading vector).
+   Container is 56×56 to give the pulse room to expand to 1.4× the 40px triangle. */
 .own-ship-marker {
+  position: relative;
   background: transparent;
   border: none;
+  width: 56px;
+  height: 56px;
+  /* Override Leaflet's default icon clipping so pulse can extend visually. */
+  overflow: visible;
 }
 
-.own-ship-marker svg {
+.own-ship-marker__pulse {
+  position: absolute;
+  top: 8px;
+  left: 8px;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: rgba(204, 255, 0, 0.5);
+  animation: ownship-pulse 2s ease-out infinite;
+  pointer-events: none;
+}
+
+@keyframes ownship-pulse {
+  0% {
+    transform: scale(1);
+    opacity: 0.5;
+  }
+  100% {
+    transform: scale(1.4);
+    opacity: 0;
+  }
+}
+
+.own-ship-marker__triangle {
+  position: absolute;
+  top: 8px;
+  left: 8px;
   display: block;
   fill: var(--boat-icon);
-  stroke: var(--bg-navy);
-  stroke-width: 1.5;
+  stroke: var(--ownship-accent);
+  stroke-width: 2;
+  stroke-linejoin: miter;
+  /* Smooth COG rotation matches the StatusBar heading glyph. */
   transition: transform 0.3s ease-out;
+}
+
+/* Heading vector — yellow-green polyline showing 1 minute of predicted travel. */
+.heading-vector {
+  stroke: var(--ownship-accent);
 }
 
 /* AIS target markers — colored by threat band */

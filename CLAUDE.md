@@ -52,7 +52,7 @@ Leaflet via `react-leaflet@^4` (v5 requires React 19; we're on 18). Renders a ti
 
 **Tile source:** OpenStreetMap CDN for laptop dev. Production on the Pi switches to NOAA raster MBTiles served by a local tile server (deferred — needs Pi setup). Note: OSM doesn't show marine depth contours / chart features; production-only concern.
 
-**Own-ship marker:** divIcon SVG triangle in `--boat-icon` orange, navy stroke, rotates with COG (smooth `transition: transform 0.3s` — disabled under `prefers-reduced-motion`).
+**Own-ship marker (triple design):** divIcon SVG with three layered elements — (1) 40px orange (`--boat-icon`) triangle with 2px yellow-green (`--ownship-accent`) outline, rotates with COG; (2) yellow-green pulsing ring at 50% opacity, animates from 40px → 56px over 2s on infinite loop (replaced by static halo when `prefers-reduced-motion`); (3) heading vector — yellow-green polyline extending from triangle in COG direction, length = 1 minute of travel at current SOG. The pulse is the **only** animated UI element on the entire interface (per design principle).
 
 **AIS markers:** divIcon SVG, colored by threat band (`--surface-sand` monitor / `--alert-amber` caution / `--alert-red` danger). Targets with COG render as oriented chevrons; targets without (e.g. anchored) render as circles. Stale targets get 0.55 opacity.
 
@@ -134,6 +134,7 @@ Palette lives in `:root` of `src/styles/app.css`. Always reference variables, ne
 - `--vessel-name` `#0F0298` — electric blue. Used **only** for AIS vessel names.
 - `--alert-amber` `#E8B84D` — amber. Stale/caution indicators, qualifier lines, threat-band caution bar/pill, `GPS stale` fix indicator.
 - `--alert-red` `#A02418` — deep red for threat-band danger fills on sand cards (cream text on it ≥7:1). Distinct from `--danger` (which is for status text on dark navy).
+- `--ownship-accent` `#CCFF00` — tennis-ball yellow-green. Reserved for the own-ship triangle outline, pulsing ring, and heading vector. Never used elsewhere in the UI. Pairs with `--boat-icon` orange to make own-ship unmissable on any map background.
 - `--waypoint` `#6B9080` — sage. Reserved for future waypoints / route markers.
 - `--ok` `#5BD891` / `--danger` `#FFA0A0` — universal green/red signals for system status text on navy (GPS OK / no fix). Brightened to pass AAA on the navy bg. Distinct from the brand palette; don't repurpose.
 

@@ -138,6 +138,38 @@ export function haversineNm(a: Position, b: Position): number {
   return 2 * R * Math.asin(Math.sqrt(h));
 }
 
+/**
+ * Project a position by `distanceM` meters along `bearingRad` from start.
+ * Uses spherical-earth approximation — accurate enough for short ranges
+ * (predictive heading vectors, dead-reckoning over a few minutes).
+ */
+export function projectPosition(
+  start: Position,
+  bearingRad: number,
+  distanceM: number,
+): Position {
+  const R = 6_371_000; // earth radius, meters
+  const delta = distanceM / R;
+  const phi1 = (start.latitude * Math.PI) / 180;
+  const lambda1 = (start.longitude * Math.PI) / 180;
+
+  const phi2 = Math.asin(
+    Math.sin(phi1) * Math.cos(delta) +
+      Math.cos(phi1) * Math.sin(delta) * Math.cos(bearingRad),
+  );
+  const lambda2 =
+    lambda1 +
+    Math.atan2(
+      Math.sin(bearingRad) * Math.sin(delta) * Math.cos(phi1),
+      Math.cos(delta) - Math.sin(phi1) * Math.sin(phi2),
+    );
+
+  return {
+    latitude: (phi2 * 180) / Math.PI,
+    longitude: (((lambda2 * 180) / Math.PI + 540) % 360) - 180,
+  };
+}
+
 /** Bearing from `from` to `to`, in radians (0 = north, clockwise). */
 export function bearingRadians(from: Position, to: Position): number {
   const la1 = toRad(from.latitude);

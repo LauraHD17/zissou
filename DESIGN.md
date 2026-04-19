@@ -27,7 +27,8 @@ Marine navigation UI for a Raspberry Pi 4 kiosk on a 1978 Sisu 22 (small diesel 
 | Text on sand | `--text-on-card` | `#142038` | All text on AIS cards |
 | Text dim on navy | `--text-dim` | `rgba(240,235,224,0.78)` | StatusBar metric labels |
 | Text dim on sand | `--text-on-card-dim` | `rgba(20,32,56,0.82)` | Card movement line, raw facts |
-| Own boat | `--boat-icon` | `#FF6B35` | Heading glyph; future own-ship marker on chart |
+| Own boat | `--boat-icon` | `#FF6B35` | Heading glyph; own-ship triangle fill on chart |
+| Own boat accent | `--ownship-accent` | `#CCFF00` | Tennis-ball yellow-green. Own-ship triangle outline, pulsing ring, heading vector. Reserved — nowhere else. |
 | AIS vessel name | `--vessel-name` | `#0F0298` | Card name only |
 | Caution | `--alert-amber` | `#E8B84D` | Stale qualifier border, GPS-stale pill, threat-caution bar/pill |
 | Danger | `--alert-red` | `#A02418` | Threat-danger bar/pill (for fills on sand; cream text on it ≥7:1) |
@@ -98,7 +99,7 @@ No hover lifts, no entry animations, no tab transitions. Adding motion to a new 
 ### Chart (`src/components/ChartCanvas.tsx`, rendered by `src/pages/ChartPage.tsx`)
 - **Library:** Leaflet via `react-leaflet@^4` (v5 needs React 19; we're on 18).
 - **Tiles:** OpenStreetMap CDN for laptop dev; NOAA raster MBTiles via local tile server on Pi (deferred).
-- **Own-ship marker:** divIcon SVG triangle, `--boat-icon` orange, navy stroke, rotates with COG (smooth transition, disabled under `prefers-reduced-motion`).
+- **Own-ship marker (triple design):** 40px orange triangle with 2px yellow-green outline (rotates with COG); yellow-green pulsing ring (40 → 56px over 2s, the only animation in the entire UI); yellow-green heading-vector polyline showing 1 minute of predicted travel at current SOG. Replaced by static halo under `prefers-reduced-motion`.
 - **AIS markers:** divIcon SVG, colored by threat band — sand (monitor), amber (caution), red (danger). Targets with COG render as oriented chevrons; without (anchored) as circles. Stale → 0.55 opacity.
 - **Auto-recenter:** map snaps to own-ship on every position update. v1 — free-pan and recenter button deferred.
 - **Resize handling:** ResizeObserver on the map container calls `invalidateSize()` so view-mode toggling (which uses `display:none`) doesn't leave stale tile sizes.

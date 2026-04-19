@@ -1,10 +1,10 @@
 import { useEffect, useMemo, useRef } from 'react';
-import { MapContainer, Marker, TileLayer, useMap } from 'react-leaflet';
+import { MapContainer, Marker, Polyline, TileLayer, useMap } from 'react-leaflet';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 
 import { useAISTargets, useSelf } from '../signalk/useSignalK';
-import { computeThreatBand, isPlausiblePosition } from '../utils/formatters';
+import { computeThreatBand, isPlausiblePosition, projectPosition } from '../utils/formatters';
 import type { Position, Vessel } from '../signalk/types';
 
 const FALLBACK_CENTER: [number, number] = [44.4, -68.8]; // mid-coast Maine
@@ -41,7 +41,10 @@ export function ChartCanvas() {
       <AutoRecenter pos={self?.position} />
 
       {self?.position && isPlausiblePosition(self.position) && (
-        <OwnShipMarker pos={self.position} cogRad={self.cog} />
+        <>
+          <HeadingVector pos={self.position} cogRad={self.cog} sogMs={self.sog} />
+          <OwnShipMarker pos={self.position} cogRad={self.cog} />
+        </>
       )}
 
       {targets.map((v) => {
@@ -61,23 +64,59 @@ export function ChartCanvas() {
   );
 }
 
-// ── Own-ship marker ─────────────────────────────────────────────────────
+// ── Own-ship marker (triple design: triangle + pulsing ring + heading vector) ─
 
 function OwnShipMarker({ pos, cogRad }: { pos: Position; cogRad: number | undefined }) {
   const headingDeg = cogRad != null && cogRad <= Math.PI * 2 ? (cogRad * 180) / Math.PI : 0;
+
+  // 56px container leaves 8px room for the ring's max scale (1.4× of 40px = 56px).
+  // Triangle is 40px, centered. Pulse ring sits underneath, animated via CSS.
   const icon = useMemo(
     () =>
       L.divIcon({
         className: 'own-ship-marker',
-        html: `<svg viewBox="0 0 24 24" width="28" height="28" style="transform: rotate(${headingDeg}deg)">
-                 <path d="M 12 2 L 20 22 L 12 17 L 4 22 Z" />
-               </svg>`,
-        iconSize: [28, 28],
-        iconAnchor: [14, 14],
+        html: `
+          <div class="own-ship-marker__pulse" aria-hidden="true"></div>
+          <svg class="own-ship-marker__triangle"
+               viewBox="0 0 40 40" width="40" height="40"
+               style="transform: rotate(${headingDeg}deg)"
+               aria-hidden="true">
+            <path d="M 20 4 L 34 36 L 20 28 L 6 36 Z" />
+          </svg>
+        `,
+        iconSize: [56, 56],
+        iconAnchor: [28, 28],
       }),
     [headingDeg],
   );
   return <Marker position={[pos.latitude, pos.longitude]} icon={icon} interactive={false} />;
+}
+
+/** Predictive 1-minute path from current position along COG at current SOG. */
+function HeadingVector({
+  pos,
+  cogRad,
+  sogMs,
+}: {
+  pos: Position;
+  cogRad: number | undefined;
+  sogMs: number | undefined;
+}) {
+  if (cogRad == null || cogRad < 0 || cogRad > Math.PI * 2) return null;
+  if (sogMs == null || sogMs < 0.25 || sogMs > 60) return null; // skip when stopped or implausible
+
+  const distanceM = sogMs * 60; // 1 minute of travel
+  const end = projectPosition(pos, cogRad, distanceM);
+
+  return (
+    <Polyline
+      positions={[
+        [pos.latitude, pos.longitude],
+        [end.latitude, end.longitude],
+      ]}
+      pathOptions={{ weight: 2, className: 'heading-vector', interactive: false }}
+    />
+  );
 }
 
 // ── AIS target markers ──────────────────────────────────────────────────
