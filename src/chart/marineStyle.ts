@@ -17,7 +17,12 @@
 // top and shows buoys + lights + ferries + sparse depth notes. Not added by
 // default because it's coverage-incomplete; opt-in if useful in dev.
 
-import type { Map as MapLibreMap } from 'maplibre-gl';
+import type {
+  DataDrivenPropertyValueSpecification,
+  ExpressionSpecification,
+  LayerSpecification,
+  Map as MapLibreMap,
+} from 'maplibre-gl';
 
 export const BASE_STYLE_URL = 'https://tiles.openfreemap.org/styles/positron';
 
@@ -117,7 +122,7 @@ export function applyMarineStyle(map: MapLibreMap): void {
 
 // ── NOAA ENC layers (depth contours, buoys, lights, wrecks, etc.) ─────
 
-const DEPTH_COLOR_EXPRESSION = [
+const DEPTH_COLOR_EXPRESSION: DataDrivenPropertyValueSpecification<string> = [
   'step',
   ['to-number', ['get', 'VALDCO']],
   COLORS.depthShallow,
@@ -125,7 +130,7 @@ const DEPTH_COLOR_EXPRESSION = [
   COLORS.depthModerate,
   DEPTH_BREAK_MODERATE,
   COLORS.depthDeep,
-] as unknown;
+] as unknown as ExpressionSpecification;
 
 function addNoaaChartLayers(map: MapLibreMap): void {
   if (!map.getSource('noaa')) {
@@ -148,13 +153,11 @@ function addNoaaChartLayers(map: MapLibreMap): void {
     source: 'noaa',
     'source-layer': 'depcnt',
     paint: {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      'line-color': DEPTH_COLOR_EXPRESSION as any,
+      'line-color': DEPTH_COLOR_EXPRESSION,
       'line-width': 1,
     },
   });
 
-  // Depth contour labels — drawn along the line, colored to match.
   addLayerIfMissing(map, {
     id: 'noaa-depth-contour-label',
     type: 'symbol',
@@ -169,8 +172,7 @@ function addNoaaChartLayers(map: MapLibreMap): void {
       'text-letter-spacing': 0.05,
     },
     paint: {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      'text-color': DEPTH_COLOR_EXPRESSION as any,
+      'text-color': DEPTH_COLOR_EXPRESSION,
       'text-halo-color': COLORS.land,
       'text-halo-width': 1.5,
     },
@@ -224,17 +226,12 @@ function addNoaaChartLayers(map: MapLibreMap): void {
   }
 }
 
-function addLayerIfMissing(
-  map: MapLibreMap,
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  layer: any,
-): void {
+function addLayerIfMissing(map: MapLibreMap, layer: LayerSpecification): void {
   if (map.getLayer(layer.id)) return;
   try {
     map.addLayer(layer);
   } catch {
-    // swallow — source-layer missing from PMTiles (e.g. region without
-    // wrecks) is fine; layer just won't render.
+    // Source-layer missing from PMTiles (e.g. a region with no wrecks) is fine.
   }
 }
 
@@ -248,10 +245,15 @@ function setPaint(
 ): void {
   if (!map.getLayer(layerId)) return;
   try {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    map.setPaintProperty(layerId, property as any, value as any);
+    // OpenFreeMap's positron schema can shift; tinting is best-effort, and
+    // each (layer, property) pair is dynamic so we can't statically type it.
+    (map.setPaintProperty as (l: string, p: string, v: unknown) => void)(
+      layerId,
+      property,
+      value,
+    );
   } catch {
-    // swallow — positron layer schema can shift; this is best-effort tinting.
+    // ignore
   }
 }
 

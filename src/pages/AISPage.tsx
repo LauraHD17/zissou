@@ -1,4 +1,4 @@
-import { AISList } from '../components/AISList';
+import { AISList } from '../ais/AISList';
 
 export function AISPage({ compact = false }: { compact?: boolean }) {
   return (

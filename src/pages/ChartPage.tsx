@@ -1,4 +1,4 @@
-import { ChartCanvas } from '../components/ChartCanvas';
+import { ChartCanvas } from '../chart/ChartCanvas';
 
 export function ChartPage() {
   return (

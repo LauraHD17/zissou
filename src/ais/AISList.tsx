@@ -1,15 +1,11 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useMemo, useState } from 'react';
+import { AIS_STALE_MS } from '../signalk/types';
 import type { Vessel } from '../signalk/types';
 import { useAISTargets, useSelf } from '../signalk/useSignalK';
-import {
-  buildVesselNarrative,
-  computeThreatBand,
-  haversineNm,
-  isPlausiblePosition,
-  type ThreatBand,
-} from '../utils/formatters';
-
-const STALE_MS = 5 * 60 * 1000;
+import { useNowMs } from '../utils/clock';
+import { haversineNm, isPlausiblePosition } from '../utils/geometry';
+import { buildVesselNarrative } from '../utils/narrative';
+import { computeThreatBand, type ThreatBand } from '../utils/threat';
 
 type FilterMode = 'all' | 'active';
 
@@ -27,23 +23,36 @@ const BAND_ORDER: Record<ThreatBand, number> = { danger: 0, caution: 1, monitor:
 export function AISList({ compact = false }: { compact?: boolean } = {}) {
   const targets = useAISTargets();
   const self = useSelf();
-  const now = useNow(5000);
+  const now = useNowMs(5000);
   const [filter, setFilter] = useState<FilterMode>('all');
 
-  const allRows = useMemo<Row[]>(() => {
+  // Geometry + narrative are stable on (targets, self) — `now` only affects
+  // staleness, which we overlay below. This keeps SignalK ticks from
+  // re-running haversine/buildNarrative for every vessel every 5 s.
+  const baseRows = useMemo(() => {
     const selfPos = self?.position;
-    return targets
-      .map((v): Row => {
-        const hasValidPosition = isPlausiblePosition(v.position);
-        const isStale = now - v.lastUpdated > STALE_MS;
+    return targets.map((v) => {
+      const hasValidPosition = isPlausiblePosition(v.position);
+      return {
+        vessel: v,
+        distanceNm:
+          selfPos && hasValidPosition && v.position ? haversineNm(selfPos, v.position) : null,
+        hasValidPosition,
+      };
+    });
+  }, [targets, self]);
+
+  const allRows = useMemo<Row[]>(() => {
+    return baseRows
+      .map(({ vessel, distanceNm, hasValidPosition }): Row => {
+        const isStale = now - vessel.lastUpdated > AIS_STALE_MS;
         return {
-          vessel: v,
-          distanceNm:
-            selfPos && hasValidPosition && v.position ? haversineNm(selfPos, v.position) : null,
-          narrative: buildVesselNarrative(v, self, now),
-          isStale,
+          vessel,
+          distanceNm,
           hasValidPosition,
-          threatBand: computeThreatBand(v, self, isStale),
+          isStale,
+          narrative: buildVesselNarrative(vessel, self, now),
+          threatBand: computeThreatBand(vessel, self, isStale),
         };
       })
       .sort((a, b) => {
@@ -54,7 +63,7 @@ export function AISList({ compact = false }: { compact?: boolean } = {}) {
         if (b.distanceNm == null) return -1;
         return a.distanceNm - b.distanceNm;
       });
-  }, [targets, self, now]);
+  }, [baseRows, self, now]);
 
   const visibleRows = filter === 'all' ? allRows : allRows.filter(isActive);
   const hiddenCount = allRows.length - visibleRows.length;
@@ -165,11 +174,3 @@ function displayName(v: Vessel): string {
   return 'Unknown vessel';
 }
 
-function useNow(intervalMs: number): number {
-  const [now, setNow] = useState(() => Date.now());
-  useEffect(() => {
-    const id = setInterval(() => setNow(Date.now()), intervalMs);
-    return () => clearInterval(id);
-  }, [intervalMs]);
-  return now;
-}

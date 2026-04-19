@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { StatusBar, type ViewMode } from './components/StatusBar';
+import { StatusBar, type ViewMode } from './statusbar/StatusBar';
 import { AISPage } from './pages/AISPage';
 import { ChartPage } from './pages/ChartPage';
 import './styles/app.css';

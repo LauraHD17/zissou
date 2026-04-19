@@ -36,3 +36,16 @@ export interface Vessel {
   lastUpdated: number;
   paths: Record<string, unknown>;
 }
+
+/** A SignalK report older than this is considered stale (no longer trustworthy). */
+export const AIS_STALE_MS = 5 * 60 * 1000;
+
+/** True when the value is a valid course-over-ground (radians, 0 ≤ cog ≤ 2π). */
+export function isValidCogRad(cog: number | null | undefined): cog is number {
+  return cog != null && cog >= 0 && cog <= Math.PI * 2;
+}
+
+/** True when the value is a plausible speed-over-ground (m/s, 0 ≤ sog < 60). */
+export function isValidSogMs(sog: number | null | undefined): sog is number {
+  return sog != null && sog >= 0 && sog < 60;
+}
