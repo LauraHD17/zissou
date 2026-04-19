@@ -13,7 +13,11 @@ import type { SignalKDelta } from './types';
 
 type Emit = (delta: SignalKDelta) => void;
 
-const SELF_START = { latitude: 41.505, longitude: -71.315 };
+// Castine, ME — eastern shore of Penobscot Bay. Chosen so the mock fleet
+// overlaps the area covered by NOAA chart cell US5ME23M (built into our
+// PMTiles via scripts/build-charts.sh). Move with the rest of the offsets
+// below if you rebuild charts for a different region.
+const SELF_START = { latitude: 44.395, longitude: -68.79 };
 
 const DEG = (d: number) => (d * Math.PI) / 180;
 const KN_TO_MS = 0.514444;
@@ -75,8 +79,8 @@ function emitSelf(emit: Emit) {
 }
 
 const freighterState = {
-  latitude: 41.58,
-  longitude: -71.24,
+  latitude: 44.47,
+  longitude: -68.715,
   cog: DEG(230),
   sogMs: 12.8 * KN_TO_MS,
 };
@@ -110,7 +114,7 @@ function emitAnchoredFisher(emit: Emit) {
       {
         timestamp: new Date().toISOString(),
         values: [
-          { path: 'navigation.position', value: { latitude: 41.498 + jitter, longitude: -71.322 + jitter } },
+          { path: 'navigation.position', value: { latitude: 44.388 + jitter, longitude: -68.797 + jitter } },
           { path: 'navigation.speedOverGround', value: 0 },
           { path: 'navigation.state', value: 'at anchor' },
           // No COG: real anchored AIS often omits it entirely.
@@ -121,8 +125,8 @@ function emitAnchoredFisher(emit: Emit) {
 }
 
 const mmsiOnlyState = {
-  latitude: 41.54,
-  longitude: -71.28,
+  latitude: 44.43,
+  longitude: -68.755,
   cog: DEG(45),
   sogMs: 7.5 * KN_TO_MS,
 };
@@ -148,8 +152,8 @@ function emitMMSIOnly(emit: Emit) {
 }
 
 const fastErraticState = {
-  latitude: 41.51,
-  longitude: -71.29,
+  latitude: 44.4,
+  longitude: -68.765,
   cog: DEG(120),
   sogMs: 28 * KN_TO_MS,
 };
@@ -207,7 +211,7 @@ function emitVeryFar(emit: Emit) {
       {
         timestamp: new Date().toISOString(),
         values: [
-          { path: 'navigation.position', value: { latitude: 41.74, longitude: -71.12 } },
+          { path: 'navigation.position', value: { latitude: 44.63, longitude: -68.595 } },
           { path: 'navigation.speedOverGround', value: 14.2 * KN_TO_MS },
           { path: 'navigation.courseOverGroundTrue', value: DEG(190) },
         ],
@@ -242,7 +246,7 @@ function emitStuckVessel(emit: Emit) {
       {
         timestamp: twelveMinAgo,
         values: [
-          { path: 'navigation.position', value: { latitude: 41.52, longitude: -71.35 } },
+          { path: 'navigation.position', value: { latitude: 44.41, longitude: -68.825 } },
           { path: 'navigation.speedOverGround', value: 0.2 * KN_TO_MS },
           { path: 'navigation.courseOverGroundTrue', value: DEG(88) },
         ],
