@@ -13,7 +13,7 @@ Navigation UI for a Raspberry Pi 4 running on a 1978 Sisu 22 (diesel inboard, ce
 
 - **SignalK** is the data bus. The Pi runs `signalk-server` (port 3000, `ws://localhost:3000/signalk/v1/stream`). Everything in the React app is a subscriber.
 - **Dev on laptop, run on Pi.** The SignalK client has a mock mode for laptop development. Switch via `VITE_SIGNALK_MODE=mock|real` env var. The mock emits the same delta shape as the real server so the reducer is identical.
-- **Map library: Leaflet.** Raster NOAA charts (MBTiles), touchscreen-friendly, huge plugin ecosystem, minimal learning curve. Not added to deps yet — ChartPage isn't built.
+- **Map library: Leaflet.** Raster NOAA charts (MBTiles), touchscreen-friendly, huge plugin ecosystem, minimal learning curve. Dev uses OSM tiles via the public CDN; production switches to a local MBTiles tile server on the Pi.
 - **No depth, wind, or heading in v1** — no sensors for them.
 
 ## Project structure
@@ -104,12 +104,13 @@ Palette lives in `:root` of `src/styles/app.css`. Always reference variables, ne
 **Functional / semantic**
 - `--boat-icon` `#FF6B35` — safety orange. Reserved for **our own vessel** (heading glyph, own-ship marker on chart). Don't use for anything else.
 - `--vessel-name` `#0F0298` — electric blue. Used **only** for AIS vessel names.
-- `--alert-amber` `#E8B84D` — amber. Stale/caution indicators, qualifier lines, `GPS stale` fix indicator.
+- `--alert-amber` `#E8B84D` — amber. Stale/caution indicators, qualifier lines, threat-band caution bar/pill, `GPS stale` fix indicator.
+- `--alert-red` `#A02418` — deep red for threat-band danger fills on sand cards (cream text on it ≥7:1). Distinct from `--danger` (which is for status text on dark navy).
 - `--waypoint` `#6B9080` — sage. Reserved for future waypoints / route markers.
-- `--ok` `#4fbf7a` / `--danger` `#e05a5a` — universal green/red signals for system status (GPS OK / no fix). Distinct from the brand palette; don't repurpose.
+- `--ok` `#5BD891` / `--danger` `#FFA0A0` — universal green/red signals for system status text on navy (GPS OK / no fix). Brightened to pass AAA on the navy bg. Distinct from the brand palette; don't repurpose.
 
 **Interactive**
-- `--focus-ring` `#E8B84D` — amber, 2px, applied via `:focus-visible`.
+- `--focus-ring` `#E8B84D` — amber, 3px outline + 2px offset via `:focus-visible`.
 
 **Pattern: navy app chrome + sand information cards.** Any readable data payload (AIS rows, instrument cards, route entries) goes on sand. Status/chrome/navigation (StatusBar, tabs, chart canvas bezel) stays on navy. Active tabs flip to sand fill to signal "you are reading this content."
 
@@ -122,7 +123,7 @@ This project targets **WCAG 2.2 Level AAA**. Apply by default — don't ship UI 
 Key constraints AAA imposes that bite hardest in this UI:
 - **Contrast 7:1** for normal text, 4.5:1 for large (≥18pt regular / 14pt bold). Verify every new text-on-surface pairing in the navy/sand palette.
 - **Touch targets ≥44×44 CSS px** (AAA, stricter than AA's 24×24). Tabs, buttons, any clickable row.
-- **Focus indicator ≥2px perimeter, 3:1 contrast change**, fully visible (not obscured by sticky StatusBar). Currently `--focus-ring` amber 2px via `:focus-visible`.
+- **Focus indicator ≥2px perimeter, 3:1 contrast change**, fully visible (not obscured by sticky StatusBar). Currently `--focus-ring` amber 3px outline + 2px offset via `:focus-visible`.
 - **No `user-scalable=no`** in viewport meta — kiosk pinch-zoom must work for low-vision use.
 - **Plain language at lower-secondary reading level** (AAA 3.1.5) — already aligned with the "plain-language UI" principle above.
 - **Motion/animation can be disabled** — respect `prefers-reduced-motion` for the heading-glyph rotation transition and any future map animations.
@@ -132,5 +133,6 @@ Run `/wcag` to audit before any visible release.
 
 ## Status
 
-Scaffolded: SignalK client, mock generator, `useSignalK` hook, AISList component, AISPage.
-Not yet built: ChartPage, StatusBar, Leaflet integration, real-Pi testing.
+**Built:** SignalK client + reconnecting WebSocket; messy mock generator (9 vessel archetypes); `useSignalK` / `useSelf` / `useAISTargets` hooks; AISPage with `<h1 sr-only>`; ChartPage placeholder; StatusBar with vessel name + GPS pill + lat/lon/speed/heading + 3-mode tabs; AISList with All/Active filter, plain-language narrative rows, threat banding (monitor/caution/danger), stale-row dim-sand surface, compact variant for split mode; navy/sand brutalist palette with WCAG 2.2 AAA contrast verified; Zalando Sans Expanded + Roboto Mono via Google Fonts; split-view layout (default 30/70 AIS/chart) with mode toggle; reduced-motion + sr-only utilities; semantic landmarks + aria.
+
+**Not yet built:** Leaflet integration in ChartPage (next), own-ship marker, AIS markers on chart, MBTiles serving on Pi, depth/heading/wind sensors, kiosk autostart, self-hosted fonts, real-Pi smoke test.
