@@ -1,9 +1,13 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useSelf } from '../signalk/useSignalK';
 import { formatCompassBearing, formatLat, formatLon, formatSpeedKnMph } from '../utils/formatters';
-import { Almanac } from './Almanac';
+import { formatEventTime, formatLocalTime, useNow as useDateNow } from '../utils/clock';
+import { nextSunEvent } from '../utils/sun';
+import { nextTideEvent } from '../utils/tides';
 
 const STALE_MS = 30_000;
+// Mid-coast Maine — used to compute sun/tide before the GPS gets a fix.
+const FALLBACK_POS = { latitude: 44.4, longitude: -68.8 };
 
 export type ViewMode = 'split' | 'ais' | 'chart';
 
@@ -30,10 +34,10 @@ export function StatusBar({ activeView, onViewChange }: StatusBarProps) {
       <div className="statusbar__left">
         <span className="statusbar__vessel">{self?.name ?? '—'}</span>
         <FixIndicator hasFix={hasFix} isStale={isStale} />
-        <Almanac />
       </div>
 
       <div className="statusbar__metrics">
+        <ClockSunTide pos={self?.position ?? FALLBACK_POS} />
         <Metric label="Lat" value={formatLat(self?.position?.latitude)} mono />
         <Metric label="Lon" value={formatLon(self?.position?.longitude)} mono />
         <Metric label="Speed" value={speed} />
@@ -61,6 +65,40 @@ function FixIndicator({ hasFix, isStale }: { hasFix: boolean; isStale: boolean }
   const state = !hasFix ? 'no-fix' : isStale ? 'stale' : 'ok';
   const label = state === 'ok' ? 'GPS OK' : state === 'stale' ? 'GPS stale' : 'no fix';
   return <span className={`fix-indicator fix-indicator--${state}`}>{label}</span>;
+}
+
+function ClockSunTide({ pos }: { pos: { latitude: number; longitude: number } }) {
+  const now = useDateNow(60_000);
+  const sun = useMemo(() => nextSunEvent(now, pos), [now, pos.latitude, pos.longitude]);
+  const tide = useMemo(() => nextTideEvent(now, pos), [now, pos.latitude, pos.longitude]);
+
+  return (
+    <div className="statusbar__almanac">
+      <span className="statusbar__time">{formatLocalTime(now)}</span>
+      <span className="statusbar__sep" aria-hidden="true">·</span>
+      {sun && (
+        <>
+          <span className="statusbar__sun">
+            <span className="statusbar__glyph" aria-hidden="true">
+              {sun.kind === 'sunrise' ? '☀↗' : '☀↘'}
+            </span>
+            <span className="sr-only">{sun.kind === 'sunrise' ? 'Sunrise' : 'Sunset'} at </span>
+            {formatEventTime(sun.time)}
+          </span>
+          <span className="statusbar__sep" aria-hidden="true">·</span>
+        </>
+      )}
+      <span className="statusbar__tide">
+        <span className="statusbar__glyph" aria-hidden="true">
+          {tide.direction === 'rising' ? '〰↗' : '〰↘'}
+        </span>
+        <span className="sr-only">
+          {tide.direction === 'rising' ? 'Tide rising, next high at ' : 'Tide falling, next low at '}
+        </span>
+        {tide.kind === 'high' ? 'High' : 'Low'} {formatEventTime(tide.time)}
+      </span>
+    </div>
+  );
 }
 
 function Metric({ label, value, mono }: { label: string; value: React.ReactNode; mono?: boolean }) {

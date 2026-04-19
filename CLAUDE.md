@@ -46,9 +46,9 @@ In split mode, the AIS list renders with `compact={true}` → applies `.ais-pane
 - **Ship thin.** v1 is ChartPage + AISPage. No InstrumentsPage until there are instruments. Position/SOG/COG go in StatusBar.
 - **Don't bundle chart tiles.** MBTiles are gigabytes. On the Pi, serve from disk via SignalK's chart plugin or a tiny local tile server. `public/charts/` is a placeholder, not a delivery path.
 
-## Almanac (clock · sun · tide)
+## StatusBar — clock, sun, tide
 
-`src/components/Almanac.tsx` displays local time + next sun event + next tide in the StatusBar's left section. Format: `2:32 PM · ☀↘ 7:47 PM · 〰↗ High 4:15 PM`.
+The StatusBar's left section includes a glanceable time + sun + tide cluster (inlined in `src/components/StatusBar.tsx` as the `ClockSunTide` sub-component). Format: `2:32 PM · ☀↘ 7:47 PM · 〰↗ High 4:15 PM`.
 
 - **Time** — 12-hour, ticks at 60-second cadence (`src/utils/clock.ts`).
 - **Sun** — `suncalc` library, fully offline, takes lat/lon from `useSelf()` (falls back to mid-coast Maine when no fix yet). See `src/utils/sun.ts`.
