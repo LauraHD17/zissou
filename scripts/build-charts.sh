@@ -108,7 +108,9 @@ echo "[charts] Found $cell_count ENC cells across ${#BUNDLE_URLS[@]} bundle(s)"
 echo "[charts] Extracting layers: ${LAYERS[*]}"
 for layer in "${LAYERS[@]}"; do
   out="$WORK_DIR/${layer}.geojson"
-  : > "$out"
+  # Remove any prior output — ogr2ogr refuses to overwrite an existing file
+  # without explicit -overwrite, but it will happily CREATE a new one.
+  rm -f "$out"
   first=1
   while IFS= read -r s57; do
     if [[ "$first" -eq 1 ]]; then
@@ -116,7 +118,8 @@ for layer in "${LAYERS[@]}"; do
         first=0
       fi
     else
-      ogr2ogr -append -f GeoJSON "$out" "$s57" "$layer" 2>/dev/null || true
+      # -update -append opens the existing file for write and appends features.
+      ogr2ogr -update -append -f GeoJSON "$out" "$s57" "$layer" 2>/dev/null || true
     fi
   done < <(find . -name '*.000')
 
