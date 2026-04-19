@@ -330,6 +330,17 @@ html, body, #root {
   background: var(--bg-navy);
 }
 
+.chart-loading {
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-dim);
+  font-family: var(--font-sans);
+  font-weight: 500;
+  font-size: 14px;
+}
+
 /* Custom control stack — hard-rectangle 48px navy buttons, top-right corner */
 .map-control-stack {
   position: absolute;

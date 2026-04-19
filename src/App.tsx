@@ -1,8 +1,11 @@
-import { useState } from 'react';
+import { lazy, Suspense, useState } from 'react';
 import { StatusBar, type ViewMode } from './statusbar/StatusBar';
 import { AISPage } from './pages/AISPage';
-import { ChartPage } from './pages/ChartPage';
 import './styles/app.css';
+
+// MapLibre + pmtiles are heavy (~1 MB gzipped). Code-split so AIS-only mode
+// doesn't pay for the chart on initial paint.
+const ChartPage = lazy(() => import('./pages/ChartPage'));
 
 export function App() {
   const [view, setView] = useState<ViewMode>('split');
@@ -15,7 +18,9 @@ export function App() {
           <AISPage compact={view === 'split'} />
         </div>
         <div className="chart-column">
-          <ChartPage />
+          <Suspense fallback={<div className="chart-loading">Loading chart…</div>}>
+            <ChartPage />
+          </Suspense>
         </div>
       </main>
     </div>

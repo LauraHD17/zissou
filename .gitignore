@@ -6,6 +6,10 @@ dist
 *.log
 .vite
 
+# Playwright runtime artifacts
+playwright-report/
+test-results/
+
 # NOAA chart PMTiles — regenerated via scripts/build-charts.sh
 # Too large for git; rebuild from NOAA data when needed.
 public/charts/*.pmtiles

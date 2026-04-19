@@ -1,0 +1,17 @@
+{
+  "_comment": "Bundle size limits in bytes. CI fails if any artifact exceeds its max. Update the baseline when you've intentionally added weight (e.g., a new feature). See scripts/check-bundle-size.mjs.",
+  "limits": {
+    "main_js": 200000,
+    "main_css": 20000,
+    "chart_chunk_js": 1200000,
+    "chart_chunk_css": 90000,
+    "total_js": 1400000
+  },
+  "measured_2026-04-19": {
+    "main_js": 148836,
+    "main_css": 9570,
+    "chart_chunk_js": 1054255,
+    "chart_chunk_css": 69808,
+    "total_js": 1219666
+  }
+}
