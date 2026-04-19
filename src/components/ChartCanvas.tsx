@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import maplibregl from 'maplibre-gl';
 import 'maplibre-gl/dist/maplibre-gl.css';
 
@@ -6,6 +6,8 @@ import { useAISTargets, useSelf } from '../signalk/useSignalK';
 import { computeThreatBand, isPlausiblePosition, projectPosition } from '../utils/formatters';
 import type { Vessel } from '../signalk/types';
 import { BASE_STYLE_URL, applyMarineStyle } from '../chart/marineStyle';
+
+type ChartMode = 'marine' | 'harbor';
 
 const FALLBACK_CENTER: [number, number] = [-68.8, 44.4]; // [lng, lat] mid-coast Maine
 const DEFAULT_ZOOM = 12;
@@ -29,6 +31,13 @@ export function ChartCanvas() {
   const self = useSelf();
   const targets = useAISTargets();
 
+  const [mode, setMode] = useState<ChartMode>('marine');
+  // Mirror mode in a ref so the style.load handler (registered once) can read it.
+  const modeRef = useRef<ChartMode>('marine');
+  modeRef.current = mode;
+
+  const [scale, setScale] = useState<{ widthPx: number; label: string } | null>(null);
+
   // ── Init map once ────────────────────────────────────────────────────
 
   useEffect(() => {
@@ -49,9 +58,16 @@ export function ChartCanvas() {
 
     map.on('style.load', () => {
       styleLoadedRef.current = true;
-      applyMarineStyle(map);
+      if (modeRef.current === 'marine') {
+        applyMarineStyle(map);
+      }
       ensureHeadingVectorLayer(map);
     });
+
+    const updateScale = () => setScale(computeScale(map));
+    map.on('move', updateScale);
+    map.on('zoom', updateScale);
+    map.on('load', updateScale);
 
     mapRef.current = map;
 
@@ -184,7 +200,135 @@ export function ChartCanvas() {
     map.setCenter([self.position.longitude, self.position.latitude]);
   }, [self?.position?.latitude, self?.position?.longitude]);
 
-  return <div ref={containerRef} className="chart-map" />;
+  // ── Mode toggle: re-set the style; style.load conditionally re-applies overrides ──
+
+  useEffect(() => {
+    const map = mapRef.current;
+    if (!map) return;
+    // Only re-set if we've already loaded once — avoids double-init on mount.
+    if (!styleLoadedRef.current) return;
+    styleLoadedRef.current = false;
+    map.setStyle(BASE_STYLE_URL);
+    // After setStyle, style.load fires and applies marine overrides (if marine)
+    // and re-adds the heading-vector source/layer.
+  }, [mode]);
+
+  // ── Manual recenter (button) ────────────────────────────────────────
+
+  const handleRecenter = () => {
+    const map = mapRef.current;
+    if (!map || !self?.position || !isPlausiblePosition(self.position)) return;
+    map.flyTo({
+      center: [self.position.longitude, self.position.latitude],
+      zoom: DEFAULT_ZOOM,
+      duration: 400,
+    });
+  };
+
+  return (
+    <div className="chart-canvas">
+      <div ref={containerRef} className="chart-map" />
+      <ControlStack
+        mode={mode}
+        onZoomIn={() => mapRef.current?.zoomIn()}
+        onZoomOut={() => mapRef.current?.zoomOut()}
+        onRecenter={handleRecenter}
+        onModeToggle={() => setMode((m) => (m === 'marine' ? 'harbor' : 'marine'))}
+      />
+      {scale && <ScaleBar widthPx={scale.widthPx} label={scale.label} />}
+    </div>
+  );
+}
+
+// ── Map controls ──────────────────────────────────────────────────────
+
+function ControlStack({
+  mode,
+  onZoomIn,
+  onZoomOut,
+  onRecenter,
+  onModeToggle,
+}: {
+  mode: ChartMode;
+  onZoomIn: () => void;
+  onZoomOut: () => void;
+  onRecenter: () => void;
+  onModeToggle: () => void;
+}) {
+  return (
+    <div className="map-control-stack" role="group" aria-label="Map controls">
+      <ControlButton onClick={onZoomIn} aria-label="Zoom in">+</ControlButton>
+      <ControlButton onClick={onZoomOut} aria-label="Zoom out">−</ControlButton>
+      <ControlButton onClick={onRecenter} aria-label="Recenter on own ship">⊙</ControlButton>
+      <ControlButton
+        onClick={onModeToggle}
+        aria-label={mode === 'marine' ? 'Switch to harbor mode' : 'Switch to marine mode'}
+        aria-pressed={mode === 'harbor'}
+      >
+        ⚓
+      </ControlButton>
+    </div>
+  );
+}
+
+function ControlButton({
+  onClick,
+  children,
+  ...props
+}: { onClick: () => void; children: React.ReactNode } & Omit<
+  React.ButtonHTMLAttributes<HTMLButtonElement>,
+  'onClick'
+>) {
+  return (
+    <button type="button" className="map-control-btn" onClick={onClick} {...props}>
+      {children}
+    </button>
+  );
+}
+
+function ScaleBar({ widthPx, label }: { widthPx: number; label: string }) {
+  return (
+    <div className="map-scalebar" aria-label={`Map scale ${label}`}>
+      <div className="map-scalebar__line" style={{ width: `${widthPx}px` }}>
+        <span className="map-scalebar__tick map-scalebar__tick--left" aria-hidden="true" />
+        <span className="map-scalebar__tick map-scalebar__tick--right" aria-hidden="true" />
+      </div>
+      <span className="map-scalebar__label">{label}</span>
+    </div>
+  );
+}
+
+// ── Scale calculation ────────────────────────────────────────────────
+
+const NICE_NM = [0.05, 0.1, 0.2, 0.5, 1, 2, 5, 10, 20, 50, 100];
+
+function computeScale(map: maplibregl.Map): { widthPx: number; label: string } {
+  const lat = map.getCenter().lat;
+  const zoom = map.getZoom();
+  // Standard Web Mercator m/px at zoom z, latitude φ.
+  const metersPerPixel =
+    (156_543.03392 * Math.cos((lat * Math.PI) / 180)) / Math.pow(2, zoom);
+
+  const targetPx = 130;
+  const targetMeters = targetPx * metersPerPixel;
+  const targetNm = targetMeters / 1852;
+
+  // Pick the nearest "nice" round nm.
+  let chosenNm = NICE_NM[NICE_NM.length - 1];
+  let bestDelta = Infinity;
+  for (const nm of NICE_NM) {
+    const delta = Math.abs(nm - targetNm);
+    if (delta < bestDelta) {
+      bestDelta = delta;
+      chosenNm = nm;
+    }
+  }
+
+  const actualPx = (chosenNm * 1852) / metersPerPixel;
+  const mi = chosenNm * 1.15078;
+  const nmStr = chosenNm < 1 ? chosenNm.toFixed(2).replace(/0$/, '') : String(chosenNm);
+  const miStr = mi < 1 ? mi.toFixed(2).replace(/0$/, '') : mi < 10 ? mi.toFixed(1) : String(Math.round(mi));
+  return { widthPx: actualPx, label: `${nmStr} nm (${miStr} mi)` };
 }
 
 // ── DOM builders (SVG via createElementNS, no innerHTML) ──────────────

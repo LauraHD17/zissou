@@ -9,6 +9,13 @@
 // When we eventually have NOAA raster MBTiles on the Pi, this whole module
 // becomes obsolete — Marine Mode swaps to an MBTiles source and the proper
 // NOAA rendering (depth contours, buoys, navaids) takes over.
+//
+// LIMITATION (dev only): OpenMapTiles has NO bathymetric data — no depth
+// contours, no soundings, no marine navaids. Those are NOAA-only. For
+// dev-time marine annotations, an OpenSeaMap raster overlay
+// (https://tiles.openseamap.org/seamark/{z}/{x}/{y}.png) can be layered on
+// top and shows buoys + lights + ferries + sparse depth notes. Not added by
+// default because it's coverage-incomplete; opt-in if useful in dev.
 
 import type { Map as MapLibreMap } from 'maplibre-gl';
 
