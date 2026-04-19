@@ -263,5 +263,3 @@ function hideLayer(map: MapLibreMap, layerId: string): void {
     // ignore
   }
 }
-}
-}
