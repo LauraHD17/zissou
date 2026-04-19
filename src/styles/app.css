@@ -184,15 +184,10 @@ html, body, #root {
 .statusbar__sun,
 .statusbar__tide {
   display: inline-flex;
-  align-items: baseline;
+  align-items: center;
   gap: 6px;
-}
-
-.statusbar__glyph {
-  font-size: 13px;
-  line-height: 1;
-  /* Informational, not the boat-icon orange — keep neutral so the sun/tide
-     glyphs don't compete with own-vessel signaling. */
+  /* Informational SVG glyphs (sun, tide) inherit currentColor — keep neutral
+     so they don't compete with the boat-icon orange used for own-ship. */
   color: var(--text-primary);
 }
 

@@ -1,4 +1,5 @@
 import { useMemo } from 'react';
+import { Icon } from '../icons';
 import { formatLocalTime, useNow } from '../utils/clock';
 import { nextSunEvent } from '../utils/sun';
 import { nextTideEvent } from '../utils/tides';
@@ -19,9 +20,7 @@ export function ClockSunTide({ pos }: Props) {
       {sun && (
         <>
           <span className="statusbar__sun">
-            <span className="statusbar__glyph" aria-hidden="true">
-              {sun.kind === 'sunrise' ? '☀↗' : '☀↘'}
-            </span>
+            <Icon name={sun.kind === 'sunrise' ? 'sunrise' : 'sunset'} size={16} />
             <span className="sr-only">{sun.kind === 'sunrise' ? 'Sunrise' : 'Sunset'} at </span>
             {formatLocalTime(sun.time)}
           </span>
@@ -29,9 +28,7 @@ export function ClockSunTide({ pos }: Props) {
         </>
       )}
       <span className="statusbar__tide">
-        <span className="statusbar__glyph" aria-hidden="true">
-          {tide.direction === 'rising' ? '〰↗' : '〰↘'}
-        </span>
+        <Icon name={tide.direction === 'rising' ? 'tideRising' : 'tideFalling'} size={16} />
         <span className="sr-only">
           {tide.direction === 'rising' ? 'Tide rising, next high at ' : 'Tide falling, next low at '}
         </span>
