@@ -1,17 +1,19 @@
 #!/usr/bin/env bash
 # Build NOAA ENC vector tiles as a single PMTiles file.
 #
-# Uses NOAA's pre-bundled regional ZIPs — one HTTP download, all cells for the
-# region included. No need to guess or maintain cell IDs.
+# Uses NOAA's pre-bundled regional ZIPs. Pass one or more region keys and the
+# script downloads each bundle, merges all cells, and builds one PMTiles file.
 #
 # Usage:
-#   ./scripts/build-charts.sh              # default region: maine
-#   ./scripts/build-charts.sh maine        # Maine coast (~40 MB zip)
-#   ./scripts/build-charts.sh northeast    # USCG District 1: ME/NH/MA/RI/CT/NY (~100 MB)
-#   ./scripts/build-charts.sh all          # every US ENC (~760 MB, slow)
+#   ./scripts/build-charts.sh maine                   # Maine only
+#   ./scripts/build-charts.sh maine nh ma             # Maine + NH + MA contiguous coast
+#   ./scripts/build-charts.sh northeast               # USCG District 1 (ME/NH/MA/RI/CT/NY)
+#   ./scripts/build-charts.sh all                     # every US ENC (~760 MB zip, slow)
+#   ./scripts/build-charts.sh https://.../FOO.zip     # custom bundle URL (output name: custom)
 #
-# Output: public/charts/<region>.pmtiles  (gitignored).
-# Regen cadence: NOAA updates ~quarterly. Re-run to refresh.
+# Multi-region output filename is the region keys joined with '-', e.g.
+# `./scripts/build-charts.sh maine nh ma` → public/charts/maine-nh-ma.pmtiles.
+# Update NOAA_PMTILES_URL in src/chart/marineStyle.ts if you change regions.
 #
 # Requires: GDAL (ogr2ogr), tippecanoe, curl, unzip.
 #   macOS:  brew install gdal tippecanoe
@@ -19,39 +21,54 @@
 
 set -euo pipefail
 
-REGION="${1:-maine}"
+if [[ $# -eq 0 ]]; then
+  REGIONS=(maine)
+else
+  REGIONS=("$@")
+fi
 
-case "$REGION" in
-  maine|me)
-    BUNDLE_URL="https://charts.noaa.gov/ENCs/ME_ENCs.zip"
-    ;;
-  northeast|ne|01cgd)
-    BUNDLE_URL="https://charts.noaa.gov/ENCs/01CGD_ENCs.zip"
-    ;;
-  all)
-    BUNDLE_URL="https://charts.noaa.gov/ENCs/All_ENCs.zip"
-    ;;
-  *)
-    # Treat any other argument as a custom URL to a NOAA ENC bundle ZIP.
-    if [[ "$REGION" =~ ^https?:// ]]; then
-      BUNDLE_URL="$REGION"
-      REGION="custom"
-    else
-      echo >&2 "ERROR: unknown region '$REGION'."
-      echo >&2 "       Try: maine | northeast | all | <https://.../xxx_ENCs.zip>"
-      exit 1
-    fi
-    ;;
-esac
+# Resolve each region key to a bundle URL.
+BUNDLE_URLS=()
+for key in "${REGIONS[@]}"; do
+  case "$key" in
+    maine|me)           BUNDLE_URLS+=("https://charts.noaa.gov/ENCs/ME_ENCs.zip") ;;
+    newhampshire|nh)    BUNDLE_URLS+=("https://charts.noaa.gov/ENCs/NH_ENCs.zip") ;;
+    massachusetts|ma)   BUNDLE_URLS+=("https://charts.noaa.gov/ENCs/MA_ENCs.zip") ;;
+    rhodeisland|ri)     BUNDLE_URLS+=("https://charts.noaa.gov/ENCs/RI_ENCs.zip") ;;
+    connecticut|ct)     BUNDLE_URLS+=("https://charts.noaa.gov/ENCs/CT_ENCs.zip") ;;
+    newyork|ny)         BUNDLE_URLS+=("https://charts.noaa.gov/ENCs/NY_ENCs.zip") ;;
+    northeast|ne|01cgd) BUNDLE_URLS+=("https://charts.noaa.gov/ENCs/01CGD_ENCs.zip") ;;
+    all)                BUNDLE_URLS+=("https://charts.noaa.gov/ENCs/All_ENCs.zip") ;;
+    *)
+      if [[ "$key" =~ ^https?:// ]]; then
+        BUNDLE_URLS+=("$key")
+      else
+        echo >&2 "ERROR: unknown region '$key'."
+        echo >&2 "       Try: maine | nh | ma | ri | ct | ny | northeast | all | <https://.../xxx_ENCs.zip>"
+        exit 1
+      fi
+      ;;
+  esac
+done
+
+# Output filename: keys joined with '-' (URLs replaced with "custom").
+out_name_parts=()
+for key in "${REGIONS[@]}"; do
+  if [[ "$key" =~ ^https?:// ]]; then
+    out_name_parts+=("custom")
+  else
+    out_name_parts+=("$key")
+  fi
+done
+OUTPUT_REGION="$(IFS='-'; echo "${out_name_parts[*]}")"
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 REPO_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
-WORK_DIR="$(mktemp -d -t "charts-${REGION}-XXXXXX")"
+WORK_DIR="$(mktemp -d -t "charts-${OUTPUT_REGION}-XXXXXX")"
 OUTPUT_DIR="$REPO_ROOT/public/charts"
-OUTPUT_FILE="$OUTPUT_DIR/${REGION}.pmtiles"
+OUTPUT_FILE="$OUTPUT_DIR/${OUTPUT_REGION}.pmtiles"
 
-# ENC layers we extract. Skip the dozens of administrative / less-critical
-# layers; easy to add later.
+# ENC layers we extract. Skip dozens of less-critical administrative layers.
 LAYERS=(DEPCNT DEPARE COALNE BOYLAT BOYSAW LIGHTS WRECKS OBSTRN SOUNDG)
 
 trap 'rm -rf "$WORK_DIR"' EXIT
@@ -65,24 +82,27 @@ command -v unzip      >/dev/null 2>&1 || { echo >&2 "ERROR: unzip not found."; e
 mkdir -p "$OUTPUT_DIR"
 cd "$WORK_DIR"
 
-# ── Download and extract the NOAA bundle ──────────────────────────────
-echo "[charts] Downloading $BUNDLE_URL"
-curl -fL --progress-bar -o bundle.zip "$BUNDLE_URL"
-echo "[charts] Extracting"
-# -o: overwrite without prompting (avoids hangs on re-runs)
-# -qq: quiet; errors still go to stderr
-if ! unzip -oqq bundle.zip; then
-  echo >&2 "ERROR: extraction failed. Often disk-space exhaustion in $(dirname "$WORK_DIR")."
-  echo >&2 "       Check with: df -h '$(dirname "$WORK_DIR")'"
-  exit 1
-fi
+# ── Download and extract each NOAA bundle ─────────────────────────────
+for i in "${!BUNDLE_URLS[@]}"; do
+  url="${BUNDLE_URLS[$i]}"
+  zip="bundle-$i.zip"
+  echo "[charts] ($((i+1))/${#BUNDLE_URLS[@]}) Downloading $url"
+  curl -fL --progress-bar -o "$zip" "$url"
+  echo "[charts] Extracting"
+  if ! unzip -oqq "$zip"; then
+    echo >&2 "ERROR: extraction failed. Often disk-space exhaustion in $(dirname "$WORK_DIR")."
+    echo >&2 "       Check with: df -h '$(dirname "$WORK_DIR")'"
+    exit 1
+  fi
+  rm -f "$zip"  # free space before the next region downloads
+done
 
 cell_count=$(find . -name '*.000' | wc -l | tr -d '[:space:]')
 if [[ "$cell_count" -eq 0 ]]; then
-  echo >&2 "ERROR: no S-57 (.000) files found in the bundle. Inspect $WORK_DIR."
+  echo >&2 "ERROR: no S-57 (.000) files found across the downloaded bundles."
   exit 1
 fi
-echo "[charts] Found $cell_count ENC cells"
+echo "[charts] Found $cell_count ENC cells across ${#BUNDLE_URLS[@]} bundle(s)"
 
 # ── Extract each target layer into one aggregated GeoJSON ─────────────
 echo "[charts] Extracting layers: ${LAYERS[*]}"
@@ -123,7 +143,6 @@ tippecanoe_args=(
 for layer in "${LAYERS[@]}"; do
   geo="$WORK_DIR/${layer}.geojson"
   [[ -s "$geo" ]] || continue
-  # Tippecanoe layer names are lowercased — matches MapLibre source-layer refs.
   lower="$(echo "$layer" | tr '[:upper:]' '[:lower:]')"
   tippecanoe_args+=(-L "${lower}:${geo}")
 done

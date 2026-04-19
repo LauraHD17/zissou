@@ -24,10 +24,13 @@ sudo apt install gdal-bin
 
 ```bash
 ./scripts/build-charts.sh                        # builds "maine" (default, ~40 MB download)
+./scripts/build-charts.sh maine nh ma            # Maine + NH + Massachusetts contiguous coast
 ./scripts/build-charts.sh northeast              # USCG District 1 (~100 MB): ME/NH/MA/RI/CT/NY
 ./scripts/build-charts.sh all                    # entire US ENC collection (~760 MB, slow)
 ./scripts/build-charts.sh https://.../FOO.zip    # custom bundle URL from NOAA
 ```
+
+Multi-region output filename is the keys joined with `-`, so `maine nh ma` → `public/charts/maine-nh-ma.pmtiles`. Update `NOAA_PMTILES_URL` in `src/chart/marineStyle.ts` if you change regions.
 
 What it does:
 
