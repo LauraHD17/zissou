@@ -69,7 +69,13 @@ cd "$WORK_DIR"
 echo "[charts] Downloading $BUNDLE_URL"
 curl -fL --progress-bar -o bundle.zip "$BUNDLE_URL"
 echo "[charts] Extracting"
-unzip -q bundle.zip
+# -o: overwrite without prompting (avoids hangs on re-runs)
+# -qq: quiet; errors still go to stderr
+if ! unzip -oqq bundle.zip; then
+  echo >&2 "ERROR: extraction failed. Often disk-space exhaustion in $(dirname "$WORK_DIR")."
+  echo >&2 "       Check with: df -h '$(dirname "$WORK_DIR")'"
+  exit 1
+fi
 
 cell_count=$(find . -name '*.000' | wc -l | tr -d '[:space:]')
 if [[ "$cell_count" -eq 0 ]]; then
