@@ -73,10 +73,15 @@ No hover lifts, no entry animations, no tab transitions. Adding motion to a new 
 ## Component Inventory
 
 ### StatusBar (`src/components/StatusBar.tsx`)
-- **Purpose:** Always-visible chrome showing own-vessel ID, GPS state, primary metrics, view-mode toggle.
-- **Sections (left → right):** vessel name + GPS fix pill | lat / lon / speed / heading metrics | view tabs (Split / AIS / Chart).
+- **Purpose:** Always-visible chrome showing own-vessel ID, GPS state, almanac, primary metrics, view-mode toggle.
+- **Sections (left → right):** vessel name + GPS fix pill + Almanac (time · sun · tide) | lat / lon / speed / heading metrics | view tabs (Split / AIS / Chart).
 - **States:** GPS ok / stale / no-fix; heading glyph hidden when GPS stale or no-fix (honesty).
 - **Accessibility:** Wrapped in `<header>`. Tabs in `<nav aria-label="View">` with `aria-pressed` per button.
+
+### Almanac (`src/components/Almanac.tsx`)
+- **Purpose:** Glanceable local-environment context — what time is it, when's the next sun event, where's the tide.
+- **Format:** `2:32 PM · ☀↘ 7:47 PM · 〰↗ High 4:15 PM` — 12-hour time, sun glyph + arrow + time, tide glyph + arrow + kind + time.
+- **Cadence:** updates once a minute. Computes next sun event from current GPS position via `suncalc` (offline). Tide currently uses a single-constituent stub — see CLAUDE.md "Almanac" for the NOAA upgrade path.
 
 ### AIS list (`src/components/AISList.tsx`)
 - **Purpose:** Shows all AIS targets sorted by threat band then distance.

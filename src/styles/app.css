@@ -145,7 +145,44 @@ html, body, #root {
 .statusbar__left {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 14px;
+  flex-wrap: wrap;
+}
+
+/* ── Almanac (clock · sun · tide) ─────────────────────────────────────── */
+
+.almanac {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 8px;
+  font-family: var(--font-sans);
+  font-weight: 500;
+  font-size: 13px;
+  color: var(--text-primary);
+  font-variant-numeric: tabular-nums;
+}
+
+.almanac__time {
+  font-weight: 700;
+}
+
+.almanac__sun,
+.almanac__tide {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 6px;
+}
+
+.almanac__glyph {
+  font-size: 13px;
+  line-height: 1;
+  /* Sun/tide glyphs are informational, not the boat-icon orange — keep neutral
+     so they don't compete with own-vessel signaling. */
+  color: var(--text-primary);
+}
+
+.almanac__sep {
+  color: var(--text-dim);
 }
 
 .statusbar__vessel {

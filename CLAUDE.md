@@ -46,6 +46,18 @@ In split mode, the AIS list renders with `compact={true}` → applies `.ais-pane
 - **Ship thin.** v1 is ChartPage + AISPage. No InstrumentsPage until there are instruments. Position/SOG/COG go in StatusBar.
 - **Don't bundle chart tiles.** MBTiles are gigabytes. On the Pi, serve from disk via SignalK's chart plugin or a tiny local tile server. `public/charts/` is a placeholder, not a delivery path.
 
+## Almanac (clock · sun · tide)
+
+`src/components/Almanac.tsx` displays local time + next sun event + next tide in the StatusBar's left section. Format: `2:32 PM · ☀↘ 7:47 PM · 〰↗ High 4:15 PM`.
+
+- **Time** — 12-hour, ticks at 60-second cadence (`src/utils/clock.ts`).
+- **Sun** — `suncalc` library, fully offline, takes lat/lon from `useSelf()` (falls back to mid-coast Maine when no fix yet). See `src/utils/sun.ts`.
+- **Tide** — **STUB** in `src/utils/tides.ts`. Currently a single-constituent M2 (12.42-hour) cycle anchored to an arbitrary reference high tide. Plausible-looking but **not a real forecast**. Replace with NOAA harmonic constants for Penobscot Bay before sailing season — two paths:
+  1. NOAA Tides & Currents API (`api.tidesandcurrents.noaa.gov`) — pre-fetch predictions for next N days, cache locally, refresh when online.
+  2. Compute from harmonic constants directly (libraries: `tidey`, `harmonic-tide`). Constants for Bar Harbor / Castine / Bangor downloadable from NOAA.
+  
+  When swapping in real data, only `nextTideEvent()` needs to change — UI consumes the same `TideEvent` interface.
+
 ## AIS threat banding
 
 `computeThreatBand()` in `src/utils/formatters.ts` returns `'monitor' | 'caution' | 'danger'` for each AIS target. Coarse heuristic, not full CPA/TCPA — enough to surface "things to worry about" without alarm fatigue. Conservative: missing/stale data always returns `monitor` so bad data never drives warnings.
@@ -133,6 +145,6 @@ Run `/wcag` to audit before any visible release.
 
 ## Status
 
-**Built:** SignalK client + reconnecting WebSocket; messy mock generator (9 vessel archetypes); `useSignalK` / `useSelf` / `useAISTargets` hooks; AISPage with `<h1 sr-only>`; ChartPage placeholder; StatusBar with vessel name + GPS pill + lat/lon/speed/heading + 3-mode tabs; AISList with All/Active filter, plain-language narrative rows, threat banding (monitor/caution/danger), stale-row dim-sand surface, compact variant for split mode; navy/sand brutalist palette with WCAG 2.2 AAA contrast verified; Zalando Sans Expanded + Roboto Mono via Google Fonts; split-view layout (default 30/70 AIS/chart) with mode toggle; reduced-motion + sr-only utilities; semantic landmarks + aria.
+**Built:** SignalK client + reconnecting WebSocket; messy mock generator (9 vessel archetypes); `useSignalK` / `useSelf` / `useAISTargets` hooks; AISPage with `<h1 sr-only>`; ChartPage placeholder; StatusBar with vessel name + GPS pill + Almanac (clock + sun + tide stub) + lat/lon/speed/heading + 3-mode tabs; AISList with All/Active filter, plain-language narrative rows, threat banding (monitor/caution/danger), stale-row dim-sand surface, compact variant for split mode; navy/sand brutalist palette with WCAG 2.2 AAA contrast verified; Zalando Sans Expanded + Roboto Mono via Google Fonts; split-view layout (default 30/70 AIS/chart) with mode toggle; reduced-motion + sr-only utilities; semantic landmarks + aria.
 
-**Not yet built:** Leaflet integration in ChartPage (next), own-ship marker, AIS markers on chart, MBTiles serving on Pi, depth/heading/wind sensors, kiosk autostart, self-hosted fonts, real-Pi smoke test.
+**Not yet built:** Leaflet integration in ChartPage (next), own-ship marker, AIS markers on chart, real tide harmonic data (currently M2 stub), waypoints / Go-To routing, anchor watch, ETA, night-vision mode, MOB button, MBTiles serving on Pi, depth/heading/wind sensors, kiosk autostart, self-hosted fonts, real-Pi smoke test.

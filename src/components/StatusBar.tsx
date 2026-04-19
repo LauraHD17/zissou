@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useSelf } from '../signalk/useSignalK';
 import { formatCompassBearing, formatLat, formatLon, formatSpeedKnMph } from '../utils/formatters';
+import { Almanac } from './Almanac';
 
 const STALE_MS = 30_000;
 
@@ -29,6 +30,7 @@ export function StatusBar({ activeView, onViewChange }: StatusBarProps) {
       <div className="statusbar__left">
         <span className="statusbar__vessel">{self?.name ?? '—'}</span>
         <FixIndicator hasFix={hasFix} isStale={isStale} />
+        <Almanac />
       </div>
 
       <div className="statusbar__metrics">
