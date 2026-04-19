@@ -149,6 +149,96 @@ export function bearingRadians(from: Position, to: Position): number {
   return (Math.atan2(y, x) + twoPi) % twoPi;
 }
 
+// ── Threat banding (coarse collision-avoidance heuristic) ─────────────────
+
+export type ThreatBand = 'monitor' | 'caution' | 'danger';
+
+/**
+ * Coarse threat classification for an AIS target. Uses distance + closing
+ * speed (NOT full CPA/TCPA geometry — that's deferred). Conservative: errs
+ * toward "monitor" when data is missing so we don't fatigue the operator
+ * with false alarms.
+ *
+ *   danger  — within 200m, OR within 0.5 nm and closing in <3 min
+ *   caution — within 1 nm and closing in <8 min, OR within 2 nm closing in <15 min,
+ *             OR within 500m without movement data
+ *   monitor — everything else (default; no styling needed)
+ *
+ * Stale, positionless, and invalid-position targets always return 'monitor'
+ * — bad data shouldn't drive collision warnings.
+ */
+export function computeThreatBand(
+  vessel: Vessel,
+  self: Vessel | undefined,
+  isStale: boolean,
+): ThreatBand {
+  if (isStale) return 'monitor';
+  if (!vessel.position || !isPlausiblePosition(vessel.position)) return 'monitor';
+  if (!self?.position) return 'monitor';
+
+  const distNm = haversineNm(self.position, vessel.position);
+  const distMeters = distNm * 1852;
+
+  // Universal proximity floor — anything this close is concerning regardless of motion.
+  if (distMeters < 200) return 'danger';
+
+  const haveOwnMotion = self.sog != null && self.cog != null && self.cog <= Math.PI * 2;
+  const haveTargetMotion =
+    vessel.sog != null && vessel.cog != null && vessel.cog <= Math.PI * 2;
+
+  // Without motion on either side we can't compute closing speed — fall back to range.
+  if (!haveOwnMotion || !haveTargetMotion) {
+    return distMeters < 500 ? 'caution' : 'monitor';
+  }
+
+  const closingMs = closingSpeedMs(
+    self.position,
+    self.sog!,
+    self.cog!,
+    vessel.position,
+    vessel.sog!,
+    vessel.cog!,
+  );
+
+  // Opening or stationary relative speed → no threat.
+  if (closingMs <= 0.1) return 'monitor';
+
+  const tcpaMin = (distMeters / closingMs) / 60;
+
+  if (distNm < 0.5 && tcpaMin < 3) return 'danger';
+  if (distNm < 1 && tcpaMin < 8) return 'caution';
+  if (distNm < 2 && tcpaMin < 15) return 'caution';
+
+  return 'monitor';
+}
+
+/**
+ * Closing speed (m/s) between A and B — positive = gap shrinking,
+ * negative = gap opening. Computed as the projection of the relative
+ * velocity onto the bearing from A to B.
+ */
+export function closingSpeedMs(
+  posA: Position,
+  sogA: number,
+  cogA: number,
+  posB: Position,
+  sogB: number,
+  cogB: number,
+): number {
+  // Velocity components (east, north) in m/s. cog is radians from north, clockwise.
+  const vAe = sogA * Math.sin(cogA);
+  const vAn = sogA * Math.cos(cogA);
+  const vBe = sogB * Math.sin(cogB);
+  const vBn = sogB * Math.cos(cogB);
+
+  const bearing = bearingRadians(posA, posB);
+  const sepE = Math.sin(bearing);
+  const sepN = Math.cos(bearing);
+
+  // (vA - vB) projected onto separation direction = rate at which A approaches B.
+  return (vAe - vBe) * sepE + (vAn - vBn) * sepN;
+}
+
 // ── Plain-language vessel summary ──────────────────────────────────────────
 
 export interface VesselNarrative {

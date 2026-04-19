@@ -46,6 +46,17 @@ In split mode, the AIS list renders with `compact={true}` → applies `.ais-pane
 - **Ship thin.** v1 is ChartPage + AISPage. No InstrumentsPage until there are instruments. Position/SOG/COG go in StatusBar.
 - **Don't bundle chart tiles.** MBTiles are gigabytes. On the Pi, serve from disk via SignalK's chart plugin or a tiny local tile server. `public/charts/` is a placeholder, not a delivery path.
 
+## AIS threat banding
+
+`computeThreatBand()` in `src/utils/formatters.ts` returns `'monitor' | 'caution' | 'danger'` for each AIS target. Coarse heuristic, not full CPA/TCPA — enough to surface "things to worry about" without alarm fatigue. Conservative: missing/stale data always returns `monitor` so bad data never drives warnings.
+
+Thresholds:
+- **danger** — within 200m (any motion), OR within 0.5 nm and closing in <3 min
+- **caution** — within 1 nm closing in <8 min, OR within 2 nm closing in <15 min, OR within 500m without motion data
+- **monitor** — everything else (no UI treatment, default sort by distance)
+
+`AISList` sorts by band first (danger → caution → monitor), then by distance within each band. Caution rows get an 8px amber left bar (inset shadow); danger rows get an 8px red left bar; both get an uppercase pill at the top of the card. When CPA/TCPA proper math is added, replace the heuristic in this one function — the UI layer doesn't need to change.
+
 ## Data units on the wire
 
 SignalK streams SI units: `navigation.speedOverGround` is **meters per second**, angles in radians or degrees depending on path (COG/heading can vary — SignalK v1 spec says radians, but many plugins emit degrees; we normalize on ingest). The store holds raw SignalK values; conversion to display units (knots, mph, statute miles, compass degrees) happens only in formatters at the render layer.

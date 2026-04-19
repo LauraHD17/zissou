@@ -1,7 +1,13 @@
 import { useEffect, useMemo, useState } from 'react';
 import type { Vessel } from '../signalk/types';
 import { useAISTargets, useSelf } from '../signalk/useSignalK';
-import { buildVesselNarrative, haversineNm, isPlausiblePosition } from '../utils/formatters';
+import {
+  buildVesselNarrative,
+  computeThreatBand,
+  haversineNm,
+  isPlausiblePosition,
+  type ThreatBand,
+} from '../utils/formatters';
 
 const STALE_MS = 5 * 60 * 1000;
 
@@ -13,7 +19,10 @@ interface Row {
   narrative: ReturnType<typeof buildVesselNarrative>;
   isStale: boolean;
   hasValidPosition: boolean;
+  threatBand: ThreatBand;
 }
+
+const BAND_ORDER: Record<ThreatBand, number> = { danger: 0, caution: 1, monitor: 2 };
 
 export function AISList({ compact = false }: { compact?: boolean } = {}) {
   const targets = useAISTargets();
@@ -24,18 +33,22 @@ export function AISList({ compact = false }: { compact?: boolean } = {}) {
   const allRows = useMemo<Row[]>(() => {
     const selfPos = self?.position;
     return targets
-      .map((v) => {
+      .map((v): Row => {
         const hasValidPosition = isPlausiblePosition(v.position);
+        const isStale = now - v.lastUpdated > STALE_MS;
         return {
           vessel: v,
           distanceNm:
             selfPos && hasValidPosition && v.position ? haversineNm(selfPos, v.position) : null,
           narrative: buildVesselNarrative(v, self, now),
-          isStale: now - v.lastUpdated > STALE_MS,
+          isStale,
           hasValidPosition,
+          threatBand: computeThreatBand(v, self, isStale),
         };
       })
       .sort((a, b) => {
+        const bandDiff = BAND_ORDER[a.threatBand] - BAND_ORDER[b.threatBand];
+        if (bandDiff !== 0) return bandDiff;
         if (a.distanceNm == null && b.distanceNm == null) return 0;
         if (a.distanceNm == null) return 1;
         if (b.distanceNm == null) return -1;
@@ -57,19 +70,34 @@ export function AISList({ compact = false }: { compact?: boolean } = {}) {
         </div>
       ) : (
         <ul className="ais-list">
-          {visibleRows.map(({ vessel, narrative, isStale }) => (
-            <li key={vessel.context} className={`ais-row${isStale ? ' ais-row--stale' : ''}`}>
-              <div className="ais-row__name">{displayName(vessel)}</div>
-              <div className="ais-row__location">{narrative.location}</div>
-              {narrative.movement && (
-                <div className="ais-row__movement">{narrative.movement}</div>
-              )}
-              {narrative.qualifier && (
-                <div className="ais-row__qualifier">{narrative.qualifier}</div>
-              )}
-              <div className="ais-row__raw">{narrative.rawFacts}</div>
-            </li>
-          ))}
+          {visibleRows.map(({ vessel, narrative, isStale, threatBand }) => {
+            const classes = [
+              'ais-row',
+              isStale && 'ais-row--stale',
+              threatBand === 'caution' && 'ais-row--caution',
+              threatBand === 'danger' && 'ais-row--danger',
+            ]
+              .filter(Boolean)
+              .join(' ');
+            return (
+              <li key={vessel.context} className={classes}>
+                {threatBand !== 'monitor' && (
+                  <span className={`threat-pill threat-pill--${threatBand}`}>
+                    {threatBand}
+                  </span>
+                )}
+                <div className="ais-row__name">{displayName(vessel)}</div>
+                <div className="ais-row__location">{narrative.location}</div>
+                {narrative.movement && (
+                  <div className="ais-row__movement">{narrative.movement}</div>
+                )}
+                {narrative.qualifier && (
+                  <div className="ais-row__qualifier">{narrative.qualifier}</div>
+                )}
+                <div className="ais-row__raw">{narrative.rawFacts}</div>
+              </li>
+            );
+          })}
         </ul>
       )}
     </div>
