@@ -27,10 +27,7 @@ interface Options {
   onTap: (waypoint: SavedWaypoint) => void;
 }
 
-export function useWaypointMarkers(
-  mapRef: RefObject<maplibregl.Map | null>,
-  { onTap }: Options,
-) {
+export function useWaypointMarkers(mapRef: RefObject<maplibregl.Map | null>, { onTap }: Options) {
   const waypoints = useWaypoints();
   const markersRef = useRef<Map<string, MarkerEntry>>(new Map());
   const onTapRef = useRef(onTap);

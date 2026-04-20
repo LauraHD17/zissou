@@ -91,9 +91,7 @@ export function AISList({ compact = false }: { compact?: boolean } = {}) {
             return (
               <li key={vessel.context} className={classes}>
                 {threatBand !== 'monitor' && (
-                  <span className={`threat-pill threat-pill--${threatBand}`}>
-                    {threatBand}
-                  </span>
+                  <span className={`threat-pill threat-pill--${threatBand}`}>{threatBand}</span>
                 )}
                 <div className="ais-row__name">{displayName(vessel)}</div>
                 <div className="ais-row__location">{narrative.location}</div>
@@ -173,4 +171,3 @@ function displayName(v: Vessel): string {
   if (v.mmsi) return `Unnamed vessel (MMSI ${v.mmsi})`;
   return 'Unknown vessel';
 }
-

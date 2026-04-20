@@ -14,16 +14,8 @@ interface Props {
  * style via CSS color. For DOM-marker consumers (createElementNS pattern),
  * use buildIconElement instead.
  */
-export function Icon({
-  name,
-  size = 24,
-  title,
-  className,
-  strokeWidth = 1.5,
-}: Props) {
-  const ariaProps = title
-    ? { role: 'img' as const, 'aria-label': title }
-    : { 'aria-hidden': true };
+export function Icon({ name, size = 24, title, className, strokeWidth = 1.5 }: Props) {
+  const ariaProps = title ? { role: 'img' as const, 'aria-label': title } : { 'aria-hidden': true };
 
   return (
     <svg

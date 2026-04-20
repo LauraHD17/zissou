@@ -54,9 +54,7 @@ export function useHeadingVector(
   }, [mapRef, self?.position?.latitude, self?.position?.longitude, self?.cog, self?.sog]);
 }
 
-function buildFeature(
-  self: Vessel | undefined,
-): GeoJSON.FeatureCollection<GeoJSON.LineString> {
+function buildFeature(self: Vessel | undefined): GeoJSON.FeatureCollection<GeoJSON.LineString> {
   const empty: GeoJSON.FeatureCollection<GeoJSON.LineString> = {
     type: 'FeatureCollection',
     features: [],

@@ -18,11 +18,7 @@ export function AlarmBanner() {
       <div role="alert" aria-live="assertive" className="alarm-banner">
         <span className="alarm-banner__message">{alarm.message}</span>
         {!alarm.acknowledged && (
-          <button
-            type="button"
-            className="alarm-banner__ack"
-            onClick={acknowledgeAlarm}
-          >
+          <button type="button" className="alarm-banner__ack" onClick={acknowledgeAlarm}>
             Acknowledge
           </button>
         )}

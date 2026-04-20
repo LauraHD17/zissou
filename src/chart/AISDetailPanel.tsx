@@ -28,22 +28,19 @@ export function AISDetailPanel({ vessel, onClose }: Props) {
     };
   }, [vessel, self]);
 
-  const displayName = vessel.name ?? (vessel.mmsi ? `Unnamed vessel (MMSI ${vessel.mmsi})` : 'Unknown vessel');
+  const displayName =
+    vessel.name ?? (vessel.mmsi ? `Unnamed vessel (MMSI ${vessel.mmsi})` : 'Unknown vessel');
 
   return (
     <SlidePanel open onClose={onClose} labelledBy="ais-detail-title">
       <article className={`ais-detail${isStale ? ' ais-detail--stale' : ''}`}>
-        {band !== 'monitor' && (
-          <span className={`threat-pill threat-pill--${band}`}>{band}</span>
-        )}
-        <h2 id="ais-detail-title" className="ais-detail__name">{displayName}</h2>
+        {band !== 'monitor' && <span className={`threat-pill threat-pill--${band}`}>{band}</span>}
+        <h2 id="ais-detail-title" className="ais-detail__name">
+          {displayName}
+        </h2>
         <p className="ais-detail__location">{narrative.location}</p>
-        {narrative.movement && (
-          <p className="ais-detail__movement">{narrative.movement}</p>
-        )}
-        {narrative.qualifier && (
-          <p className="ais-detail__qualifier">{narrative.qualifier}</p>
-        )}
+        {narrative.movement && <p className="ais-detail__movement">{narrative.movement}</p>}
+        {narrative.qualifier && <p className="ais-detail__qualifier">{narrative.qualifier}</p>}
         <p className="ais-detail__raw">{narrative.rawFacts}</p>
       </article>
     </SlidePanel>

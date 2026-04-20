@@ -30,7 +30,7 @@ export function ensureAnchorCircleLayers(map: MapLibreMap): void {
       filter: ['==', '$type', 'Polygon'],
       paint: {
         'fill-color': ['coalesce', ['get', 'fillColor'], '#E8B84D'],
-        'fill-opacity': 0.10,
+        'fill-opacity': 0.1,
       },
     });
   }

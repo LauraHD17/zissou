@@ -28,9 +28,10 @@ interface AddInput {
 
 export function addWaypoint(input: AddInput): SavedWaypoint {
   const wp: SavedWaypoint = {
-    id: typeof crypto !== 'undefined' && 'randomUUID' in crypto
-      ? crypto.randomUUID()
-      : `wp-${Date.now()}-${Math.floor(Math.random() * 1e6)}`,
+    id:
+      typeof crypto !== 'undefined' && 'randomUUID' in crypto
+        ? crypto.randomUUID()
+        : `wp-${Date.now()}-${Math.floor(Math.random() * 1e6)}`,
     lat: input.lat,
     lon: input.lon,
     label: input.label,
@@ -42,7 +43,10 @@ export function addWaypoint(input: AddInput): SavedWaypoint {
   return wp;
 }
 
-export function updateWaypoint(id: string, patch: Partial<Omit<SavedWaypoint, 'id' | 'createdAt'>>): void {
+export function updateWaypoint(
+  id: string,
+  patch: Partial<Omit<SavedWaypoint, 'id' | 'createdAt'>>,
+): void {
   store.update((prev) => ({
     items: prev.items.map((w) => (w.id === id ? { ...w, ...patch } : w)),
   }));

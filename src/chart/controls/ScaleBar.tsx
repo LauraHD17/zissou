@@ -62,8 +62,7 @@ function computeScale(map: maplibregl.Map): Scale {
   const lat = map.getCenter().lat;
   const zoom = map.getZoom();
   // Web Mercator m/px at zoom z, latitude φ.
-  const metersPerPixel =
-    (156_543.03392 * Math.cos((lat * Math.PI) / 180)) / Math.pow(2, zoom);
+  const metersPerPixel = (156_543.03392 * Math.cos((lat * Math.PI) / 180)) / Math.pow(2, zoom);
 
   const targetMeters = TARGET_PX * metersPerPixel;
   const targetNm = targetMeters / M_PER_NM;
@@ -81,6 +80,7 @@ function computeScale(map: maplibregl.Map): Scale {
   const widthPx = (chosenNm * M_PER_NM) / metersPerPixel;
   const mi = (chosenNm * M_PER_NM) / M_PER_MILE;
   const nmStr = chosenNm < 1 ? chosenNm.toFixed(2).replace(/0$/, '') : String(chosenNm);
-  const miStr = mi < 1 ? mi.toFixed(2).replace(/0$/, '') : mi < 10 ? mi.toFixed(1) : String(Math.round(mi));
+  const miStr =
+    mi < 1 ? mi.toFixed(2).replace(/0$/, '') : mi < 10 ? mi.toFixed(1) : String(Math.round(mi));
   return { widthPx, label: `${nmStr} nm (${miStr} mi)` };
 }

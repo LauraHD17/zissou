@@ -20,7 +20,7 @@
   --text-dim: rgba(232, 154, 137, 0.78);
   --text-on-card-dim: rgba(232, 154, 137, 0.82);
   --border-on-navy: rgba(232, 154, 137, 0.16);
-  --border-on-card: rgba(232, 154, 137, 0.20);
+  --border-on-card: rgba(232, 154, 137, 0.2);
 
   /* Functional accents — shift to red spectrum */
   --boat-icon: #ff4422;

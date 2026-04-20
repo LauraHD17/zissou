@@ -10,8 +10,7 @@ export interface SignalKClient {
 
 const MODE = (import.meta.env.VITE_SIGNALK_MODE ?? 'mock') as 'mock' | 'real';
 const URL =
-  import.meta.env.VITE_SIGNALK_URL ??
-  'ws://localhost:3000/signalk/v1/stream?subscribe=all';
+  import.meta.env.VITE_SIGNALK_URL ?? 'ws://localhost:3000/signalk/v1/stream?subscribe=all';
 
 export function createSignalKClient(): SignalKClient {
   return MODE === 'real' ? createRealClient(URL) : createMockClient();

@@ -50,7 +50,7 @@ export function startMockStream(emit: Emit): () => void {
 
 const selfState = {
   ...SELF_START,
-  heading: DEG(90),  // east, radians
+  heading: DEG(90), // east, radians
   sogMs: 4.2 * KN_TO_MS,
 };
 
@@ -69,7 +69,10 @@ function emitSelf(emit: Emit) {
         timestamp: new Date().toISOString(),
         values: [
           { path: 'name', value: 'Sisu' },
-          { path: 'navigation.position', value: { latitude: selfState.latitude, longitude: selfState.longitude } },
+          {
+            path: 'navigation.position',
+            value: { latitude: selfState.latitude, longitude: selfState.longitude },
+          },
           { path: 'navigation.speedOverGround', value: selfState.sogMs },
           { path: 'navigation.courseOverGroundTrue', value: selfState.heading },
         ],
@@ -96,8 +99,14 @@ function emitCleanFreighter(emit: Emit) {
       {
         timestamp: new Date().toISOString(),
         values: [
-          { path: 'navigation.position', value: { latitude: freighterState.latitude, longitude: freighterState.longitude } },
-          { path: 'navigation.speedOverGround', value: freighterState.sogMs + (Math.random() - 0.5) * 0.2 },
+          {
+            path: 'navigation.position',
+            value: { latitude: freighterState.latitude, longitude: freighterState.longitude },
+          },
+          {
+            path: 'navigation.speedOverGround',
+            value: freighterState.sogMs + (Math.random() - 0.5) * 0.2,
+          },
           { path: 'navigation.courseOverGroundTrue', value: freighterState.cog },
           { path: 'navigation.state', value: 'underway' },
         ],
@@ -114,7 +123,10 @@ function emitAnchoredFisher(emit: Emit) {
       {
         timestamp: new Date().toISOString(),
         values: [
-          { path: 'navigation.position', value: { latitude: 44.388 + jitter, longitude: -68.797 + jitter } },
+          {
+            path: 'navigation.position',
+            value: { latitude: 44.388 + jitter, longitude: -68.797 + jitter },
+          },
           { path: 'navigation.speedOverGround', value: 0 },
           { path: 'navigation.state', value: 'at anchor' },
           // No COG: real anchored AIS often omits it entirely.
@@ -142,7 +154,10 @@ function emitMMSIOnly(emit: Emit) {
       {
         timestamp: new Date().toISOString(),
         values: [
-          { path: 'navigation.position', value: { latitude: mmsiOnlyState.latitude, longitude: mmsiOnlyState.longitude } },
+          {
+            path: 'navigation.position',
+            value: { latitude: mmsiOnlyState.latitude, longitude: mmsiOnlyState.longitude },
+          },
           { path: 'navigation.speedOverGround', value: mmsiOnlyState.sogMs },
           { path: 'navigation.courseOverGroundTrue', value: mmsiOnlyState.cog },
         ],
@@ -172,7 +187,10 @@ function emitFastErratic(emit: Emit) {
       {
         timestamp: new Date().toISOString(),
         values: [
-          { path: 'navigation.position', value: { latitude: fastErraticState.latitude, longitude: fastErraticState.longitude } },
+          {
+            path: 'navigation.position',
+            value: { latitude: fastErraticState.latitude, longitude: fastErraticState.longitude },
+          },
           { path: 'navigation.speedOverGround', value: fastErraticState.sogMs },
           { path: 'navigation.courseOverGroundTrue', value: fastErraticState.cog },
         ],
@@ -197,7 +215,10 @@ function emitVeryClose(emit: Emit) {
             },
           },
           { path: 'navigation.speedOverGround', value: 2.1 * KN_TO_MS },
-          { path: 'navigation.courseOverGroundTrue', value: ((Date.now() / 200) % 360) * (Math.PI / 180) },
+          {
+            path: 'navigation.courseOverGroundTrue',
+            value: ((Date.now() / 200) % 360) * (Math.PI / 180),
+          },
         ],
       },
     ],
@@ -273,11 +294,25 @@ function emitPositionlessVessel(emit: Emit) {
 function emitInitialMetadata(emit: Emit) {
   emit({
     context: 'vessels.urn:mrn:imo:mmsi:366999712',
-    updates: [{ values: [{ path: 'name', value: 'MAERSK GATEWAY' }, { path: 'design.aisShipType', value: 70 }] }],
+    updates: [
+      {
+        values: [
+          { path: 'name', value: 'MAERSK GATEWAY' },
+          { path: 'design.aisShipType', value: 70 },
+        ],
+      },
+    ],
   });
   emit({
     context: 'vessels.urn:mrn:imo:mmsi:338112233',
-    updates: [{ values: [{ path: 'name', value: 'Miss Carol' }, { path: 'design.aisShipType', value: 30 }] }],
+    updates: [
+      {
+        values: [
+          { path: 'name', value: 'Miss Carol' },
+          { path: 'design.aisShipType', value: 30 },
+        ],
+      },
+    ],
   });
   emit({
     context: 'vessels.urn:mrn:imo:mmsi:338555777',
@@ -289,7 +324,14 @@ function emitInitialMetadata(emit: Emit) {
   });
   emit({
     context: 'vessels.urn:mrn:imo:mmsi:538008192',
-    updates: [{ values: [{ path: 'name', value: 'STAR ANTARES' }, { path: 'design.aisShipType', value: 80 }] }],
+    updates: [
+      {
+        values: [
+          { path: 'name', value: 'STAR ANTARES' },
+          { path: 'design.aisShipType', value: 80 },
+        ],
+      },
+    ],
   });
 }
 

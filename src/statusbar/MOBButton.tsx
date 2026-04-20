@@ -119,7 +119,9 @@ export function MOBButton({ onViewChange }: Props) {
 
       {confirmOpen && (
         <SlidePanel open onClose={() => setConfirmOpen(false)} labelledBy="mob-confirm-title">
-          <h2 id="mob-confirm-title" className="mob-confirm__title">Man overboard</h2>
+          <h2 id="mob-confirm-title" className="mob-confirm__title">
+            Man overboard
+          </h2>
           <p className="mob-confirm__body">
             This will drop a waypoint at your current position and switch to chart view.
           </p>

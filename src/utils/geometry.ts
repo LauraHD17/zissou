@@ -20,9 +20,7 @@ export function haversineNm(a: Position, b: Position): number {
   const dLon = toRad(b.longitude - a.longitude);
   const la1 = toRad(a.latitude);
   const la2 = toRad(b.latitude);
-  const h =
-    Math.sin(dLat / 2) ** 2 +
-    Math.cos(la1) * Math.cos(la2) * Math.sin(dLon / 2) ** 2;
+  const h = Math.sin(dLat / 2) ** 2 + Math.cos(la1) * Math.cos(la2) * Math.sin(dLon / 2) ** 2;
   return 2 * EARTH_RADIUS_NM * Math.asin(Math.sqrt(h));
 }
 
@@ -42,18 +40,13 @@ export function bearingRadians(from: Position, to: Position): number {
  * Spherical-earth approximation — accurate enough for short ranges
  * (predictive heading vectors, dead-reckoning over a few minutes).
  */
-export function projectPosition(
-  start: Position,
-  bearingRad: number,
-  distanceM: number,
-): Position {
+export function projectPosition(start: Position, bearingRad: number, distanceM: number): Position {
   const delta = distanceM / EARTH_RADIUS_M;
   const phi1 = toRad(start.latitude);
   const lambda1 = toRad(start.longitude);
 
   const phi2 = Math.asin(
-    Math.sin(phi1) * Math.cos(delta) +
-      Math.cos(phi1) * Math.sin(delta) * Math.cos(bearingRad),
+    Math.sin(phi1) * Math.cos(delta) + Math.cos(phi1) * Math.sin(delta) * Math.cos(bearingRad),
   );
   const lambda2 =
     lambda1 +

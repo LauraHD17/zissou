@@ -1,10 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import {
-  bearingRadians,
-  haversineNm,
-  isPlausiblePosition,
-  projectPosition,
-} from './geometry';
+import { bearingRadians, haversineNm, isPlausiblePosition, projectPosition } from './geometry';
 
 const CASTINE = { latitude: 44.4, longitude: -68.8 };
 

@@ -24,9 +24,7 @@ export function readRecents(): RecentDestination[] {
 
 export function pushRecent(entry: RecentDestination): void {
   store.update((prev) => {
-    const dedup = prev.items.filter(
-      (e) => !samePosition(e.position, entry.position),
-    );
+    const dedup = prev.items.filter((e) => !samePosition(e.position, entry.position));
     return { items: [entry, ...dedup].slice(0, MAX) };
   });
 }
@@ -35,7 +33,10 @@ export function clearRecents(): void {
   store.set({ items: [] });
 }
 
-function samePosition(a: { latitude: number; longitude: number }, b: { latitude: number; longitude: number }): boolean {
+function samePosition(
+  a: { latitude: number; longitude: number },
+  b: { latitude: number; longitude: number },
+): boolean {
   return round(a.latitude) === round(b.latitude) && round(a.longitude) === round(b.longitude);
 }
 

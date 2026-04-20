@@ -73,14 +73,12 @@ describe('defineStore', () => {
   it('notifies subscribers on set()', () => {
     mockLocalStorage();
     const s = defineStore<number>('test.notify.v1', 1, 0);
-    let calls = 0;
     // Subscribe via the underlying useSyncExternalStore behavior — easier to
     // test by calling set and checking read; the React hook is exercised in
     // Playwright-level tests where actual rendering matters.
     s.set(1);
     s.set(2);
     expect(s.read()).toBe(2);
-    void calls;
   });
 
   it('skips persistence when next === current (Object.is)', () => {

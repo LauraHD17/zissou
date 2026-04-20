@@ -17,7 +17,9 @@ const measured = {
   main_js: pickLargest(files.filter((f) => f.startsWith('index-') && f.endsWith('.js'))),
   main_css: pickLargest(files.filter((f) => f.startsWith('index-') && f.endsWith('.css'))),
   chart_chunk_js: pickLargest(files.filter((f) => f.startsWith('ChartPage-') && f.endsWith('.js'))),
-  chart_chunk_css: pickLargest(files.filter((f) => f.startsWith('ChartPage-') && f.endsWith('.css'))),
+  chart_chunk_css: pickLargest(
+    files.filter((f) => f.startsWith('ChartPage-') && f.endsWith('.css')),
+  ),
   total_js: files
     .filter((f) => f.endsWith('.js'))
     .reduce((sum, f) => sum + statSync(join(distDir, f)).size, 0),
@@ -33,12 +35,16 @@ for (const [key, limit] of Object.entries(limits)) {
   const actual = measured[key] ?? 0;
   const pct = ((actual / limit) * 100).toFixed(0);
   const status = actual <= limit ? '✓' : '✗';
-  console.log(`${status} ${key.padEnd(20)} ${formatBytes(actual)} / ${formatBytes(limit)} (${pct}%)`);
+  console.log(
+    `${status} ${key.padEnd(20)} ${formatBytes(actual)} / ${formatBytes(limit)} (${pct}%)`,
+  );
   if (actual > limit) failed = true;
 }
 
 if (failed) {
-  console.error('\nBundle size limit exceeded. Investigate, then either trim or update .bundle-baseline.json deliberately.');
+  console.error(
+    '\nBundle size limit exceeded. Investigate, then either trim or update .bundle-baseline.json deliberately.',
+  );
   process.exit(1);
 }
 

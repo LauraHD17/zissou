@@ -54,7 +54,7 @@ export function computeThreatBand(
 
   if (closingMs <= 0.1) return 'monitor';
 
-  const tcpaMin = (distMeters / closingMs) / 60;
+  const tcpaMin = distMeters / closingMs / 60;
 
   if (distNm < 0.5 && tcpaMin < 3) return 'danger';
   if (distNm < 1 && tcpaMin < 8) return 'caution';
