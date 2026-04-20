@@ -17,12 +17,19 @@ interface MarkerEntry {
   appliedCogDeg: number | null;
 }
 
+interface Options {
+  onTap?: (vessel: Vessel) => void;
+}
+
 export function useAISMarkers(
   mapRef: RefObject<maplibregl.Map | null>,
   targets: Vessel[],
   self: Vessel | undefined,
+  { onTap }: Options = {},
 ) {
   const markersRef = useRef<Map<string, MarkerEntry>>(new Map());
+  const onTapRef = useRef(onTap);
+  onTapRef.current = onTap;
 
   useEffect(() => {
     const map = mapRef.current;
@@ -45,10 +52,14 @@ export function useAISMarkers(
       // Create or recreate (when the inner shape changes between chevron/circle).
       if (!entry || entry.hasHeading !== hasHeading) {
         entry?.marker.remove();
-        const marker = new maplibregl.Marker({
-          element: buildMarkerElement(hasHeading),
-          anchor: 'center',
-        })
+        const el = buildMarkerElement(hasHeading);
+        el.addEventListener('click', (e) => {
+          e.stopPropagation();
+          onTapRef.current?.(v);
+        });
+        // Pointer cursor so it reads as tappable.
+        el.style.cursor = 'pointer';
+        const marker = new maplibregl.Marker({ element: el, anchor: 'center' })
           .setLngLat([v.position.longitude, v.position.latitude])
           .addTo(map);
         entry = {

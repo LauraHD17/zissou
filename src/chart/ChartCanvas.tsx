@@ -18,6 +18,8 @@ import { ensureAnchorCircleLayers, useAnchorCircle } from './markers/AnchorCircl
 import { AnchorButton } from '../anchor/AnchorButton';
 import { useAnchorDragWatch } from '../anchor/useAnchorDragWatch';
 import { useMOBMarker } from './markers/MOBMarker';
+import { AISDetailPanel } from './AISDetailPanel';
+import type { Vessel } from '../signalk/types';
 import { MapControls } from './controls/MapControls';
 import { ScaleBar } from './controls/ScaleBar';
 import { DropPinButton } from './controls/DropPinButton';
@@ -46,6 +48,7 @@ export function ChartCanvas() {
   const { mode, setMode, modeRef } = useChartMode(mapRef, styleLoadedRef);
   const [dropPinArmed, setDropPinArmed] = useState(false);
   const [tappedWaypoint, setTappedWaypoint] = useState<SavedWaypoint | null>(null);
+  const [tappedVessel, setTappedVessel] = useState<Vessel | null>(null);
 
   useEffect(() => {
     if (!containerRef.current) return;
@@ -89,7 +92,7 @@ export function ChartCanvas() {
   }, []);
 
   useOwnShipMarker(mapRef, self);
-  useAISMarkers(mapRef, targets, self);
+  useAISMarkers(mapRef, targets, self, { onTap: setTappedVessel });
   useHeadingVector(mapRef, self);
   useDestinationMarker(mapRef);
   useGoToRoute(mapRef);
@@ -141,6 +144,12 @@ export function ChartCanvas() {
         <WaypointActionSheet
           waypoint={tappedWaypoint}
           onClose={() => setTappedWaypoint(null)}
+        />
+      )}
+      {tappedVessel && (
+        <AISDetailPanel
+          vessel={tappedVessel}
+          onClose={() => setTappedVessel(null)}
         />
       )}
     </div>

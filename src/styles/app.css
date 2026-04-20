@@ -469,6 +469,66 @@ html, body, #root {
   cursor: not-allowed;
 }
 
+/* ── AIS detail slide-up panel ─────────────────────────────────────── */
+
+.ais-detail {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.ais-detail--stale {
+  opacity: 0.85;
+}
+
+.ais-detail__name {
+  font-family: var(--font-sans);
+  font-weight: 700;
+  font-size: 18px;
+  margin: 0;
+  color: var(--vessel-name);
+  letter-spacing: 0.01em;
+}
+
+.ais-detail__location {
+  font-family: var(--font-sans);
+  font-weight: 500;
+  font-size: 16px;
+  line-height: 1.4;
+  margin: 0;
+  color: var(--text-on-card);
+}
+
+.ais-detail__movement {
+  font-family: var(--font-sans);
+  font-weight: 400;
+  font-size: 15px;
+  line-height: 1.4;
+  margin: 0;
+  color: var(--text-on-card-dim);
+}
+
+.ais-detail__qualifier {
+  font-family: var(--font-sans);
+  font-weight: 600;
+  font-size: 13px;
+  margin: 0;
+  padding: 4px 8px;
+  color: var(--text-on-card);
+  background: rgba(232, 184, 77, 0.22);
+  border-left: 3px solid var(--alert-amber);
+  border-radius: 0;
+}
+
+.ais-detail__raw {
+  font-family: var(--font-mono);
+  font-weight: 400;
+  font-size: 12px;
+  margin: 4px 0 0;
+  color: var(--text-on-card-dim);
+  letter-spacing: 0.02em;
+}
+
 /* ── MOB chart marker (32 px red, labeled) ─────────────────────────── */
 
 .mob-marker {
