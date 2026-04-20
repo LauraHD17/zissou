@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import maplibregl from 'maplibre-gl';
 import 'maplibre-gl/dist/maplibre-gl.css';
 import { Protocol } from 'pmtiles';
@@ -9,9 +9,14 @@ import { BASE_STYLE_URL, applyMarineStyle } from './marineStyle';
 import { useOwnShipMarker } from './markers/OwnShipMarker';
 import { useAISMarkers } from './markers/AISMarkers';
 import { ensureHeadingVectorLayer, useHeadingVector } from './markers/HeadingVector';
+import { useDestinationMarker } from './markers/DestinationMarker';
+import { ensureGoToRouteLayer, useGoToRoute } from './markers/GoToRoute';
 import { MapControls } from './controls/MapControls';
 import { ScaleBar } from './controls/ScaleBar';
+import { DropPinButton } from './controls/DropPinButton';
+import { DestinationWidget } from './controls/DestinationWidget';
 import { useChartMode } from './hooks/useChartMode';
+import { useDropPinMode } from './hooks/useDropPinMode';
 
 const FALLBACK_CENTER: [number, number] = [-68.8, 44.4]; // [lng, lat] mid-coast Maine
 const DEFAULT_ZOOM = 12;
@@ -32,6 +37,7 @@ export function ChartCanvas() {
   const self = useSelf();
   const targets = useAISTargets();
   const { mode, setMode, modeRef } = useChartMode(mapRef, styleLoadedRef);
+  const [dropPinArmed, setDropPinArmed] = useState(false);
 
   useEffect(() => {
     if (!containerRef.current) return;
@@ -54,6 +60,7 @@ export function ChartCanvas() {
       styleLoadedRef.current = true;
       if (modeRef.current === 'marine') applyMarineStyle(map);
       ensureHeadingVectorLayer(map);
+      ensureGoToRouteLayer(map);
     });
 
     mapRef.current = map;
@@ -75,6 +82,12 @@ export function ChartCanvas() {
   useOwnShipMarker(mapRef, self);
   useAISMarkers(mapRef, targets, self);
   useHeadingVector(mapRef, self);
+  useDestinationMarker(mapRef);
+  useGoToRoute(mapRef);
+  useDropPinMode(mapRef, {
+    armed: dropPinArmed,
+    onDrop: () => setDropPinArmed(false),
+  });
 
   useEffect(() => {
     const map = mapRef.current;
@@ -101,7 +114,14 @@ export function ChartCanvas() {
         onZoomOut={() => mapRef.current?.zoomOut()}
         onRecenter={handleRecenter}
         onModeToggle={() => setMode((m) => (m === 'marine' ? 'harbor' : 'marine'))}
+        dropPinSlot={
+          <DropPinButton
+            armed={dropPinArmed}
+            onToggle={() => setDropPinArmed((a) => !a)}
+          />
+        }
       />
+      <DestinationWidget />
       <ScaleBar mapRef={mapRef} />
     </div>
   );

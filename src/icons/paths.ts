@@ -41,6 +41,14 @@ export const ICON_PATHS = {
   // two arc-arms sweeping down to imply flukes.
   anchor:
     'M 12 4 m -2 0 a 2 2 0 1 0 4 0 a 2 2 0 1 0 -4 0 M 12 6 v 13 M 8 9 h 8 M 12 19 q -7 0 -7 -5 M 12 19 q 7 0 7 -5',
+
+  // ── Waypoint markers + entry button ────────────────────────────────
+  // Pin: inverted teardrop with a small inner circle (drop-pin / Go-To dest).
+  pin:
+    'M 12 2 c 4 0 7 3 7 7 c 0 5 -7 13 -7 13 c 0 0 -7 -8 -7 -13 c 0 -4 3 -7 7 -7 M 12 9 m -2 0 a 2 2 0 1 0 4 0 a 2 2 0 1 0 -4 0',
+  // Three-dot kebab — "more" entry to waypoints panel.
+  more:
+    'M 12 5 m -1 0 a 1 1 0 1 0 2 0 a 1 1 0 1 0 -2 0 M 12 12 m -1 0 a 1 1 0 1 0 2 0 a 1 1 0 1 0 -2 0 M 12 19 m -1 0 a 1 1 0 1 0 2 0 a 1 1 0 1 0 -2 0',
 } as const;
 
 export type IconName = keyof typeof ICON_PATHS;

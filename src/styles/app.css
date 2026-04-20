@@ -541,10 +541,154 @@ html, body, #root {
 }
 
 .map-control-btn:active,
-.map-control-btn[aria-pressed="true"] {
+.map-control-btn[aria-pressed="true"],
+.map-control-btn--active {
   background: var(--surface-sand);
   color: var(--text-on-card);
   border-color: var(--surface-sand);
+}
+
+/* ── Destination marker + Go-To route ──────────────────────────────── */
+
+.destination-marker {
+  color: var(--alert-amber);
+}
+
+.destination-marker svg {
+  display: block;
+  fill: var(--alert-amber);
+  stroke: var(--bg-navy);
+  stroke-width: 1;
+}
+
+.destination-marker--mob {
+  color: var(--alert-red);
+}
+.destination-marker--mob svg {
+  fill: var(--alert-red);
+}
+
+/* ── Destination widget (top-right pill) ───────────────────────────── */
+
+.destination-widget {
+  position: absolute;
+  top: 16px;
+  right: 80px; /* leaves room for the map control stack on the right */
+  z-index: 10;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 8px 14px;
+  background: rgba(20, 32, 56, 0.85);
+  color: var(--text-primary);
+  border: 1px solid var(--alert-amber);
+  border-radius: 0;
+  font-family: var(--font-mono);
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.destination-widget__bearing,
+.destination-widget__distance,
+.destination-widget__eta {
+  font-variant-numeric: tabular-nums;
+}
+
+/* ── Action sheet (inside SlidePanel) ──────────────────────────────── */
+
+.action-sheet__title {
+  font-family: var(--font-sans);
+  font-weight: 700;
+  font-size: 18px;
+  margin: 0 0 4px;
+  color: var(--text-on-card);
+}
+
+.action-sheet__meta {
+  font-family: var(--font-mono);
+  font-size: 13px;
+  color: var(--text-on-card-dim);
+  margin: 0 0 16px;
+}
+
+.action-sheet__buttons {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.action-sheet__btn {
+  background: var(--surface-sand);
+  color: var(--text-on-card);
+  border: 1px solid var(--bg-navy);
+  border-radius: 0;
+  padding: 14px 16px;
+  font-family: var(--font-sans);
+  font-weight: 600;
+  font-size: 15px;
+  text-align: left;
+  cursor: pointer;
+  min-height: 56px;
+}
+
+/* ── Coordinate entry form ─────────────────────────────────────────── */
+
+.coord-entry {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.coord-entry__title {
+  font-family: var(--font-sans);
+  font-weight: 700;
+  font-size: 18px;
+  margin: 0 0 8px;
+  color: var(--text-on-card);
+}
+
+.coord-entry__field {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-family: var(--font-sans);
+  font-weight: 600;
+  font-size: 13px;
+  color: var(--text-on-card);
+}
+
+.coord-entry__field input {
+  padding: 12px;
+  font-family: var(--font-mono);
+  font-size: 16px;
+  border: 1px solid var(--bg-navy);
+  border-radius: 0;
+  background: var(--surface-sand);
+  color: var(--text-on-card);
+  min-height: 44px;
+}
+
+.coord-entry__error {
+  color: var(--alert-red);
+  font-family: var(--font-sans);
+  font-size: 13px;
+  margin: 0;
+}
+
+.coord-entry__submit {
+  background: var(--bg-navy);
+  color: var(--text-primary);
+  border: 1px solid var(--bg-navy);
+  border-radius: 0;
+  padding: 14px;
+  font-family: var(--font-sans);
+  font-weight: 700;
+  font-size: 15px;
+  cursor: pointer;
+  min-height: 56px;
+  margin-top: 8px;
 }
 
 /* Brutalist scale bar — bottom-left, navy pill background, cream tick line */
