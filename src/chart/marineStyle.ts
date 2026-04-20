@@ -122,15 +122,42 @@ export function applyMarineStyle(map: MapLibreMap): void {
 
 // ── NOAA ENC layers (depth contours, buoys, lights, wrecks, etc.) ─────
 
-const DEPTH_COLOR_EXPRESSION: DataDrivenPropertyValueSpecification<string> = [
-  'step',
-  ['to-number', ['get', 'VALDCO']],
-  COLORS.depthShallow,
-  DEPTH_BREAK_SHALLOW,
-  COLORS.depthModerate,
-  DEPTH_BREAK_MODERATE,
-  COLORS.depthDeep,
-] as unknown as ExpressionSpecification;
+const DEPTH_COLOR_EXPRESSION: DataDrivenPropertyValueSpecification<string> =
+  depthColorExpressionForTide(0);
+
+/**
+ * Depth-contour color expression shifted by the current tide height.
+ * Soundings (VALDCO) are referenced to mean low water — effective depth at a
+ * contour = VALDCO + tide above MLW. So "shallow" now means VALDCO + tide <
+ * shallow-threshold, i.e., VALDCO < shallow-threshold − tide. We shift the
+ * step breaks down by the current tide in meters. Never negative.
+ */
+export function depthColorExpressionForTide(
+  tideFt: number,
+): DataDrivenPropertyValueSpecification<string> {
+  const tideM = tideFt * 0.3048;
+  const shallowBreak = Math.max(0.01, DEPTH_BREAK_SHALLOW - tideM);
+  const moderateBreak = Math.max(shallowBreak + 0.01, DEPTH_BREAK_MODERATE - tideM);
+  return [
+    'step',
+    ['to-number', ['get', 'VALDCO']],
+    COLORS.depthShallow,
+    shallowBreak,
+    COLORS.depthModerate,
+    moderateBreak,
+    COLORS.depthDeep,
+  ] as unknown as ExpressionSpecification;
+}
+
+export function applyTideToDepthContours(map: MapLibreMap, tideFt: number): void {
+  const expr = depthColorExpressionForTide(tideFt);
+  if (map.getLayer('noaa-depth-contour')) {
+    map.setPaintProperty('noaa-depth-contour', 'line-color', expr);
+  }
+  if (map.getLayer('noaa-depth-contour-label')) {
+    map.setPaintProperty('noaa-depth-contour-label', 'text-color', expr);
+  }
+}
 
 function addNoaaChartLayers(map: MapLibreMap): void {
   if (!map.getSource('noaa')) {
@@ -167,14 +194,17 @@ function addNoaaChartLayers(map: MapLibreMap): void {
     layout: {
       'symbol-placement': 'line',
       'text-field': ['concat', ['to-string', ['get', 'VALDCO']], ' m'],
-      'text-font': ['Noto Sans Regular'],
-      'text-size': 11,
+      'text-font': ['Noto Sans Bold'],
+      // Bumped from 11 → 13 with a thicker halo so numbers stay readable at
+      // the helm in glare. Paired with the DepthLegend component so the
+      // color meaning is self-evident even when the labels are crowded.
+      'text-size': 13,
       'text-letter-spacing': 0.05,
     },
     paint: {
       'text-color': DEPTH_COLOR_EXPRESSION,
       'text-halo-color': COLORS.land,
-      'text-halo-width': 1.5,
+      'text-halo-width': 2.5,
     },
   });
 
@@ -237,21 +267,12 @@ function addLayerIfMissing(map: MapLibreMap, layer: LayerSpecification): void {
 
 // ── helpers ────────────────────────────────────────────────────────────
 
-function setPaint(
-  map: MapLibreMap,
-  layerId: string,
-  property: string,
-  value: unknown,
-): void {
+function setPaint(map: MapLibreMap, layerId: string, property: string, value: unknown): void {
   if (!map.getLayer(layerId)) return;
   try {
     // OpenFreeMap's positron schema can shift; tinting is best-effort, and
     // each (layer, property) pair is dynamic so we can't statically type it.
-    (map.setPaintProperty as (l: string, p: string, v: unknown) => void)(
-      layerId,
-      property,
-      value,
-    );
+    (map.setPaintProperty as (l: string, p: string, v: unknown) => void)(layerId, property, value);
   } catch {
     // ignore
   }

@@ -5,7 +5,7 @@
 
 import { defineMemoryStore } from '../storage/localStore';
 
-export type AlarmKind = 'anchor-drag' | 'mob';
+export type AlarmKind = 'anchor-drag' | 'mob' | 'anchorage-drying';
 
 export interface ActiveAlarm {
   kind: AlarmKind;
@@ -21,7 +21,12 @@ export function useActiveAlarm() {
   return alarmStore.use();
 }
 
-export function raiseAlarm(kind: AlarmKind, message: string): void {
+export function raiseAlarm(
+  input: { kind: AlarmKind; message: string } | AlarmKind,
+  legacyMessage?: string,
+): void {
+  const kind = typeof input === 'string' ? input : input.kind;
+  const message = typeof input === 'string' ? (legacyMessage ?? '') : input.message;
   const current = alarmStore.read();
   if (current && current.kind === kind && !current.acknowledged) {
     // Already raised; just refresh the message in case the distance changed.

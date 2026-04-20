@@ -35,6 +35,10 @@ const HALF_PERIOD_MS = M2_PERIOD_MS / 2;
 // Arbitrary reference high tide. Real implementation will derive from station data.
 const REF_HIGH = new Date('2026-04-19T03:00:00').getTime();
 
+// M2 amplitude in feet — rough mid-coast-Maine average. Real implementation
+// reads the station-specific amplitude.
+const M2_AMPLITUDE_FT = 5;
+
 export function nextTideEvent(now: Date, _pos?: Position): TideEvent {
   const elapsed = now.getTime() - REF_HIGH;
   const cycles = elapsed / M2_PERIOD_MS;
@@ -49,4 +53,27 @@ export function nextTideEvent(now: Date, _pos?: Position): TideEvent {
   // Past low, water is rising, next event is high.
   const highTime = REF_HIGH + (cycleFloor + 1) * M2_PERIOD_MS;
   return { kind: 'high', time: new Date(highTime), direction: 'rising' };
+}
+
+/** Tide height relative to mean low water, in feet. 0 = lowest, +10 = highest
+ *  (for our default 5 ft amplitude). Consumers use the *delta* from charted
+ *  depth — contours show soundings at mean low water, so adding this height
+ *  gives instantaneous water depth at that point. */
+export function tideHeightFt(now: Date, _pos?: Position): number {
+  const elapsed = now.getTime() - REF_HIGH;
+  const phase = (elapsed / M2_PERIOD_MS) * 2 * Math.PI;
+  // cos peaks at REF_HIGH — shift so minimum is 0 (above MLW reference).
+  return M2_AMPLITUDE_FT * (1 + Math.cos(phase));
+}
+
+/** Direction + rate of change over the next hour. Used by the tide info pill
+ *  and the anchorage-drying check. */
+export function tideTrend(
+  now: Date,
+  pos?: Position,
+): { direction: 'rising' | 'falling'; rateFtPerHr: number } {
+  const curr = tideHeightFt(now, pos);
+  const later = tideHeightFt(new Date(now.getTime() + 60 * 60 * 1000), pos);
+  const delta = later - curr;
+  return { direction: delta >= 0 ? 'rising' : 'falling', rateFtPerHr: Math.abs(delta) };
 }

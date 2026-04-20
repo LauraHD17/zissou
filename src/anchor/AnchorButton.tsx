@@ -7,12 +7,7 @@
 import { useState } from 'react';
 import { Icon } from '../icons';
 import { SlidePanel } from '../ui/SlidePanel';
-import {
-  acknowledgeAnchorAlarm,
-  clearAnchor,
-  dropAnchor,
-  useAnchorWatch,
-} from './anchorStore';
+import { acknowledgeAnchorAlarm, clearAnchor, dropAnchor, useAnchorWatch } from './anchorStore';
 import { useSelf } from '../signalk/useSignalK';
 import { isPlausiblePosition } from '../utils/geometry';
 import type { AnchorRadiusFt } from '../types/nav';
@@ -53,12 +48,17 @@ function ConfigPanel({ onClose }: { onClose: () => void }) {
   const self = useSelf();
   const [radius, setRadius] = useState<AnchorRadiusFt>(75);
   const [audioEnabled, setAudioEnabled] = useState(true);
+  const [chartedDepth, setChartedDepth] = useState('');
 
   const canDrop = self?.position && isPlausiblePosition(self.position);
+  const parsedDepth = parseFloat(chartedDepth);
+  const chartedDepthFt = Number.isFinite(parsedDepth) && parsedDepth > 0 ? parsedDepth : undefined;
 
   return (
     <div className="anchor-panel">
-      <h2 id="anchor-panel-title" className="anchor-panel__title">Drop anchor here</h2>
+      <h2 id="anchor-panel-title" className="anchor-panel__title">
+        Drop anchor here
+      </h2>
       <p className="anchor-panel__subtitle">
         Watches your position; alerts if you drift outside the circle.
       </p>
@@ -92,6 +92,24 @@ function ConfigPanel({ onClose }: { onClose: () => void }) {
         <span>Play audio alarm if dragging</span>
       </label>
 
+      <label className="anchor-panel__depth">
+        <span>
+          Charted depth here{' '}
+          <span className="anchor-panel__depth-sub">(optional, ft at low tide)</span>
+        </span>
+        <input
+          type="text"
+          inputMode="decimal"
+          value={chartedDepth}
+          onChange={(e) => setChartedDepth(e.target.value)}
+          placeholder="e.g. 12"
+        />
+      </label>
+      <p className="anchor-panel__hint">
+        Fill this in if you know the chart soundings here — the watch will warn when the tide drops
+        to where your keel would hit.
+      </p>
+
       <button
         type="button"
         className="anchor-panel__drop"
@@ -101,6 +119,7 @@ function ConfigPanel({ onClose }: { onClose: () => void }) {
           dropAnchor({
             drop: self!.position!,
             radiusFt: radius,
+            chartedDepthFt,
             audioEnabled,
           });
           onClose();
@@ -121,9 +140,12 @@ function ActivePanel({ onClose }: { onClose: () => void }) {
 
   return (
     <div className="anchor-panel">
-      <h2 id="anchor-panel-title" className="anchor-panel__title">Anchor watch active</h2>
+      <h2 id="anchor-panel-title" className="anchor-panel__title">
+        Anchor watch active
+      </h2>
       <p className="anchor-panel__subtitle">
-        Watching {anchor.radiusFt} ft from drop point. {anchor.audioEnabled ? 'Audio on.' : 'Audio off.'}
+        Watching {anchor.radiusFt} ft from drop point.{' '}
+        {anchor.audioEnabled ? 'Audio on.' : 'Audio off.'}
       </p>
       {isAlarming && (
         <button
