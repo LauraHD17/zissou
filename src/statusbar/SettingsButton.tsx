@@ -1,7 +1,3 @@
-// Gear button in the StatusBar → opens a SlidePanel with user-editable
-// preferences. Scaffolded with Boat Name; grows to include alarm volume,
-// units, etc. as features land.
-
 import { useEffect, useRef, useState } from 'react';
 import { Icon } from '../icons';
 import { SlidePanel } from '../ui/SlidePanel';

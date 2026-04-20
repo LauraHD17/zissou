@@ -4,8 +4,17 @@
 const MS_TO_KN = 1.9438444924;
 const MS_TO_MPH = 2.2369362921;
 const NM_TO_MILES = 1.15077945;
-const NM_TO_METERS = 1852;
+export const NM_TO_METERS = 1852;
 const METERS_TO_YARDS = 1.0936133;
+const M_TO_FT = 3.28084;
+
+export function metersToFeet(m: number): number {
+  return m * M_TO_FT;
+}
+
+export function feetToMeters(ft: number): number {
+  return ft / M_TO_FT;
+}
 
 // ── Speed ──────────────────────────────────────────────────────────────────
 

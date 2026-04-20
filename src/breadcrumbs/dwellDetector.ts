@@ -21,7 +21,7 @@ export interface Dwell {
   pointCount: number;
 }
 
-export type DwellTag = 'mooring' | 'anchorage-overnight' | 'anchorage' | 'fuel-stop';
+export type DwellTag = 'mooring' | 'anchorage-overnight' | 'anchorage';
 
 export function detectDwells(points: Breadcrumb[]): Dwell[] {
   const dwells: Dwell[] = [];

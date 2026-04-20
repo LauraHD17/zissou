@@ -29,3 +29,15 @@ export function formatLocalTime(d: Date): string {
   if (h === 0) h = 12;
   return `${h}:${m.toString().padStart(2, '0')} ${ampm}`;
 }
+
+/** "just now" / "5 min ago" / "2h ago" / "3d ago". */
+export function formatAgo(t: number, nowMs: number = Date.now()): string {
+  const sec = Math.round((nowMs - t) / 1000);
+  if (sec < 60) return 'just now';
+  const min = Math.round(sec / 60);
+  if (min < 60) return `${min} min ago`;
+  const hr = Math.round(min / 60);
+  if (hr < 24) return `${hr}h ago`;
+  const d = Math.round(hr / 24);
+  return `${d}d ago`;
+}

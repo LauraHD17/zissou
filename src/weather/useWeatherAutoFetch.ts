@@ -48,8 +48,10 @@ export function useWeatherAutoFetch(): void {
     const interval = window.setInterval(maybeFetch, REFRESH_MS);
     void maybeFetch();
     return () => window.clearInterval(interval);
+    // Re-arm only on coarse (~11 km) position change — crossing a 0.01° grid
+    // constantly at anchor shouldn't reset the 1-hr refresh timer.
   }, [
-    Math.round((self?.position?.latitude ?? 0) * 100) / 100,
-    Math.round((self?.position?.longitude ?? 0) * 100) / 100,
+    Math.round((self?.position?.latitude ?? 0) * 10) / 10,
+    Math.round((self?.position?.longitude ?? 0) * 10) / 10,
   ]);
 }

@@ -1,34 +1,31 @@
-// Depth-contour color key. Hard square chips + numeric ranges. The labels
-// shift with the current tide so they show EFFECTIVE water depth right now
-// (not the charted MLW value), matching how the contour lines are colored.
-// Dismissible via the shared dismiss store.
+// Depth-contour color key. Labels reflect current EFFECTIVE water depth
+// (charted + tide height) so they match what the contour lines actually
+// show right now, not the MLW-referenced values. Top-left of the chart.
 
 import { useSelf } from '../../signalk/useSignalK';
 import { useNow } from '../../utils/clock';
+import { FALLBACK_POS } from '../../utils/geometry';
+import { metersToFeet } from '../../utils/units';
 import { tideHeightFt } from '../../utils/tides';
-import { dismiss, useIsDismissed } from '../../ui/dismissStore';
-import { DismissButton } from '../../ui/DismissButton';
-
-const FT_PER_M = 3.28084;
-const SHALLOW_M = 1.83; // 6 ft at MLW
-const MODERATE_M = 6.1; // 20 ft at MLW
+import { OverlayPill } from '../../ui/OverlayPill';
+import { DEPTH_BREAK_MODERATE_M, DEPTH_BREAK_SHALLOW_M } from '../marineStyle';
 
 export function DepthLegend() {
   const self = useSelf();
   const now = useNow(5 * 60 * 1000);
-  const dismissed = useIsDismissed('depth-legend');
-  if (dismissed) return null;
-
-  const pos = self?.position ?? { latitude: 44.4, longitude: -68.8 };
+  const pos = self?.position ?? FALLBACK_POS;
   const tideFt = tideHeightFt(now, pos);
-
-  // Current effective thresholds in feet: charted break + tide above MLW.
-  const shallowFt = SHALLOW_M * FT_PER_M + tideFt;
-  const moderateFt = MODERATE_M * FT_PER_M + tideFt;
+  const shallowFt = metersToFeet(DEPTH_BREAK_SHALLOW_M) + tideFt;
+  const moderateFt = metersToFeet(DEPTH_BREAK_MODERATE_M) + tideFt;
 
   return (
-    <div className="depth-legend" role="group" aria-label="Depth color key">
-      <DismissButton onClick={() => dismiss('depth-legend')} label="Hide depth key" />
+    <OverlayPill
+      className="depth-legend"
+      dismissKey="depth-legend"
+      dismissLabel="Hide depth key"
+      role="group"
+      ariaLabel="Depth color key"
+    >
       <span className="depth-legend__title">DEPTH</span>
       <ul className="depth-legend__rows">
         <Row color="shallow" label={`< ${formatFtCompact(shallowFt)}`} name="Shallow" />
@@ -40,7 +37,7 @@ export function DepthLegend() {
         <Row color="deep" label={`${formatFtCompact(moderateFt)}+`} name="Deep" />
       </ul>
       <span className="depth-legend__footer">tide +{tideFt.toFixed(1)}</span>
-    </div>
+    </OverlayPill>
   );
 }
 

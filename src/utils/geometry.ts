@@ -6,6 +6,9 @@ import type { Position } from '../signalk/types';
 const EARTH_RADIUS_NM = 3440.065;
 const EARTH_RADIUS_M = 6_371_000;
 
+/** Mid-coast Maine — used as a sun/tide/theme fallback before GPS fix. */
+export const FALLBACK_POS: Position = { latitude: 44.4, longitude: -68.8 };
+
 export function isPlausiblePosition(p: Position | undefined): boolean {
   if (!p) return false;
   if (p.latitude === 0 && p.longitude === 0) return false;

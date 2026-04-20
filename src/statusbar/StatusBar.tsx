@@ -3,6 +3,7 @@ import { useSelf } from '../signalk/useSignalK';
 import { resolveBoatName, useUserPrefs } from '../prefs/userPrefsStore';
 import { formatCompassBearing } from '../utils/bearings';
 import { useNowMs } from '../utils/clock';
+import { FALLBACK_POS } from '../utils/geometry';
 import { formatLat, formatLon, formatSpeedKnMph } from '../utils/units';
 import { ClockSunTide } from './ClockSunTide';
 import { MOBButton } from './MOBButton';
@@ -13,9 +14,6 @@ import { WaypointsButton } from './WaypointsButton';
 /** GPS fix considered stale if no update in this many ms. Distinct from
  *  AIS_STALE_MS (5 min) — own-fix tolerance is much tighter. */
 const FIX_STALE_MS = 30_000;
-
-// Mid-coast Maine fallback so sun/tide compute before the GPS gets a fix.
-const FALLBACK_POS = { latitude: 44.4, longitude: -68.8 };
 
 export type ViewMode = 'split' | 'ais' | 'chart';
 

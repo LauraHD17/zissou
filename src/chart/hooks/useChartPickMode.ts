@@ -1,10 +1,7 @@
 // Generic chart pick-position gesture. When armed, the chart is captured
-// for picking a point: pan/zoom gestures disable, a ghost pin tracks the
-// cursor/finger, and release fires `onPick` with the lat/lon. Callers decide
-// what to do with the picked point — set a destination, save a waypoint, etc.
-//
-// WCAG 2.5.7 alternative path: a coordinate-entry dialog opened from the
-// arming button (long-press / keyboard) — see the per-feature button.
+// for picking a point: pan/zoom disable, a ghost pin tracks the cursor, and
+// release fires `onPick` with the lat/lon. Callers decide what to do with
+// the picked point — set a destination, save a waypoint, etc.
 
 import { useEffect, useRef } from 'react';
 import type { RefObject } from 'react';

@@ -4,12 +4,11 @@
 import { useState } from 'react';
 import { useSelf } from '../signalk/useSignalK';
 import { useNow } from '../utils/clock';
+import { FALLBACK_POS } from '../utils/geometry';
 import { Icon } from '../icons';
 import { SlidePanel } from '../ui/SlidePanel';
 import { resolveActiveTheme, setThemeMode, useThemePrefs } from '../theme/useTheme';
 import type { ThemeMode } from '../types/nav';
-
-const FALLBACK_POS = { latitude: 44.4, longitude: -68.8 };
 
 const MODES: { value: ThemeMode; label: string; description: string }[] = [
   { value: 'auto', label: 'Auto', description: 'Day during daylight, night after civil dusk.' },

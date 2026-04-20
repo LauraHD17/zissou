@@ -6,11 +6,10 @@
 import { useEffect } from 'react';
 import { useSelf } from '../signalk/useSignalK';
 import { useNow } from '../utils/clock';
+import { FALLBACK_POS } from '../utils/geometry';
 import { defineStore } from '../storage/localStore';
 import type { ThemePrefs } from '../types/nav';
 import SunCalc from 'suncalc';
-
-const FALLBACK_POS = { latitude: 44.4, longitude: -68.8 };
 
 const themeStore = defineStore<ThemePrefs>('nav.theme.v1', 1, {
   mode: 'auto',

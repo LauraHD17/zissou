@@ -8,6 +8,7 @@ import type { Position } from '../signalk/types';
 import { Icon, type IconName } from '../icons';
 import { SlidePanel } from '../ui/SlidePanel';
 import { useSelf } from '../signalk/useSignalK';
+import { formatAgo } from '../utils/clock';
 import { isPlausiblePosition } from '../utils/geometry';
 import type { SavedWaypoint, RecentDestination, WaypointCategory } from '../types/nav';
 import { setDestination } from './destinationStore';
@@ -200,8 +201,6 @@ function iconForTag(t: DwellTag): IconName {
     case 'anchorage':
     case 'anchorage-overnight':
       return 'anchor';
-    case 'fuel-stop':
-      return 'fuel';
     case 'mooring':
       return 'mooringBuoy';
   }
@@ -213,8 +212,6 @@ function labelForTag(t: DwellTag): string {
       return 'Anchorage — overnight';
     case 'anchorage':
       return 'Anchorage';
-    case 'fuel-stop':
-      return 'Fuel stop';
     case 'mooring':
       return 'Mooring';
   }
@@ -248,15 +245,4 @@ function labelForCategory(c: WaypointCategory): string {
 
 function formatCoords(p: RecentDestination['position']): string {
   return `${p.latitude.toFixed(4)}, ${p.longitude.toFixed(4)}`;
-}
-
-function formatAgo(t: number): string {
-  const sec = Math.round((Date.now() - t) / 1000);
-  if (sec < 60) return 'just now';
-  const min = Math.round(sec / 60);
-  if (min < 60) return `${min} min ago`;
-  const hr = Math.round(min / 60);
-  if (hr < 24) return `${hr}h ago`;
-  const d = Math.round(hr / 24);
-  return `${d}d ago`;
 }

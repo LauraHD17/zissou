@@ -63,10 +63,6 @@ export const ICON_PATHS = {
   // Minimal gear: octagonal outline + center circle. Stroke-only so it
   // reads at the 20px StatusBar scale without visual weight.
   gear: 'M 10 3 h 4 l 0.5 2.2 l 2 1 l 2 -0.7 l 2 3.5 l -1.5 1.5 v 2 l 1.5 1.5 l -2 3.5 l -2 -0.7 l -2 1 l -0.5 2.2 h -4 l -0.5 -2.2 l -2 -1 l -2 0.7 l -2 -3.5 l 1.5 -1.5 v -2 l -1.5 -1.5 l 2 -3.5 l 2 0.7 l 2 -1 z M 12 12 m -2.5 0 a 2.5 2.5 0 1 0 5 0 a 2.5 2.5 0 1 0 -5 0',
-
-  // ── Fuel range circle toggle ───────────────────────────────────────
-  // Simple fuel pump silhouette: rounded tank + nozzle + base.
-  fuel: 'M 4 21 h 10 M 5 21 v -16 a 1 1 0 0 1 1 -1 h 7 a 1 1 0 0 1 1 1 v 16 M 5 12 h 9 M 14 8 l 3 0 a 1 1 0 0 1 1 1 v 9 a 1 1 0 0 0 1 1 a 1 1 0 0 0 1 -1 v -11 l -3 -3',
 } as const;
 
 export type IconName = keyof typeof ICON_PATHS;

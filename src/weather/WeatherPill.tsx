@@ -1,15 +1,12 @@
-// "Can I go?" overlay. Brutalist variant:
-//   • 8×8 hard-square staleness indicator inline with the headline
-//   • Raw clock time for "last fetch" (not "45 min ago")
-//   • Stacked `WIND ONLY` tag when wave data is absent — state, not toast
+// NWS forecast + "can I go?" verdict for the next 6 hr. Staleness dot is
+// green/amber/red based on last-fetch age; text carries the same signal.
 
 import { useMemo } from 'react';
 import { FORECAST_STALE_MS, FORECAST_AGE_SHOW_AFTER_MS, useForecastCache } from './weatherStore';
 import { assessWindow } from './canIGo';
 import { useUserPrefs } from '../prefs/userPrefsStore';
 import { useNow, formatLocalTime } from '../utils/clock';
-import { dismiss, useIsDismissed } from '../ui/dismissStore';
-import { DismissButton } from '../ui/DismissButton';
+import { OverlayPill } from '../ui/OverlayPill';
 
 const WINDOW_MS = 6 * 60 * 60 * 1000;
 
@@ -29,16 +26,12 @@ export function WeatherPill() {
     [cache.hourly, now, prefs.weatherLimits.maxWindKn],
   );
 
-  const dismissKey = `weather:${cache.lastFetchedAt}`;
-  const dismissed = useIsDismissed(dismissKey);
-  if (cache.lastFetchedAt === 0 || dismissed) return null;
+  if (cache.lastFetchedAt === 0) return null;
 
   const ageMs = now.getTime() - cache.lastFetchedAt;
   const stale = ageMs > FORECAST_STALE_MS;
   const aging = !stale && ageMs > FORECAST_AGE_SHOW_AFTER_MS;
   const showAge = aging || stale;
-
-  // Staleness dot class: green when fresh, amber when aging, red when stale.
   const dotClass = stale
     ? 'weather-pill__dot weather-pill__dot--stale'
     : aging
@@ -46,18 +39,14 @@ export function WeatherPill() {
       : 'weather-pill__dot weather-pill__dot--fresh';
 
   return (
-    <div
+    <OverlayPill
       className={`weather-pill weather-pill--${assessment.verdict}${stale ? ' weather-pill--stale' : ''}`}
-      role="status"
-      aria-label={`Weather: ${assessment.summary}${stale ? ' Forecast is stale.' : ''}`}
+      dismissKey={`weather:${cache.lastFetchedAt}`}
+      dismissLabel="Hide weather forecast"
+      ariaLabel={`Weather: ${assessment.summary}${stale ? ' Forecast is stale.' : ''}`}
     >
-      <DismissButton onClick={() => dismiss(dismissKey)} label="Hide weather forecast" />
       <span className="weather-pill__primary">
-        <span
-          className={dotClass}
-          aria-hidden="true"
-          data-state={stale ? 'stale' : aging ? 'aging' : 'fresh'}
-        />
+        <span className={dotClass} aria-hidden="true" />
         {headlineFor(assessment.verdict)} · next 6 hr
       </span>
       <span className="weather-pill__summary">{assessment.summary}</span>
@@ -66,7 +55,7 @@ export function WeatherPill() {
           {stale ? 'Stale · ' : ''}Last fetch {formatLocalTime(new Date(cache.lastFetchedAt))}
         </span>
       )}
-    </div>
+    </OverlayPill>
   );
 }
 

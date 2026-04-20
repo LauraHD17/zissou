@@ -51,8 +51,11 @@ const COLORS = {
   wreck: '#A02418',
 };
 
-const DEPTH_BREAK_SHALLOW = 1.83; // meters (6 ft)
-const DEPTH_BREAK_MODERATE = 6.1; // meters (20 ft)
+export const DEPTH_BREAK_SHALLOW_M = 1.83; // meters (6 ft) — VALDCO breakpoint
+export const DEPTH_BREAK_MODERATE_M = 6.1; // meters (20 ft) — VALDCO breakpoint
+
+const DEPTH_BREAK_SHALLOW = DEPTH_BREAK_SHALLOW_M;
+const DEPTH_BREAK_MODERATE = DEPTH_BREAK_MODERATE_M;
 
 /**
  * Apply marine palette overrides to a MapLibre map after its style has loaded.

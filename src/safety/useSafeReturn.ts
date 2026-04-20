@@ -9,7 +9,7 @@ import { useMemo } from 'react';
 import SunCalc from 'suncalc';
 import { useSelf } from '../signalk/useSignalK';
 import { useNow } from '../utils/clock';
-import { haversineNm, isPlausiblePosition } from '../utils/geometry';
+import { FALLBACK_POS, haversineNm, isPlausiblePosition } from '../utils/geometry';
 import { useUserPrefs } from '../prefs/userPrefsStore';
 import {
   computeDetectedCruisingKn,
@@ -55,7 +55,7 @@ export function useSafeReturn(): SafeReturnState {
     const etaHomeMins =
       distanceHomeNm != null && effectiveKn > 0 ? (distanceHomeNm / effectiveKn) * 60 : null;
 
-    const sunPos = pos ?? { latitude: 44.4, longitude: -68.8 }; // fallback
+    const sunPos = pos ?? FALLBACK_POS;
     const times = SunCalc.getTimes(now, sunPos.latitude, sunPos.longitude);
     const sunset = times.sunset;
     const minsToSunset = sunset instanceof Date ? (sunset.getTime() - now.getTime()) / 60_000 : NaN;

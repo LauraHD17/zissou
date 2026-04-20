@@ -1,10 +1,5 @@
-// User-editable preferences (identity, alarm prefs). Persisted.
-//
-// Separate from ThemePrefs (nav.theme.v1) so each concern has its own key —
-// corruption of one doesn't wipe the other. See plan §localStorage schema.
-//
-// Scaffolded with boatName first; alarm volume / tone wire up when the
-// Settings panel grows.
+// User-editable preferences. Kept separate from ThemePrefs (nav.theme.v1)
+// so corruption of one key doesn't wipe the other.
 
 import { defineStore } from '../storage/localStore';
 import type {

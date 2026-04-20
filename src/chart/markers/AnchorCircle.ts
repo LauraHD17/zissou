@@ -6,13 +6,13 @@ import type { RefObject } from 'react';
 import type maplibregl from 'maplibre-gl';
 import type { Map as MapLibreMap, GeoJSONSource } from 'maplibre-gl';
 import { projectPosition } from '../../utils/geometry';
+import { feetToMeters } from '../../utils/units';
 import { useAnchorWatch } from '../../anchor/anchorStore';
 
 const SOURCE_ID = 'anchor-circle';
 const FILL_LAYER = 'anchor-circle-fill';
 const LINE_LAYER = 'anchor-circle-line';
 const POINT_LAYER = 'anchor-circle-point';
-const FT_PER_METER = 3.28084;
 const SEGMENTS = 36;
 
 export function ensureAnchorCircleLayers(map: MapLibreMap): void {
@@ -88,7 +88,7 @@ type AW = ReturnType<typeof useAnchorWatch>;
 function buildFeature(anchor: AW): GeoJSON.FeatureCollection {
   if (!anchor) return { type: 'FeatureCollection', features: [] };
 
-  const radiusM = anchor.radiusFt / FT_PER_METER;
+  const radiusM = feetToMeters(anchor.radiusFt);
   const dragging = !anchor.alarmAcknowledged; // reuse acknowledged as a coarse "still concerning" flag
   const color = dragging ? '#A02418' : '#E8B84D';
 

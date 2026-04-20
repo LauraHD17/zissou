@@ -21,12 +21,8 @@ export function useActiveAlarm() {
   return alarmStore.use();
 }
 
-export function raiseAlarm(
-  input: { kind: AlarmKind; message: string } | AlarmKind,
-  legacyMessage?: string,
-): void {
-  const kind = typeof input === 'string' ? input : input.kind;
-  const message = typeof input === 'string' ? (legacyMessage ?? '') : input.message;
+export function raiseAlarm(input: { kind: AlarmKind; message: string }): void {
+  const { kind, message } = input;
   const current = alarmStore.read();
   if (current && current.kind === kind && !current.acknowledged) {
     // Already raised; just refresh the message in case the distance changed.
