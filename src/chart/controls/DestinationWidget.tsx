@@ -10,11 +10,8 @@ import { formatCompassBearing } from '../../utils/bearings';
 import { formatDistance, msToKnots } from '../../utils/units';
 import { formatLocalTime } from '../../utils/clock';
 import { SlidePanel } from '../../ui/SlidePanel';
-import {
-  clearDestination,
-  useActiveDestination,
-} from '../../waypoints/destinationStore';
-import { SaveWaypointDialog } from '../../waypoints/SaveWaypointDialog';
+import { clearDestination, useActiveDestination } from '../../waypoints/destinationStore';
+import { WaypointEditor } from '../../waypoints/WaypointEditor';
 
 export function DestinationWidget() {
   const dest = useActiveDestination();
@@ -59,7 +56,9 @@ export function DestinationWidget() {
           <h2 id="dest-actions-title" className="action-sheet__title">
             {label}
           </h2>
-          <p className="action-sheet__meta">{bearing} · {distance} · {eta}</p>
+          <p className="action-sheet__meta">
+            {bearing} · {distance} · {eta}
+          </p>
           <div className="action-sheet__buttons">
             <button
               type="button"
@@ -86,10 +85,7 @@ export function DestinationWidget() {
       )}
 
       {saveOpen && dest && (
-        <SaveWaypointDialog
-          position={dest.position}
-          onClose={() => setSaveOpen(false)}
-        />
+        <WaypointEditor mode="create" position={dest.position} onClose={() => setSaveOpen(false)} />
       )}
     </>
   );

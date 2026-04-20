@@ -1,47 +1,66 @@
-// Save current destination position as a named waypoint. Opens via the
-// "Save to waypoints" action in the destination widget's action sheet.
+// Create or edit a saved waypoint. Handles both modes:
+//   - create: pass `position`; submit calls addWaypoint
+//   - edit:   pass `waypoint`; submit calls updateWaypoint
+// Only one of the two is supplied per call.
 
 import { useState } from 'react';
 import { Icon, type IconName } from '../icons';
 import { SlidePanel } from '../ui/SlidePanel';
 import type { Position } from '../signalk/types';
-import type { WaypointCategory } from '../types/nav';
-import { addWaypoint } from './waypointStore';
+import type { SavedWaypoint, WaypointCategory } from '../types/nav';
+import { addWaypoint, updateWaypoint } from './waypointStore';
 
 const CATEGORIES: { value: WaypointCategory; icon: IconName; label: string }[] = [
   { value: 'mooring', icon: 'mooringBuoy', label: 'Mooring' },
   { value: 'anchorage', icon: 'anchor', label: 'Anchorage' },
   { value: 'hazard', icon: 'warning', label: 'Hazard' },
-  { value: 'poi', icon: 'star', label: 'Spot' },
+  { value: 'poi', icon: 'star', label: 'Favorite' },
 ];
 
-interface Props {
-  position: Position;
-  onClose: () => void;
-}
+type Props =
+  | { mode: 'create'; position: Position; onClose: () => void }
+  | { mode: 'edit'; waypoint: SavedWaypoint; onClose: () => void };
 
-export function SaveWaypointDialog({ position, onClose }: Props) {
-  const [label, setLabel] = useState('');
-  const [category, setCategory] = useState<WaypointCategory>('poi');
+export function WaypointEditor(props: Props) {
+  const isEdit = props.mode === 'edit';
+  const initialLabel = isEdit ? props.waypoint.label : '';
+  const initialCategory: WaypointCategory = isEdit ? props.waypoint.category : 'poi';
+  const position: Position = isEdit
+    ? { latitude: props.waypoint.lat, longitude: props.waypoint.lon }
+    : props.position;
+
+  const [label, setLabel] = useState(initialLabel);
+  const [category, setCategory] = useState<WaypointCategory>(initialCategory);
 
   const submit = (e: React.FormEvent) => {
     e.preventDefault();
     const trimmed = label.trim();
     if (!trimmed) return;
-    addWaypoint({
-      lat: position.latitude,
-      lon: position.longitude,
-      label: trimmed,
-      category,
-    });
-    onClose();
+    if (isEdit) {
+      updateWaypoint(props.waypoint.id, { label: trimmed, category });
+    } else {
+      addWaypoint({
+        lat: position.latitude,
+        lon: position.longitude,
+        label: trimmed,
+        category,
+      });
+    }
+    props.onClose();
   };
 
+  const title = isEdit ? 'Edit waypoint' : 'Save this spot';
+  const submitText = isEdit ? 'Save changes' : 'Save spot';
+
   return (
-    <SlidePanel open onClose={onClose} labelledBy="save-wp-title">
+    <SlidePanel open onClose={props.onClose} labelledBy="wp-editor-title">
       <form onSubmit={submit} className="save-wp">
-        <h2 id="save-wp-title" className="save-wp__title">Save this spot</h2>
-        <p className="save-wp__pos">{position.latitude.toFixed(4)}, {position.longitude.toFixed(4)}</p>
+        <h2 id="wp-editor-title" className="save-wp__title">
+          {title}
+        </h2>
+        <p className="save-wp__pos">
+          {position.latitude.toFixed(4)}, {position.longitude.toFixed(4)}
+        </p>
 
         <label className="save-wp__field">
           <span>Label</span>
@@ -78,7 +97,7 @@ export function SaveWaypointDialog({ position, onClose }: Props) {
         </fieldset>
 
         <button type="submit" className="save-wp__submit" disabled={!label.trim()}>
-          Save spot
+          {submitText}
         </button>
       </form>
     </SlidePanel>

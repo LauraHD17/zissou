@@ -1,7 +1,7 @@
-// Toggles drop-pin mode on/off. When armed, the chart accepts tap-and-hold
-// to place a Go-To destination. The button's coordinate-entry alternative
-// (long-press the button itself) is the WCAG 2.5.7 path for users who can't
-// drag-tap on the chart.
+// Toggles drop-pin (destination) mode. When armed, a chart tap/drag drops a
+// Go-To destination at the release point. The button's coordinate-entry
+// alternative (long-press the button itself) is the WCAG 2.5.7 path for users
+// who can't drag-tap on the chart.
 
 import { useState } from 'react';
 import { Icon } from '../../icons';
@@ -59,11 +59,7 @@ export function DropPinButton({ armed, onToggle }: Props) {
       </button>
 
       {coordPanelOpen && (
-        <SlidePanel
-          open
-          onClose={() => setCoordPanelOpen(false)}
-          labelledBy="coord-entry-title"
-        >
+        <SlidePanel open onClose={() => setCoordPanelOpen(false)} labelledBy="coord-entry-title">
           <CoordinateEntryForm onSubmit={() => setCoordPanelOpen(false)} />
         </SlidePanel>
       )}
@@ -99,7 +95,9 @@ function CoordinateEntryForm({ onSubmit }: { onSubmit: () => void }) {
 
   return (
     <form onSubmit={submit} className="coord-entry">
-      <h2 id="coord-entry-title" className="coord-entry__title">Enter destination coordinates</h2>
+      <h2 id="coord-entry-title" className="coord-entry__title">
+        Enter destination coordinates
+      </h2>
       <label className="coord-entry__field">
         <span>Latitude</span>
         <input
@@ -121,8 +119,14 @@ function CoordinateEntryForm({ onSubmit }: { onSubmit: () => void }) {
           placeholder="-68.7898"
         />
       </label>
-      {err && <p className="coord-entry__error" role="alert">{err}</p>}
-      <button type="submit" className="coord-entry__submit">Set destination</button>
+      {err && (
+        <p className="coord-entry__error" role="alert">
+          {err}
+        </p>
+      )}
+      <button type="submit" className="coord-entry__submit">
+        Set destination
+      </button>
     </form>
   );
 }
