@@ -22,10 +22,19 @@ import { AISDetailPanel } from './AISDetailPanel';
 import type { Vessel } from '../signalk/types';
 import { MapControls } from './controls/MapControls';
 import { ScaleBar } from './controls/ScaleBar';
+import { DepthLegend } from './controls/DepthLegend';
 import { DropPinButton } from './controls/DropPinButton';
+import { SaveWaypointButton } from './controls/SaveWaypointButton';
 import { DestinationWidget } from './controls/DestinationWidget';
+import { SafeReturnPill } from '../safety/SafeReturnPill';
+import { RouteTidePill } from '../safety/RouteTidePill';
+import { WeatherPill } from '../weather/WeatherPill';
 import { useChartMode } from './hooks/useChartMode';
-import { useDropPinMode } from './hooks/useDropPinMode';
+import { useChartPickMode } from './hooks/useChartPickMode';
+import { useTideAwareContours } from './hooks/useTideAwareContours';
+import { setDestination } from '../waypoints/destinationStore';
+import { WaypointEditor } from '../waypoints/WaypointEditor';
+import type { Position } from '../signalk/types';
 
 const FALLBACK_CENTER: [number, number] = [-68.8, 44.4]; // [lng, lat] mid-coast Maine
 const DEFAULT_ZOOM = 12;
@@ -46,9 +55,15 @@ export function ChartCanvas() {
   const self = useSelf();
   const targets = useAISTargets();
   const { mode, setMode, modeRef } = useChartMode(mapRef, styleLoadedRef);
-  const [dropPinArmed, setDropPinArmed] = useState(false);
+  const [pickMode, setPickMode] = useState<'idle' | 'destination' | 'waypoint'>('idle');
+  const [saveAt, setSaveAt] = useState<Position | null>(null);
   const [tappedWaypoint, setTappedWaypoint] = useState<SavedWaypoint | null>(null);
   const [tappedVessel, setTappedVessel] = useState<Vessel | null>(null);
+  // Auto-recenter vs free-pan. User drag/zoom suspends tracking; Recenter
+  // button re-engages it.
+  const [following, setFollowing] = useState(true);
+  const followingRef = useRef(true);
+  followingRef.current = following;
 
   useEffect(() => {
     if (!containerRef.current) return;
@@ -75,6 +90,15 @@ export function ChartCanvas() {
       ensureAnchorCircleLayers(map);
     });
 
+    // Suspend auto-recenter when the operator pans or zooms manually.
+    // `originalEvent` is only set on user-initiated moves; programmatic
+    // setCenter / flyTo don't fire with one, so they don't toggle us off.
+    const onUserMove = (e: { originalEvent?: Event }) => {
+      if (e.originalEvent && followingRef.current) setFollowing(false);
+    };
+    map.on('dragstart', onUserMove);
+    map.on('zoomstart', onUserMove);
+
     mapRef.current = map;
 
     // View-mode toggle uses display:none, which window.resize doesn't see.
@@ -98,20 +122,34 @@ export function ChartCanvas() {
   useGoToRoute(mapRef);
   useWaypointMarkers(mapRef, { onTap: setTappedWaypoint });
   useAnchorCircle(mapRef);
+  useTideAwareContours(mapRef);
   useAnchorDragWatch();
   useMOBMarker(mapRef);
-  useDropPinMode(mapRef, {
-    armed: dropPinArmed,
-    onDrop: () => setDropPinArmed(false),
+  useChartPickMode(mapRef, {
+    armed: pickMode !== 'idle',
+    onPick: (pos) => {
+      if (pickMode === 'destination') {
+        setDestination({ source: 'goto-pin', position: pos, setAt: Date.now() });
+        setPickMode('idle');
+      } else if (pickMode === 'waypoint') {
+        setSaveAt(pos);
+        setPickMode('idle');
+      }
+    },
   });
+
+  const togglePickMode = (mode: 'destination' | 'waypoint') =>
+    setPickMode((prev) => (prev === mode ? 'idle' : mode));
 
   useEffect(() => {
     const map = mapRef.current;
-    if (!map || !self?.position || !isPlausiblePosition(self.position)) return;
+    if (!map || !following) return;
+    if (!self?.position || !isPlausiblePosition(self.position)) return;
     map.setCenter([self.position.longitude, self.position.latitude]);
-  }, [self?.position?.latitude, self?.position?.longitude]);
+  }, [self?.position?.latitude, self?.position?.longitude, following]);
 
   const handleRecenter = () => {
+    setFollowing(true);
     const map = mapRef.current;
     if (!map || !self?.position || !isPlausiblePosition(self.position)) return;
     map.flyTo({
@@ -126,32 +164,40 @@ export function ChartCanvas() {
       <div ref={containerRef} className="chart-map" />
       <MapControls
         mode={mode}
+        following={following}
         onZoomIn={() => mapRef.current?.zoomIn()}
         onZoomOut={() => mapRef.current?.zoomOut()}
         onRecenter={handleRecenter}
         onModeToggle={() => setMode((m) => (m === 'marine' ? 'harbor' : 'marine'))}
         dropPinSlot={
           <DropPinButton
-            armed={dropPinArmed}
-            onToggle={() => setDropPinArmed((a) => !a)}
+            armed={pickMode === 'destination'}
+            onToggle={() => togglePickMode('destination')}
+          />
+        }
+        saveWaypointSlot={
+          <SaveWaypointButton
+            armed={pickMode === 'waypoint'}
+            onToggle={() => togglePickMode('waypoint')}
           />
         }
         anchorSlot={<AnchorButton />}
       />
       <DestinationWidget />
+      <div className="chart-overlay-stack">
+        <RouteTidePill mapRef={mapRef} />
+        <WeatherPill />
+        <SafeReturnPill />
+      </div>
       <ScaleBar mapRef={mapRef} />
+      <DepthLegend />
       {tappedWaypoint && (
-        <WaypointActionSheet
-          waypoint={tappedWaypoint}
-          onClose={() => setTappedWaypoint(null)}
-        />
+        <WaypointActionSheet waypoint={tappedWaypoint} onClose={() => setTappedWaypoint(null)} />
       )}
       {tappedVessel && (
-        <AISDetailPanel
-          vessel={tappedVessel}
-          onClose={() => setTappedVessel(null)}
-        />
+        <AISDetailPanel vessel={tappedVessel} onClose={() => setTappedVessel(null)} />
       )}
+      {saveAt && <WaypointEditor mode="create" position={saveAt} onClose={() => setSaveAt(null)} />}
     </div>
   );
 }

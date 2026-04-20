@@ -1,38 +1,38 @@
 :root {
   /* Base */
   --bg-navy: #142038;
-  --surface-sand: #F0EBE0;
-  --text-primary: #F0EBE0;
+  --surface-sand: #f0ebe0;
+  --text-primary: #f0ebe0;
   --text-on-card: #142038;
 
   /* Functional */
-  --boat-icon: #FF6B35;
-  --vessel-name: #0F0298;
-  --alert-amber: #E8B84D;
-  --waypoint: #6B9080;
+  --boat-icon: #ff6b35;
+  --vessel-name: #0f0298;
+  --alert-amber: #e8b84d;
+  --waypoint: #6b9080;
 
   /* Interactive */
-  --focus-ring: #E8B84D;
+  --focus-ring: #e8b84d;
 
   /* Derived tones — alphas tuned for WCAG AAA (7:1) contrast against base surfaces */
   --text-dim: rgba(240, 235, 224, 0.78);
   --text-on-card-dim: rgba(20, 32, 56, 0.82);
   --border-on-navy: rgba(240, 235, 224, 0.16);
-  --border-on-card: rgba(20, 32, 56, 0.20);
+  --border-on-card: rgba(20, 32, 56, 0.2);
 
   /* Stale card surface — a desaturated sand that still hits 7:1 with navy text */
-  --surface-sand-stale: #D8D0BC;
+  --surface-sand-stale: #d8d0bc;
 
   /* Status (universal green/red — brightened so they pass 7:1 on navy) */
-  --ok: #5BD891;
-  --danger: #FFA0A0;
+  --ok: #5bd891;
+  --danger: #ffa0a0;
 
   /* Threat band — deep red for fills on sand cards (cream text on it ≥7:1) */
-  --alert-red: #A02418;
+  --alert-red: #a02418;
 
   /* Own-ship secondary accent — tennis-ball yellow-green. Used only for
      the own-ship outline, pulsing ring, and heading vector. Not for AIS or UI. */
-  --ownship-accent: #CCFF00;
+  --ownship-accent: #ccff00;
 
   /* Typography */
   --font-sans: 'Zalando Sans Expanded', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
@@ -47,7 +47,9 @@
   box-sizing: border-box;
 }
 
-html, body, #root {
+html,
+body,
+#root {
   margin: 0;
   padding: 0;
   height: 100%;
@@ -104,23 +106,30 @@ html, body, #root {
   bottom: 0;
   left: 0;
   right: 0;
-  height: 33vh;
+  /* Grow with content up to 80vh so every form/action-sheet can show its
+     Save button. Internal scroll kicks in past the cap. */
+  max-height: 80vh;
   background: var(--surface-sand);
   color: var(--text-on-card);
   border-top: 1px solid var(--bg-navy);
   border-radius: 0;
-  padding: 16px;
+  padding: 20px 20px calc(20px + env(safe-area-inset-bottom));
   overflow-y: auto;
+  overscroll-behavior: contain;
   transform: translateY(100%);
   animation: slide-panel-in 250ms cubic-bezier(0.4, 0, 0.2, 1) forwards;
 }
 
 @keyframes slide-panel-overlay-in {
-  to { opacity: 1; }
+  to {
+    opacity: 1;
+  }
 }
 
 @keyframes slide-panel-in {
-  to { transform: translateY(0); }
+  to {
+    transform: translateY(0);
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -145,8 +154,14 @@ html, body, #root {
 
 /* WCAG 2.3.1 — 1 Hz is well under the 3 Hz cap. Do NOT increase frequency. */
 @keyframes alarm-flash {
-  0%, 50% { opacity: 1; }
-  50.01%, 100% { opacity: 0; }
+  0%,
+  50% {
+    opacity: 1;
+  }
+  50.01%,
+  100% {
+    opacity: 0;
+  }
 }
 
 .alarm-banner {
@@ -252,36 +267,59 @@ html, body, #root {
 
 .statusbar {
   display: flex;
-  align-items: center;
-  gap: 24px;
-  padding: 10px 16px;
+  flex-direction: column;
+  gap: 6px;
+  padding: 8px 14px;
   background: var(--bg-navy);
   border-bottom: 1px solid var(--border-on-navy);
-  flex-wrap: wrap;
 }
 
-.statusbar__left {
+.statusbar__row {
   display: flex;
   align-items: center;
-  gap: 14px;
+  gap: 12px;
   flex-wrap: wrap;
+  row-gap: 8px;
+}
+
+.statusbar__row--chrome {
+  justify-content: space-between;
+}
+
+.statusbar__row--metrics {
+  justify-content: center;
+  gap: 32px;
+  border-top: 1px solid var(--border-on-navy);
+  padding-top: 6px;
+}
+
+.statusbar__left,
+.statusbar__right {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-shrink: 0;
+  flex-wrap: wrap;
+  row-gap: 6px;
 }
 
 /* ── StatusBar clock / sun / tide cluster ─────────────────────────────── */
 
 .statusbar__almanac {
   display: inline-flex;
-  align-items: baseline;
-  gap: 8px;
+  align-items: center;
+  gap: 7px;
   font-family: var(--font-sans);
   font-weight: 500;
   font-size: 13px;
   color: var(--text-primary);
   font-variant-numeric: tabular-nums;
+  flex-shrink: 0;
 }
 
 .statusbar__time {
   font-weight: 700;
+  font-size: 14px;
 }
 
 .statusbar__sun,
@@ -298,12 +336,22 @@ html, body, #root {
   color: var(--text-dim);
 }
 
-.statusbar__vessel {
+/* Centered nameplate in Row 1 — the operator's boat name, user-editable
+   via Settings. Falls back to SignalK self.name then "—". */
+.statusbar__nameplate {
+  flex: 1;
+  text-align: center;
+  margin: 0;
   font-family: var(--font-sans);
-  font-weight: 700;
-  font-size: 15px;
-  letter-spacing: 0.02em;
+  font-weight: 800;
+  font-size: 20px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
   color: var(--text-primary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  min-width: 0;
 }
 
 .fix-indicator {
@@ -326,7 +374,7 @@ html, body, #root {
 .fix-indicator--stale {
   color: var(--alert-amber);
   background: rgba(232, 184, 77, 0.16);
-  border-color: rgba(232, 184, 77, 0.40);
+  border-color: rgba(232, 184, 77, 0.4);
 }
 
 .fix-indicator--no-fix {
@@ -335,19 +383,12 @@ html, body, #root {
   border-color: rgba(224, 90, 90, 0.38);
 }
 
-.statusbar__metrics {
-  display: flex;
-  align-items: center;
-  gap: 20px;
-  flex: 1;
-  justify-content: center;
-  min-width: 0;
-}
-
 .statusbar__metric {
   display: flex;
-  flex-direction: column;
-  min-width: 0;
+  flex-direction: row;
+  align-items: baseline;
+  gap: 8px;
+  flex-shrink: 0;
 }
 
 .statusbar__metric-label {
@@ -377,6 +418,12 @@ html, body, #root {
   font-size: 13px;
 }
 
+/* Separator inside multi-value metrics (e.g. Position: lat · lon). */
+.statusbar__metric-sep {
+  color: var(--text-dim);
+  margin: 0 4px;
+}
+
 /* The heading glyph represents our own boat — safety orange. */
 .heading-glyph {
   color: var(--boat-icon);
@@ -387,9 +434,12 @@ html, body, #root {
 .statusbar__tabs {
   display: flex;
   gap: 6px;
+  flex-shrink: 0;
 }
 
-.statusbar__theme-toggle {
+.statusbar__theme-toggle,
+.statusbar__settings-toggle,
+.statusbar__waypoints-toggle {
   background: transparent;
   border: 1px solid var(--border-on-navy);
   color: var(--text-primary);
@@ -403,7 +453,9 @@ html, body, #root {
   justify-content: center;
 }
 
-.statusbar__theme-toggle:hover {
+.statusbar__theme-toggle:hover,
+.statusbar__settings-toggle:hover,
+.statusbar__waypoints-toggle:hover {
   border-color: rgba(240, 235, 224, 0.28);
 }
 
@@ -614,15 +666,15 @@ html, body, #root {
   background: transparent;
   border: 1px solid var(--border-on-navy);
   color: var(--text-primary);
-  padding: 12px 20px;
+  padding: 10px 14px;
   font-family: var(--font-sans);
-  font-size: 14px;
+  font-size: 13px;
   font-weight: 600;
   letter-spacing: 0.02em;
   border-radius: 0;
   cursor: pointer;
-  min-width: 64px;
-  min-height: 44px;       /* WCAG 2.5.5 AAA — 44×44 minimum */
+  min-width: 56px;
+  min-height: 44px; /* WCAG 2.5.5 AAA — 44×44 minimum */
 }
 
 .tab:hover {
@@ -691,11 +743,27 @@ html, body, #root {
 }
 
 .map-control-btn:active,
-.map-control-btn[aria-pressed="true"],
+.map-control-btn[aria-pressed='true'],
 .map-control-btn--active {
   background: var(--surface-sand);
   color: var(--text-on-card);
   border-color: var(--surface-sand);
+}
+
+/* Drift indicator on Recenter when the user has panned away — tiny amber
+   dot in the upper-right corner says "tap to snap back". */
+.map-control-btn--drift {
+  position: relative;
+}
+.map-control-btn--drift::after {
+  content: '';
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  width: 6px;
+  height: 6px;
+  background: var(--alert-amber);
+  border: 1px solid var(--bg-navy);
 }
 
 /* ── Saved waypoint markers (sage; icon by category) ───────────────── */
@@ -726,6 +794,13 @@ html, body, #root {
   stroke-width: 1;
 }
 
+/* Ghost pin: live preview while drop-pin mode is armed. Dimmer so the
+   operator knows it's a tentative placement, not committed. */
+.destination-marker--ghost {
+  opacity: 0.6;
+  pointer-events: none;
+}
+
 .destination-marker--mob {
   color: var(--alert-red);
 }
@@ -734,6 +809,162 @@ html, body, #root {
 }
 
 /* ── Destination widget (top-right pill) ───────────────────────────── */
+
+/* Right-side overlay stack — destination widget sits in top-right; pills
+   below it share this column so they don't overlap each other. */
+.chart-overlay-stack {
+  position: absolute;
+  top: 72px;
+  right: 80px;
+  z-index: 10;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  max-width: 320px;
+}
+
+.route-tide,
+.safe-return,
+.weather-pill {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 8px 32px 8px 14px; /* right pad leaves room for dismiss button */
+  background: rgba(20, 32, 56, 0.85);
+  color: var(--text-primary);
+  border-radius: 0;
+  font-family: var(--font-sans);
+  font-size: 13px;
+  line-height: 1.2;
+}
+
+/* Dismiss "×" for chart-overlay pills. Text-only, no icon component, no
+   rounded bg — pure brutalist control. 32×32 hit area for gloved hands. */
+.pill-dismiss {
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 32px;
+  height: 32px;
+  background: transparent;
+  border: 0;
+  color: var(--text-dim);
+  font-family: var(--font-sans);
+  font-size: 18px;
+  line-height: 1;
+  cursor: pointer;
+  padding: 0;
+}
+
+.pill-dismiss:hover {
+  color: var(--text-primary);
+}
+
+.weather-pill {
+  border: 1px solid var(--border-on-navy);
+}
+
+.weather-pill--safe {
+  border-color: var(--ok);
+}
+
+.weather-pill--watch {
+  border-color: var(--alert-amber);
+}
+
+.weather-pill--nogo {
+  border-color: var(--alert-red);
+  color: var(--danger);
+}
+
+.weather-pill--stale {
+  opacity: 0.85;
+  border-style: dashed;
+}
+
+.weather-pill__primary {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+}
+
+/* Hard-square staleness indicator — no pulse, no circle. Paired with the
+   last-fetch clock time below; color is redundant-safe (shape + text). */
+.weather-pill__dot {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  flex-shrink: 0;
+  border: 1px solid var(--bg-navy);
+}
+
+.weather-pill__dot--fresh {
+  background: var(--ok);
+}
+
+.weather-pill__dot--aging {
+  background: var(--alert-amber);
+}
+
+.weather-pill__dot--stale {
+  background: var(--alert-red);
+}
+
+.weather-pill__summary {
+  font-size: 12px;
+  color: var(--text-dim);
+}
+
+.weather-pill__age {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--text-dim);
+  font-variant-numeric: tabular-nums;
+}
+
+.route-tide--watch {
+  border: 1px solid var(--alert-amber);
+}
+
+.route-tide--warn {
+  border: 1px solid var(--alert-red);
+  color: var(--danger);
+}
+
+.safe-return {
+  border: 1px solid var(--alert-amber);
+}
+
+.route-tide__primary,
+.safe-return__primary {
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+.route-tide__meta,
+.safe-return__meta {
+  font-size: 11px;
+  color: var(--text-dim);
+  font-variant-numeric: tabular-nums;
+}
+
+.safe-return__meta {
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.safe-return--warn {
+  border-color: var(--alert-red);
+  color: var(--danger);
+}
+
+.safe-return--neutral {
+  border-color: var(--border-on-navy);
+  color: var(--text-dim);
+}
 
 .destination-widget {
   position: absolute;
@@ -802,6 +1033,149 @@ html, body, #root {
   background: var(--alert-red);
   color: var(--surface-sand);
   border-color: var(--alert-red);
+}
+
+/* ── Waypoints panel (saved + recents list) ────────────────────────── */
+
+.wp-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.wp-panel__title {
+  font-family: var(--font-sans);
+  font-weight: 700;
+  font-size: 18px;
+  margin: 0;
+  color: var(--text-on-card);
+}
+
+.wp-panel__save-current {
+  background: var(--bg-navy);
+  color: var(--text-primary);
+  border: 1px solid var(--bg-navy);
+  border-radius: 0;
+  padding: 14px 16px;
+  font-family: var(--font-sans);
+  font-weight: 700;
+  font-size: 15px;
+  cursor: pointer;
+  min-height: 56px;
+  text-align: left;
+}
+
+.wp-panel__save-current:disabled {
+  background: transparent;
+  color: var(--text-on-card-dim);
+  border-color: var(--border-on-card);
+  cursor: not-allowed;
+}
+
+.wp-panel__section {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding-top: 8px;
+  border-top: 1px solid var(--border-on-card);
+}
+
+.wp-panel__section-title {
+  font-family: var(--font-sans);
+  font-weight: 600;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--text-on-card-dim);
+  margin: 0;
+}
+
+.wp-panel__empty {
+  font-family: var(--font-sans);
+  font-size: 13px;
+  color: var(--text-on-card-dim);
+  margin: 0;
+  padding: 4px 0;
+}
+
+.wp-panel__list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.wp-panel__row {
+  display: flex;
+  align-items: stretch;
+  gap: 4px;
+}
+
+.wp-panel__row-main {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 12px;
+  background: transparent;
+  border: 1px solid var(--border-on-card);
+  border-radius: 0;
+  color: var(--text-on-card);
+  cursor: pointer;
+  text-align: left;
+  min-height: 56px;
+  font-family: var(--font-sans);
+}
+
+.wp-panel__row-main:hover {
+  background: rgba(20, 32, 56, 0.04);
+}
+
+.wp-panel__row-main svg {
+  color: var(--waypoint);
+  flex-shrink: 0;
+}
+
+.wp-panel__row-text {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.wp-panel__row-label {
+  font-weight: 600;
+  font-size: 15px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.wp-panel__row-meta {
+  font-family: var(--font-mono);
+  font-weight: 500;
+  font-size: 12px;
+  color: var(--text-on-card-dim);
+}
+
+.wp-panel__row-kebab {
+  width: 44px;
+  min-height: 56px;
+  background: transparent;
+  border: 1px solid var(--border-on-card);
+  border-radius: 0;
+  color: var(--text-on-card);
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.wp-panel__row-kebab:hover {
+  background: rgba(20, 32, 56, 0.04);
 }
 
 /* ── Anchor watch panel ────────────────────────────────────────────── */
@@ -891,6 +1265,39 @@ html, body, #root {
   width: 18px;
   height: 18px;
   accent-color: var(--bg-navy);
+}
+
+.anchor-panel__depth {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-family: var(--font-sans);
+  font-weight: 600;
+  font-size: 13px;
+  color: var(--text-on-card);
+}
+
+.anchor-panel__depth-sub {
+  font-weight: 500;
+  color: var(--text-on-card-dim);
+}
+
+.anchor-panel__depth input {
+  padding: 12px;
+  font-family: var(--font-mono);
+  font-size: 16px;
+  border: 1px solid var(--bg-navy);
+  border-radius: 0;
+  background: var(--surface-sand);
+  color: var(--text-on-card);
+  min-height: 44px;
+}
+
+.anchor-panel__hint {
+  font-family: var(--font-sans);
+  font-size: 12px;
+  color: var(--text-on-card-dim);
+  margin: 0;
 }
 
 .anchor-panel__drop {
@@ -1079,6 +1486,257 @@ html, body, #root {
   cursor: pointer;
   min-height: 56px;
   margin-top: 8px;
+}
+
+/* ── Settings panel (SlidePanel body) ──────────────────────────────── */
+
+.settings-form {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.settings-form__title {
+  font-family: var(--font-sans);
+  font-weight: 700;
+  font-size: 18px;
+  margin: 0;
+  color: var(--text-on-card);
+  letter-spacing: 0.02em;
+}
+
+.settings-form__section {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding-top: 8px;
+  border-top: 1px solid var(--border-on-card);
+}
+
+.settings-form__section-title {
+  font-family: var(--font-sans);
+  font-weight: 600;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--text-on-card-dim);
+  margin: 0;
+}
+
+.settings-form__field {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-family: var(--font-sans);
+  font-weight: 600;
+  font-size: 13px;
+  color: var(--text-on-card);
+}
+
+.settings-form__field input {
+  padding: 12px;
+  font-family: var(--font-sans);
+  font-weight: 500;
+  font-size: 16px;
+  border: 1px solid var(--bg-navy);
+  border-radius: 0;
+  background: var(--surface-sand);
+  color: var(--text-on-card);
+  min-height: 44px;
+  width: 100%;
+}
+
+.settings-form__row {
+  display: flex;
+  gap: 8px;
+}
+
+.settings-form__field--dim {
+  flex: 1;
+  min-width: 0;
+}
+
+.settings-form__field--disabled {
+  opacity: 0.55;
+}
+
+.settings-form__field--disabled input {
+  background: var(--surface-sand-stale);
+  cursor: not-allowed;
+}
+
+.settings-form__hint--muted {
+  color: var(--text-on-card-dim);
+  font-style: italic;
+}
+
+.settings-form__field-label {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 4px;
+  flex-wrap: wrap;
+}
+
+.settings-form__field-sublabel {
+  font-weight: 500;
+  font-size: 12px;
+  color: var(--text-on-card-dim);
+  letter-spacing: 0;
+  text-transform: none;
+}
+
+.settings-form__input-wrap {
+  position: relative;
+  display: block;
+}
+
+.settings-form__field--dim input {
+  font-family: var(--font-mono);
+  padding-right: 32px;
+  text-align: right;
+}
+
+.settings-form__unit {
+  position: absolute;
+  right: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  font-family: var(--font-sans);
+  font-weight: 600;
+  font-size: 12px;
+  color: var(--text-on-card-dim);
+  pointer-events: none;
+}
+
+.settings-form__hint {
+  font-family: var(--font-sans);
+  font-size: 12px;
+  color: var(--text-on-card-dim);
+  margin: 0;
+}
+
+.settings-form__buttons {
+  display: flex;
+  gap: 8px;
+  margin-top: 4px;
+}
+
+.settings-form__buttons > .action-sheet__btn {
+  flex: 1;
+}
+
+.action-sheet__btn--primary {
+  background: var(--bg-navy);
+  color: var(--text-primary);
+  border-color: var(--bg-navy);
+}
+
+.settings-form__secondary {
+  background: transparent;
+  color: var(--text-on-card);
+  border: 1px solid var(--bg-navy);
+  border-radius: 0;
+  padding: 10px 14px;
+  font-family: var(--font-sans);
+  font-weight: 600;
+  font-size: 13px;
+  letter-spacing: 0.02em;
+  cursor: pointer;
+  min-height: 44px;
+  align-self: flex-start;
+}
+
+.settings-form__secondary:hover {
+  background: rgba(20, 32, 56, 0.06);
+}
+
+/* ── Depth legend (bottom-right corner of chart) ───────────────────── */
+
+.depth-legend {
+  position: absolute;
+  top: 16px;
+  left: 16px;
+  z-index: 10;
+  padding: 6px 8px 6px 8px;
+  padding-right: 22px; /* room for the × dismiss */
+  background: rgba(20, 32, 56, 0.88);
+  color: var(--text-primary);
+  border: 1px solid var(--border-on-navy);
+  border-radius: 0;
+  font-family: var(--font-sans);
+  font-size: 11px;
+  line-height: 1.15;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  min-width: 92px;
+}
+
+.depth-legend .pill-dismiss {
+  width: 22px;
+  height: 22px;
+  font-size: 14px;
+}
+
+.depth-legend__title {
+  font-family: var(--font-sans);
+  font-weight: 700;
+  font-size: 9px;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: var(--text-dim);
+}
+
+.depth-legend__rows {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.depth-legend__row {
+  display: grid;
+  grid-template-columns: 10px 1fr;
+  align-items: center;
+  gap: 6px;
+  font-variant-numeric: tabular-nums;
+}
+
+.depth-legend__swatch {
+  width: 10px;
+  height: 10px;
+  border: 1px solid var(--bg-navy);
+}
+
+.depth-legend__swatch--shallow {
+  background: #ff3b1a;
+}
+
+.depth-legend__swatch--moderate {
+  background: #ffd700;
+}
+
+.depth-legend__swatch--deep {
+  background: #6fecb0;
+}
+
+.depth-legend__range {
+  font-family: var(--font-mono);
+  font-weight: 500;
+  font-size: 11px;
+  color: var(--text-primary);
+}
+
+.depth-legend__footer {
+  font-family: var(--font-mono);
+  font-size: 9px;
+  color: var(--text-dim);
+  border-top: 1px solid var(--border-on-navy);
+  padding-top: 3px;
+  margin-top: 1px;
+  letter-spacing: 0.02em;
 }
 
 /* Brutalist scale bar — bottom-left, navy pill background, cream tick line */
@@ -1355,7 +2013,7 @@ html, body, #root {
   font-weight: 700;
   font-size: 10px;
   text-transform: uppercase;
-  letter-spacing: 0.10em;
+  letter-spacing: 0.1em;
   padding: 3px 8px;
   border-radius: 0;
 }

@@ -51,6 +51,7 @@ In split mode, the AIS list renders with `compact={true}` → applies `.ais-pane
 **MapLibre GL** (raw `maplibre-gl`, no React wrapper — react-map-gl v7 conflicts with maplibre-gl v5 peer dep). Vector tiles + custom style for marine palette.
 
 **Tile sources:**
+
 - **Base (land/water/roads)**: OpenFreeMap positron vector tiles + marine palette overrides in `src/chart/marineStyle.ts` (water → slate blue, land → sand, coastline → navy, minor roads/buildings hidden). Free, no API key, resilient to OpenFreeMap tile versioning.
 - **NOAA chart overlay (depth contours, buoys, lights, wrecks)**: self-hosted PMTiles file at `/charts/<region>.pmtiles`. Single-file format, no tile server — MapLibre reads it directly via the `pmtiles` npm package. Built from NOAA ENC data by `scripts/build-charts.sh` — see `docs/charts.md` for the pipeline (requires GDAL + tippecanoe locally, one-time setup). PMTiles file is gitignored; regenerate from NOAA data as needed. Same file deployed to the Pi.
 
@@ -79,7 +80,7 @@ The StatusBar's left section includes a glanceable time + sun + tide cluster (in
 - **Tide** — **STUB** in `src/utils/tides.ts`. Currently a single-constituent M2 (12.42-hour) cycle anchored to an arbitrary reference high tide. Plausible-looking but **not a real forecast**. Replace with NOAA harmonic constants for Penobscot Bay before sailing season — two paths:
   1. NOAA Tides & Currents API (`api.tidesandcurrents.noaa.gov`) — pre-fetch predictions for next N days, cache locally, refresh when online.
   2. Compute from harmonic constants directly (libraries: `tidey`, `harmonic-tide`). Constants for Bar Harbor / Castine / Bangor downloadable from NOAA.
-  
+
   When swapping in real data, only `nextTideEvent()` needs to change — UI consumes the same `TideEvent` interface.
 
 ## AIS threat banding
@@ -87,6 +88,7 @@ The StatusBar's left section includes a glanceable time + sun + tide cluster (in
 `computeThreatBand()` in `src/utils/formatters.ts` returns `'monitor' | 'caution' | 'danger'` for each AIS target. Coarse heuristic, not full CPA/TCPA — enough to surface "things to worry about" without alarm fatigue. Conservative: missing/stale data always returns `monitor` so bad data never drives warnings.
 
 Thresholds:
+
 - **danger** — within 200m (any motion), OR within 0.5 nm and closing in <3 min
 - **caution** — within 1 nm closing in <8 min, OR within 2 nm closing in <15 min, OR within 500m without motion data
 - **monitor** — everything else (no UI treatment, default sort by distance)
@@ -129,15 +131,18 @@ npm run dev
 Palette lives in `:root` of `src/styles/app.css`. Always reference variables, never hardcode hex values.
 
 **Base surfaces**
+
 - `--bg-navy` `#142038` — deep navy. Body bg, StatusBar.
 - `--surface-sand` `#F0EBE0` — sand. AIS rows and any "card" surface sitting on navy.
 
 **Text**
+
 - `--text-primary` `#F0EBE0` — cream, used on navy surfaces.
 - `--text-on-card` `#142038` — navy, used on sand surfaces.
 - `--text-dim` / `--text-on-card-dim` — 60%-ish opacity variants for secondary labels.
 
 **Functional / semantic**
+
 - `--boat-icon` `#FF6B35` — safety orange. Reserved for **our own vessel** (heading glyph, own-ship marker on chart). Don't use for anything else.
 - `--vessel-name` `#0F0298` — electric blue. Used **only** for AIS vessel names.
 - `--alert-amber` `#E8B84D` — amber. Stale/caution indicators, qualifier lines, threat-band caution bar/pill, `GPS stale` fix indicator.
@@ -147,6 +152,7 @@ Palette lives in `:root` of `src/styles/app.css`. Always reference variables, ne
 - `--ok` `#5BD891` / `--danger` `#FFA0A0` — universal green/red signals for system status text on navy (GPS OK / no fix). Brightened to pass AAA on the navy bg. Distinct from the brand palette; don't repurpose.
 
 **Interactive**
+
 - `--focus-ring` `#E8B84D` — amber, 3px outline + 2px offset via `:focus-visible`.
 
 **Pattern: navy app chrome + sand information cards.** Any readable data payload (AIS rows, instrument cards, route entries) goes on sand. Status/chrome/navigation (StatusBar, tabs, chart canvas bezel) stays on navy. Active tabs flip to sand fill to signal "you are reading this content."
@@ -158,6 +164,7 @@ Palette lives in `:root` of `src/styles/app.css`. Always reference variables, ne
 This project targets **WCAG 2.2 Level AAA**. Apply by default — don't ship UI changes that knowingly violate it.
 
 Key constraints AAA imposes that bite hardest in this UI:
+
 - **Contrast 7:1** for normal text, 4.5:1 for large (≥18pt regular / 14pt bold). Verify every new text-on-surface pairing in the navy/sand palette.
 - **Touch targets ≥44×44 CSS px** (AAA, stricter than AA's 24×24). Tabs, buttons, any clickable row.
 - **Focus indicator ≥2px perimeter, 3:1 contrast change**, fully visible (not obscured by sticky StatusBar). Currently `--focus-ring` amber 3px outline + 2px offset via `:focus-visible`.
