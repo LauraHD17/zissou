@@ -57,11 +57,7 @@ export function defineMemoryStore<T>(initial: T): Store<T> {
   };
 }
 
-export function defineStore<T>(
-  localStorageKey: string,
-  version: number,
-  initial: T,
-): Store<T> {
+export function defineStore<T>(localStorageKey: string, version: number, initial: T): Store<T> {
   let current = load<T>(localStorageKey, version, initial);
   const listeners = new Set<() => void>();
 

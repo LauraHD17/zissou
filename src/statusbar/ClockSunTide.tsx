@@ -16,21 +16,27 @@ export function ClockSunTide({ pos }: Props) {
   return (
     <div className="statusbar__almanac">
       <span className="statusbar__time">{formatLocalTime(now)}</span>
-      <span className="statusbar__sep" aria-hidden="true">·</span>
+      <span className="statusbar__sep" aria-hidden="true">
+        ·
+      </span>
       {sun && (
         <>
           <span className="statusbar__sun">
-            <Icon name={sun.kind === 'sunrise' ? 'sunrise' : 'sunset'} size={16} />
+            <Icon name={sun.kind === 'sunrise' ? 'sunrise' : 'sunset'} size={20} />
             <span className="sr-only">{sun.kind === 'sunrise' ? 'Sunrise' : 'Sunset'} at </span>
             {formatLocalTime(sun.time)}
           </span>
-          <span className="statusbar__sep" aria-hidden="true">·</span>
+          <span className="statusbar__sep" aria-hidden="true">
+            ·
+          </span>
         </>
       )}
       <span className="statusbar__tide">
-        <Icon name={tide.direction === 'rising' ? 'tideRising' : 'tideFalling'} size={16} />
+        <Icon name={tide.direction === 'rising' ? 'tideRising' : 'tideFalling'} size={20} />
         <span className="sr-only">
-          {tide.direction === 'rising' ? 'Tide rising, next high at ' : 'Tide falling, next low at '}
+          {tide.direction === 'rising'
+            ? 'Tide rising, next high at '
+            : 'Tide falling, next low at '}
         </span>
         {tide.kind === 'high' ? 'High' : 'Low'} {formatLocalTime(tide.time)}
       </span>

@@ -18,17 +18,13 @@ export const ICON_PATHS = {
 
   // ── StatusBar almanac (replaces ☀↗ ☀↘ 〰↗ 〰↘) ─────────────────────
   // Sun half above horizon + up arrow.
-  sunrise:
-    'M 2 18 h 20 M 7 18 a 5 5 0 0 1 10 0 M 12 8 v -5 M 9.5 5.5 L 12 3 L 14.5 5.5',
+  sunrise: 'M 2 18 h 20 M 7 18 a 5 5 0 0 1 10 0 M 12 8 v -5 M 9.5 5.5 L 12 3 L 14.5 5.5',
   // Sun half above horizon + down arrow.
-  sunset:
-    'M 2 18 h 20 M 7 18 a 5 5 0 0 1 10 0 M 12 3 v 5 M 9.5 5.5 L 12 8 L 14.5 5.5',
+  sunset: 'M 2 18 h 20 M 7 18 a 5 5 0 0 1 10 0 M 12 3 v 5 M 9.5 5.5 L 12 8 L 14.5 5.5',
   // Wave + up arrow.
-  tideRising:
-    'M 2 16 q 3 -3 6 0 t 6 0 t 6 0 M 19 11 v -7 M 16.5 6.5 L 19 4 L 21.5 6.5',
+  tideRising: 'M 2 16 q 3 -3 6 0 t 6 0 t 6 0 M 19 11 v -7 M 16.5 6.5 L 19 4 L 21.5 6.5',
   // Wave + down arrow.
-  tideFalling:
-    'M 2 16 q 3 -3 6 0 t 6 0 t 6 0 M 19 4 v 7 M 16.5 8.5 L 19 11 L 21.5 8.5',
+  tideFalling: 'M 2 16 q 3 -3 6 0 t 6 0 t 6 0 M 19 4 v 7 M 16.5 8.5 L 19 11 L 21.5 8.5',
 
   // ── Theme toggle (day / night) ─────────────────────────────────────
   // Sun: filled-look circle with 8 short rays (rendered as stroke).
@@ -44,11 +40,9 @@ export const ICON_PATHS = {
 
   // ── Waypoint markers + entry button ────────────────────────────────
   // Pin: inverted teardrop with a small inner circle (drop-pin / Go-To dest).
-  pin:
-    'M 12 2 c 4 0 7 3 7 7 c 0 5 -7 13 -7 13 c 0 0 -7 -8 -7 -13 c 0 -4 3 -7 7 -7 M 12 9 m -2 0 a 2 2 0 1 0 4 0 a 2 2 0 1 0 -4 0',
+  pin: 'M 12 2 c 4 0 7 3 7 7 c 0 5 -7 13 -7 13 c 0 0 -7 -8 -7 -13 c 0 -4 3 -7 7 -7 M 12 9 m -2 0 a 2 2 0 1 0 4 0 a 2 2 0 1 0 -4 0',
   // Three-dot kebab — "more" entry to waypoints panel.
-  more:
-    'M 12 5 m -1 0 a 1 1 0 1 0 2 0 a 1 1 0 1 0 -2 0 M 12 12 m -1 0 a 1 1 0 1 0 2 0 a 1 1 0 1 0 -2 0 M 12 19 m -1 0 a 1 1 0 1 0 2 0 a 1 1 0 1 0 -2 0',
+  more: 'M 12 5 m -1 0 a 1 1 0 1 0 2 0 a 1 1 0 1 0 -2 0 M 12 12 m -1 0 a 1 1 0 1 0 2 0 a 1 1 0 1 0 -2 0 M 12 19 m -1 0 a 1 1 0 1 0 2 0 a 1 1 0 1 0 -2 0',
 
   // ── Waypoint category icons (sage when rendered on chart) ──────────
   // Mooring buoy — small ball + vertical stem with eye on top.
@@ -58,14 +52,21 @@ export const ICON_PATHS = {
   warning:
     'M 12 3 L 22 20 L 2 20 Z M 12 9 v 5 M 12 17 m -0.5 0 a 0.5 0.5 0 1 0 1 0 a 0.5 0.5 0 1 0 -1 0',
   // Star — 5-point outline.
-  star:
-    'M 12 2 L 14.5 9 L 22 9 L 16 14 L 18 22 L 12 17.5 L 6 22 L 8 14 L 2 9 L 9.5 9 Z',
+  star: 'M 12 2 L 14.5 9 L 22 9 L 16 14 L 18 22 L 12 17.5 L 6 22 L 8 14 L 2 9 L 9.5 9 Z',
 
   // ── MOB (man overboard) ────────────────────────────────────────────
   // Head silhouette over two wavy water lines — reads as "person in water"
   // at glyph scale. Distinctive vs warning triangle and waypoint icons.
-  mob:
-    'M 12 5 m -3 0 a 3 3 0 1 0 6 0 a 3 3 0 1 0 -6 0 M 2 14 q 5 -3 10 0 t 10 0 M 2 18 q 5 -3 10 0 t 10 0',
+  mob: 'M 12 5 m -3 0 a 3 3 0 1 0 6 0 a 3 3 0 1 0 -6 0 M 2 14 q 5 -3 10 0 t 10 0 M 2 18 q 5 -3 10 0 t 10 0',
+
+  // ── Settings (opens user-prefs slide-panel) ────────────────────────
+  // Minimal gear: octagonal outline + center circle. Stroke-only so it
+  // reads at the 20px StatusBar scale without visual weight.
+  gear: 'M 10 3 h 4 l 0.5 2.2 l 2 1 l 2 -0.7 l 2 3.5 l -1.5 1.5 v 2 l 1.5 1.5 l -2 3.5 l -2 -0.7 l -2 1 l -0.5 2.2 h -4 l -0.5 -2.2 l -2 -1 l -2 0.7 l -2 -3.5 l 1.5 -1.5 v -2 l -1.5 -1.5 l 2 -3.5 l 2 0.7 l 2 -1 z M 12 12 m -2.5 0 a 2.5 2.5 0 1 0 5 0 a 2.5 2.5 0 1 0 -5 0',
+
+  // ── Fuel range circle toggle ───────────────────────────────────────
+  // Simple fuel pump silhouette: rounded tank + nozzle + base.
+  fuel: 'M 4 21 h 10 M 5 21 v -16 a 1 1 0 0 1 1 -1 h 7 a 1 1 0 0 1 1 1 v 16 M 5 12 h 9 M 14 8 l 3 0 a 1 1 0 0 1 1 1 v 9 a 1 1 0 0 0 1 1 a 1 1 0 0 0 1 -1 v -11 l -3 -3',
 } as const;
 
 export type IconName = keyof typeof ICON_PATHS;

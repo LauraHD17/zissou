@@ -1,0 +1,344 @@
+// Gear button in the StatusBar → opens a SlidePanel with user-editable
+// preferences. Scaffolded with Boat Name; grows to include alarm volume,
+// units, etc. as features land.
+
+import { useEffect, useRef, useState } from 'react';
+import { Icon } from '../icons';
+import { SlidePanel } from '../ui/SlidePanel';
+import {
+  setBoatName,
+  setHomeMooring,
+  setPropulsion,
+  setSafetyMargin,
+  setVesselDims,
+  setWeatherLimits,
+  useUserPrefs,
+} from '../prefs/userPrefsStore';
+import { useSelf } from '../signalk/useSignalK';
+import { isPlausiblePosition } from '../utils/geometry';
+import { computeDetectedCruisingKn, useCruisingSpeedSamples } from '../prefs/cruisingSpeedStore';
+
+export function SettingsButton() {
+  const [open, setOpen] = useState(false);
+
+  return (
+    <>
+      <button
+        type="button"
+        className="statusbar__settings-toggle"
+        onClick={() => setOpen(true)}
+        aria-label="Open settings"
+      >
+        <Icon name="gear" size={20} />
+      </button>
+
+      {open && (
+        <SlidePanel open onClose={() => setOpen(false)} labelledBy="settings-title">
+          <SettingsForm onDone={() => setOpen(false)} />
+        </SlidePanel>
+      )}
+    </>
+  );
+}
+
+function SettingsForm({ onDone }: { onDone: () => void }) {
+  const prefs = useUserPrefs();
+  const self = useSelf();
+  const samples = useCruisingSpeedSamples();
+  const detectedKn = computeDetectedCruisingKn(samples);
+  const cruiseSublabel =
+    detectedKn == null
+      ? '(Learning)'
+      : samples.length < 120
+        ? `(Est ${detectedKn.toFixed(1)} kn · ${samples.length} samples)`
+        : `(Avg ${detectedKn.toFixed(1)} kn · ${samples.length} samples)`;
+  const [name, setName] = useState(prefs.boatName);
+  const [loa, setLoa] = useState(numInit(prefs.vessel.loaFt));
+  const [beam, setBeam] = useState(numInit(prefs.vessel.beamFt));
+  const [draft, setDraft] = useState(numInit(prefs.vessel.draftFt));
+  const [safety, setSafety] = useState(numInit(prefs.safetyMarginFt));
+  const [cruise, setCruise] = useState(numInit(prefs.propulsion.cruisingSpeedKn));
+  const [homeLat, setHomeLat] = useState(numInit(prefs.homeMooring?.latitude));
+  const [homeLon, setHomeLon] = useState(numInit(prefs.homeMooring?.longitude));
+  const [homeLabel, setHomeLabel] = useState(prefs.homeMooring?.label ?? '');
+  const [maxWind, setMaxWind] = useState(numInit(prefs.weatherLimits.maxWindKn));
+  const [maxWave, setMaxWave] = useState(numInit(prefs.weatherLimits.maxWaveFt));
+  const nameRef = useRef<HTMLInputElement>(null);
+
+  const useCurrentAsHome = () => {
+    if (!self?.position || !isPlausiblePosition(self.position)) return;
+    setHomeLat(self.position.latitude.toFixed(5));
+    setHomeLon(self.position.longitude.toFixed(5));
+  };
+
+  useEffect(() => {
+    nameRef.current?.focus();
+    nameRef.current?.select();
+  }, []);
+
+  const submit = (e: React.FormEvent) => {
+    e.preventDefault();
+    setBoatName(name);
+    setVesselDims({
+      loaFt: parseOptional(loa),
+      beamFt: parseOptional(beam),
+      draftFt: parseOptional(draft),
+    });
+    const safetyN = parseOptional(safety);
+    if (safetyN != null) setSafetyMargin(safetyN);
+    setPropulsion({
+      cruisingSpeedKn: parseOptional(cruise),
+    });
+    const homeLatN = parseLatLon(homeLat, 90);
+    const homeLonN = parseLatLon(homeLon, 180);
+    if (homeLatN != null && homeLonN != null) {
+      setHomeMooring({
+        latitude: homeLatN,
+        longitude: homeLonN,
+        label: homeLabel.trim() || undefined,
+      });
+    } else if (!homeLat.trim() && !homeLon.trim()) {
+      setHomeMooring(undefined);
+    }
+    setWeatherLimits({
+      maxWindKn: parseOptional(maxWind),
+      maxWaveFt: parseOptional(maxWave),
+    });
+    onDone();
+  };
+
+  return (
+    <form onSubmit={submit} className="settings-form">
+      <h2 id="settings-title" className="settings-form__title">
+        Settings
+      </h2>
+
+      <section className="settings-form__section">
+        <h3 className="settings-form__section-title">Identity</h3>
+        <label className="settings-form__field">
+          <span>Boat name</span>
+          <input
+            ref={nameRef}
+            type="text"
+            value={name}
+            maxLength={40}
+            onChange={(e) => setName(e.target.value)}
+            placeholder="e.g. Sisu"
+          />
+        </label>
+        <p className="settings-form__hint">
+          Shown on the StatusBar. Leave blank to use the name from SignalK.
+        </p>
+      </section>
+
+      <section className="settings-form__section">
+        <h3 className="settings-form__section-title">Vessel</h3>
+        <div className="settings-form__row">
+          <DimField
+            label="LOA"
+            sublabel="(length)"
+            unit="ft"
+            value={loa}
+            onChange={setLoa}
+            placeholder="22"
+          />
+          <DimField
+            label="Beam"
+            sublabel="(width)"
+            unit="ft"
+            value={beam}
+            onChange={setBeam}
+            placeholder="7"
+          />
+          <DimField
+            label="Draft"
+            sublabel="(depth)"
+            unit="ft"
+            value={draft}
+            onChange={setDraft}
+            placeholder="2.5"
+          />
+        </div>
+        <p className="settings-form__hint">
+          Feeds shallow-water warnings and anchor scope. For a centerboard boat (a keel that lifts
+          up), enter draft with the board down.
+        </p>
+      </section>
+
+      <section className="settings-form__section">
+        <h3 className="settings-form__section-title">Safety</h3>
+        <div className="settings-form__row">
+          <DimField
+            label="Safety margin"
+            sublabel="(below keel)"
+            unit="ft"
+            value={safety}
+            onChange={setSafety}
+            placeholder="2"
+          />
+        </div>
+        <p className="settings-form__hint">
+          Added to draft when computing safe-water alerts. Two feet is a sensible default for
+          coastal cruising.
+        </p>
+      </section>
+
+      <section className="settings-form__section">
+        <h3 className="settings-form__section-title">Cruise speed</h3>
+        <div className="settings-form__row">
+          <DimField
+            label="Override"
+            sublabel={cruiseSublabel}
+            unit="kn"
+            value={cruise}
+            onChange={setCruise}
+            placeholder={detectedKn != null ? detectedKn.toFixed(1) : '6'}
+          />
+        </div>
+        <p className="settings-form__hint">
+          Auto-detected from GPS when you're underway. Leave Override blank to use the detected
+          value; fill it in to force a specific speed for ETA and Safe Return calcs.
+        </p>
+      </section>
+
+      <section className="settings-form__section">
+        <h3 className="settings-form__section-title">Home mooring</h3>
+        <div className="settings-form__field">
+          <span>Label (optional)</span>
+          <input
+            type="text"
+            maxLength={30}
+            value={homeLabel}
+            onChange={(e) => setHomeLabel(e.target.value)}
+            placeholder="Camden Harbor"
+          />
+        </div>
+        <div className="settings-form__row">
+          <DimField
+            label="Lat"
+            sublabel="(−90…90)"
+            unit="°"
+            value={homeLat}
+            onChange={setHomeLat}
+            placeholder="44.2100"
+          />
+          <DimField
+            label="Lon"
+            sublabel="(−180…180)"
+            unit="°"
+            value={homeLon}
+            onChange={setHomeLon}
+            placeholder="-69.0600"
+          />
+        </div>
+        <button type="button" className="settings-form__secondary" onClick={useCurrentAsHome}>
+          Use current position
+        </button>
+        <p className="settings-form__hint">
+          Feeds the Safe Return pill — daylight left, time to get home, and the latest departure
+          time. Clear both fields to remove.
+        </p>
+      </section>
+
+      <section className="settings-form__section">
+        <h3 className="settings-form__section-title">Weather limits</h3>
+        <div className="settings-form__row">
+          <DimField
+            label="Max wind"
+            sublabel="(sustained)"
+            unit="kn"
+            value={maxWind}
+            onChange={setMaxWind}
+            placeholder="15"
+          />
+          <DimField
+            label="Max wave"
+            sublabel="(sig)"
+            unit="ft"
+            value={maxWave}
+            onChange={setMaxWave}
+            placeholder="2"
+            disabled
+          />
+        </div>
+        <p className="settings-form__hint settings-form__hint--muted">
+          Wind data updates hourly. Wave data is unavailable from this forecast source — "Can I go?"
+          currently assesses wind only.
+        </p>
+        <p className="settings-form__hint">
+          Used for "Can I go?" forecast checks. Set to what you and your boat are comfortable with.
+        </p>
+      </section>
+
+      <div className="settings-form__buttons">
+        <button type="button" className="action-sheet__btn" onClick={onDone}>
+          Cancel
+        </button>
+        <button type="submit" className="action-sheet__btn action-sheet__btn--primary">
+          Save
+        </button>
+      </div>
+    </form>
+  );
+}
+
+function DimField({
+  label,
+  sublabel,
+  unit,
+  value,
+  onChange,
+  placeholder,
+  disabled = false,
+}: {
+  label: string;
+  sublabel: string;
+  unit: string;
+  value: string;
+  onChange: (v: string) => void;
+  placeholder: string;
+  disabled?: boolean;
+}) {
+  return (
+    <label
+      className={`settings-form__field settings-form__field--dim${disabled ? ' settings-form__field--disabled' : ''}`}
+    >
+      <span className="settings-form__field-label">
+        {label} <span className="settings-form__field-sublabel">{sublabel}</span>
+      </span>
+      <span className="settings-form__input-wrap">
+        <input
+          type="text"
+          inputMode="decimal"
+          value={value}
+          onChange={(e) => onChange(e.target.value)}
+          placeholder={placeholder}
+          disabled={disabled}
+        />
+        <span className="settings-form__unit" aria-hidden="true">
+          {unit}
+        </span>
+      </span>
+    </label>
+  );
+}
+
+function numInit(n: number | undefined): string {
+  return n == null ? '' : String(n);
+}
+
+function parseOptional(s: string): number | undefined {
+  const trimmed = s.trim();
+  if (!trimmed) return undefined;
+  const n = parseFloat(trimmed);
+  return Number.isFinite(n) && n > 0 ? n : undefined;
+}
+
+function parseLatLon(s: string, max: number): number | null {
+  const trimmed = s.trim();
+  if (!trimmed) return null;
+  const n = parseFloat(trimmed);
+  if (!Number.isFinite(n)) return null;
+  if (n < -max || n > max) return null;
+  return n;
+}

@@ -44,6 +44,10 @@ export type AnchorRadiusFt = 50 | 75 | 100;
 export interface AnchorWatch {
   drop: Position;
   radiusFt: AnchorRadiusFt;
+  /** Optional charted depth at the drop point (ft, at MLW). When set, enables
+   *  the "anchorage drying" warning — computed against tide height forecast
+   *  vs vessel draft + safety margin. */
+  chartedDepthFt?: number;
   setAt: number;
   alarmAcknowledged: boolean;
   audioEnabled: boolean;
@@ -61,8 +65,54 @@ export interface ThemePrefs {
 
 export type AlarmTone = 'siren' | 'chirp' | 'silent';
 
+/** Hull dimensions, in feet. All optional — a partial spec still informs the
+ *  calcs that use whatever fields are set. For a centerboard boat, draft is
+ *  the board-down maximum (the shallow-water floor). */
+export interface VesselDims {
+  loaFt?: number;
+  beamFt?: number;
+  draftFt?: number;
+}
+
+/** Cruise prefs feed Safe Return ETAs and tide-aware passage windows.
+ *  Cruising speed is auto-detected from GPS samples (see
+ *  src/prefs/cruisingSpeedStore.ts); the optional override here takes
+ *  precedence when the operator wants a specific value. */
+export interface PropulsionPrefs {
+  /** Manual override of the auto-detected cruising speed. Leave undefined to
+   *  use the detected median. */
+  cruisingSpeedKn?: number;
+}
+
+/** Home port / mooring for Safe Return calcs. Set once from Settings; used
+ *  by the daylight-to-home countdown. */
+export interface HomeMooring {
+  latitude: number;
+  longitude: number;
+  /** Optional label — shown in the Safe Return pill ("2.3 hr to Camden"). */
+  label?: string;
+}
+
+/** Soft limits for weather "can I go" assessments. */
+export interface WeatherLimits {
+  maxWindKn?: number;
+  maxWaveFt?: number;
+}
+
 export interface UserPrefs {
-  theme: ThemePrefs;
+  /** Operator-set display name for the vessel. Shown as the StatusBar
+   *  nameplate; overrides the SignalK-reported self.name when set. */
+  boatName: string;
+  /** Hull dimensions — feeds shallow-water alarms and anchor scope calcs. */
+  vessel: VesselDims;
+  /** Safety cushion added to draft for tide-aware alerts, in feet. */
+  safetyMarginFt: number;
+  /** Fuel + cruise settings for the range circle + ETA refinement. */
+  propulsion: PropulsionPrefs;
+  /** Home port / mooring for Safe Return and "time to home" calcs. */
+  homeMooring?: HomeMooring;
+  /** Limits for "can I go" weather checks. */
+  weatherLimits: WeatherLimits;
   alarmVolumePct: number; // 0–100
   alarmTone: AlarmTone;
 }
