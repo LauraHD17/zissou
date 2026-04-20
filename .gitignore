@@ -10,6 +10,9 @@ dist
 playwright-report/
 test-results/
 
+# TS incremental build cache — churns on every build.
+tsconfig.tsbuildinfo
+
 # NOAA chart PMTiles — regenerated via scripts/build-charts.sh
 # Too large for git; rebuild from NOAA data when needed.
 public/charts/*.pmtiles
