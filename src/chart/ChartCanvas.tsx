@@ -14,6 +14,9 @@ import { ensureGoToRouteLayer, useGoToRoute } from './markers/GoToRoute';
 import { useWaypointMarkers } from './markers/WaypointMarkers';
 import { WaypointActionSheet } from '../waypoints/WaypointActionSheet';
 import type { SavedWaypoint } from '../types/nav';
+import { ensureAnchorCircleLayers, useAnchorCircle } from './markers/AnchorCircle';
+import { AnchorButton } from '../anchor/AnchorButton';
+import { useAnchorDragWatch } from '../anchor/useAnchorDragWatch';
 import { MapControls } from './controls/MapControls';
 import { ScaleBar } from './controls/ScaleBar';
 import { DropPinButton } from './controls/DropPinButton';
@@ -65,6 +68,7 @@ export function ChartCanvas() {
       if (modeRef.current === 'marine') applyMarineStyle(map);
       ensureHeadingVectorLayer(map);
       ensureGoToRouteLayer(map);
+      ensureAnchorCircleLayers(map);
     });
 
     mapRef.current = map;
@@ -89,6 +93,8 @@ export function ChartCanvas() {
   useDestinationMarker(mapRef);
   useGoToRoute(mapRef);
   useWaypointMarkers(mapRef, { onTap: setTappedWaypoint });
+  useAnchorCircle(mapRef);
+  useAnchorDragWatch();
   useDropPinMode(mapRef, {
     armed: dropPinArmed,
     onDrop: () => setDropPinArmed(false),
@@ -125,6 +131,7 @@ export function ChartCanvas() {
             onToggle={() => setDropPinArmed((a) => !a)}
           />
         }
+        anchorSlot={<AnchorButton />}
       />
       <DestinationWidget />
       <ScaleBar mapRef={mapRef} />

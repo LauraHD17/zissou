@@ -7,9 +7,10 @@ interface Props {
   onZoomOut: () => void;
   onRecenter: () => void;
   onModeToggle: () => void;
-  /** Slot for feature-owned controls (drop-pin, anchor) — keeps MapControls
-      ignorant of feature state while preserving the visual stack. */
+  /** Slots for feature-owned controls — keeps MapControls ignorant of
+      feature state while preserving the visual stack. */
   dropPinSlot?: React.ReactNode;
+  anchorSlot?: React.ReactNode;
 }
 
 export function MapControls({
@@ -19,6 +20,7 @@ export function MapControls({
   onRecenter,
   onModeToggle,
   dropPinSlot,
+  anchorSlot,
 }: Props) {
   return (
     <div className="map-control-stack" role="group" aria-label="Map controls">
@@ -35,6 +37,7 @@ export function MapControls({
         <Icon name={mode === 'marine' ? 'wave' : 'streets'} size={24} />
       </ControlButton>
       {dropPinSlot}
+      {anchorSlot}
     </div>
   );
 }

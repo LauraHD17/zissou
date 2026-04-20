@@ -654,6 +654,114 @@ html, body, #root {
   border-color: var(--alert-red);
 }
 
+/* ── Anchor watch panel ────────────────────────────────────────────── */
+
+.anchor-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.anchor-panel__title {
+  font-family: var(--font-sans);
+  font-weight: 700;
+  font-size: 18px;
+  margin: 0;
+  color: var(--text-on-card);
+}
+
+.anchor-panel__subtitle {
+  font-family: var(--font-sans);
+  font-size: 14px;
+  color: var(--text-on-card-dim);
+  margin: 0 0 8px;
+}
+
+.anchor-panel__radii {
+  border: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.anchor-panel__radii legend {
+  font-family: var(--font-sans);
+  font-weight: 600;
+  font-size: 13px;
+  color: var(--text-on-card);
+  margin-bottom: 6px;
+}
+
+.anchor-panel__radii-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 6px;
+}
+
+.anchor-panel__radius {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 14px;
+  border: 1px solid var(--border-on-card);
+  font-family: var(--font-sans);
+  font-weight: 700;
+  font-size: 16px;
+  color: var(--text-on-card);
+  cursor: pointer;
+  min-height: 56px;
+}
+
+.anchor-panel__radius--active {
+  background: rgba(20, 32, 56, 0.08);
+  border-color: var(--bg-navy);
+}
+
+.anchor-panel__radius input {
+  width: 16px;
+  height: 16px;
+  accent-color: var(--bg-navy);
+}
+
+.anchor-panel__audio {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  font-family: var(--font-sans);
+  font-weight: 500;
+  font-size: 14px;
+  color: var(--text-on-card);
+  cursor: pointer;
+}
+
+.anchor-panel__audio input {
+  width: 18px;
+  height: 18px;
+  accent-color: var(--bg-navy);
+}
+
+.anchor-panel__drop {
+  background: var(--bg-navy);
+  color: var(--text-primary);
+  border: 1px solid var(--bg-navy);
+  border-radius: 0;
+  padding: 14px;
+  font-family: var(--font-sans);
+  font-weight: 700;
+  font-size: 15px;
+  cursor: pointer;
+  min-height: 56px;
+  margin-top: 8px;
+}
+
+.anchor-panel__drop:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
 /* ── SaveWaypoint dialog ───────────────────────────────────────────── */
 
 .save-wp {
