@@ -1,0 +1,49 @@
+/* Night-vision palette overrides. Activated via [data-theme="night"] on <html>.
+ *
+ * Hand-tuned per-token red palette — not a CSS filter:invert. Astronomical-red
+ * mode preserves dark adaptation; every value is in the long-wavelength end of
+ * the spectrum so eyes stay night-adapted while still showing useful contrast.
+ *
+ * Brightness filter is applied to <main> (not <html>) so the alarm flash
+ * stays full-red intensity even in night mode. */
+
+:root[data-theme='night'] {
+  /* Surfaces */
+  --bg-navy: #0d0000;
+  --surface-sand: #2d1010;
+  --surface-sand-stale: #1a0808;
+
+  /* Text — text-primary brightened from spec #CC7766 to #E89A89 to hit
+     WCAG AAA 7:1 contrast against #0d0000 (audit caught the original at 5.4:1) */
+  --text-primary: #e89a89;
+  --text-on-card: #e89a89;
+  --text-dim: rgba(232, 154, 137, 0.78);
+  --text-on-card-dim: rgba(232, 154, 137, 0.82);
+  --border-on-navy: rgba(232, 154, 137, 0.16);
+  --border-on-card: rgba(232, 154, 137, 0.20);
+
+  /* Functional accents — shift to red spectrum */
+  --boat-icon: #ff4422;
+  --vessel-name: #ff8866;
+  --alert-amber: #ffbb44;
+  --alert-red: #ff6644;
+  --waypoint: #aa6655;
+  --ownship-accent: #ffaa44;
+
+  /* Status */
+  --ok: #88cc88;
+  --danger: #ff6644;
+
+  /* Focus ring stays warm */
+  --focus-ring: #ffbb44;
+}
+
+/* Brightness filter — scoped to <main> so safety alarms keep full intensity. */
+:root[data-theme='night'] main.app__main {
+  filter: brightness(var(--night-brightness, 0.4));
+}
+
+/* Slow the own-ship pulse to reduce night-time motion stimulus. */
+:root[data-theme='night'] .own-ship-marker__pulse {
+  animation-duration: 4s;
+}

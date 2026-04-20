@@ -83,6 +83,109 @@ html, body, #root {
   }
 }
 
+/* ── SlidePanel (used by AIS detail, waypoint editor, anchor config, MOB confirm) ── */
+
+.slide-panel-root {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+}
+
+.slide-panel-overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(20, 32, 56, 0.4);
+  opacity: 0;
+  animation: slide-panel-overlay-in 200ms ease-out forwards;
+}
+
+.slide-panel {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 33vh;
+  background: var(--surface-sand);
+  color: var(--text-on-card);
+  border-top: 1px solid var(--bg-navy);
+  border-radius: 0;
+  padding: 16px;
+  overflow-y: auto;
+  transform: translateY(100%);
+  animation: slide-panel-in 250ms cubic-bezier(0.4, 0, 0.2, 1) forwards;
+}
+
+@keyframes slide-panel-overlay-in {
+  to { opacity: 1; }
+}
+
+@keyframes slide-panel-in {
+  to { transform: translateY(0); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .slide-panel-overlay,
+  .slide-panel {
+    animation: none;
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* ── AlarmBanner (anchor drag, MOB) ────────────────────────────────── */
+
+.alarm-flash {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 99;
+  border: 12px solid var(--alert-red);
+  animation: alarm-flash 1s steps(2, jump-end) infinite;
+}
+
+/* WCAG 2.3.1 — 1 Hz is well under the 3 Hz cap. Do NOT increase frequency. */
+@keyframes alarm-flash {
+  0%, 50% { opacity: 1; }
+  50.01%, 100% { opacity: 0; }
+}
+
+.alarm-banner {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 101;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 10px 16px;
+  background: var(--bg-navy);
+  color: var(--text-primary);
+  border-bottom: 2px solid var(--alert-red);
+  font-family: var(--font-sans);
+  font-weight: 600;
+  font-size: 14px;
+}
+
+.alarm-banner__message {
+  flex: 1;
+}
+
+.alarm-banner__ack {
+  background: var(--alert-red);
+  color: var(--surface-sand);
+  border: 1px solid var(--alert-red);
+  border-radius: 0;
+  padding: 8px 16px;
+  font-family: var(--font-sans);
+  font-weight: 700;
+  font-size: 13px;
+  letter-spacing: 0.05em;
+  cursor: pointer;
+  min-height: 44px;
+}
+
 /* Visually hidden but exposed to assistive tech. */
 .sr-only {
   position: absolute;
