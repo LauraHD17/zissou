@@ -407,6 +407,96 @@ html, body, #root {
   border-color: rgba(240, 235, 224, 0.28);
 }
 
+/* ── MOB button (always visible in StatusBar) ──────────────────────── */
+
+.mob-button {
+  background: var(--alert-red);
+  color: var(--surface-sand);
+  border: 1px solid var(--bg-navy);
+  border-radius: 0;
+  padding: 0 16px;
+  font-family: var(--font-sans);
+  font-weight: 700;
+  font-size: 16px;
+  letter-spacing: 0.05em;
+  cursor: pointer;
+  min-width: 64px;
+  min-height: 56px;
+  white-space: nowrap;
+}
+
+.mob-button--active {
+  background: var(--bg-navy);
+  color: var(--alert-red);
+  border-color: var(--alert-red);
+  font-size: 13px;
+  letter-spacing: 0.08em;
+}
+
+/* ── MOB confirm panel ─────────────────────────────────────────────── */
+
+.mob-confirm__title {
+  font-family: var(--font-sans);
+  font-weight: 700;
+  font-size: 18px;
+  margin: 0 0 8px;
+  color: var(--text-on-card);
+}
+
+.mob-confirm__body {
+  font-family: var(--font-sans);
+  font-size: 14px;
+  color: var(--text-on-card);
+  margin: 0 0 16px;
+}
+
+.mob-confirm__buttons {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.action-sheet__btn--mob {
+  background: var(--alert-red);
+  color: var(--surface-sand);
+  border-color: var(--alert-red);
+  font-weight: 700;
+  letter-spacing: 0.04em;
+}
+
+.action-sheet__btn--mob:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* ── MOB chart marker (32 px red, labeled) ─────────────────────────── */
+
+.mob-marker {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  color: var(--alert-red);
+  pointer-events: none;
+}
+
+.mob-marker svg {
+  display: block;
+  fill: var(--alert-red);
+  stroke: var(--bg-navy);
+  stroke-width: 1;
+}
+
+.mob-marker__label {
+  font-family: var(--font-sans);
+  font-weight: 700;
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  color: var(--surface-sand);
+  background: var(--alert-red);
+  padding: 2px 6px;
+  margin-top: 2px;
+}
+
 /* ── SlidePanel inner content patterns ──────────────────────────────── */
 
 .theme-panel__title {

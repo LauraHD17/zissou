@@ -17,6 +17,7 @@ import type { SavedWaypoint } from '../types/nav';
 import { ensureAnchorCircleLayers, useAnchorCircle } from './markers/AnchorCircle';
 import { AnchorButton } from '../anchor/AnchorButton';
 import { useAnchorDragWatch } from '../anchor/useAnchorDragWatch';
+import { useMOBMarker } from './markers/MOBMarker';
 import { MapControls } from './controls/MapControls';
 import { ScaleBar } from './controls/ScaleBar';
 import { DropPinButton } from './controls/DropPinButton';
@@ -95,6 +96,7 @@ export function ChartCanvas() {
   useWaypointMarkers(mapRef, { onTap: setTappedWaypoint });
   useAnchorCircle(mapRef);
   useAnchorDragWatch();
+  useMOBMarker(mapRef);
   useDropPinMode(mapRef, {
     armed: dropPinArmed,
     onDrop: () => setDropPinArmed(false),

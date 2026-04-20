@@ -60,6 +60,12 @@ export const ICON_PATHS = {
   // Star — 5-point outline.
   star:
     'M 12 2 L 14.5 9 L 22 9 L 16 14 L 18 22 L 12 17.5 L 6 22 L 8 14 L 2 9 L 9.5 9 Z',
+
+  // ── MOB (man overboard) ────────────────────────────────────────────
+  // Head silhouette over two wavy water lines — reads as "person in water"
+  // at glyph scale. Distinctive vs warning triangle and waypoint icons.
+  mob:
+    'M 12 5 m -3 0 a 3 3 0 1 0 6 0 a 3 3 0 1 0 -6 0 M 2 14 q 5 -3 10 0 t 10 0 M 2 18 q 5 -3 10 0 t 10 0',
 } as const;
 
 export type IconName = keyof typeof ICON_PATHS;

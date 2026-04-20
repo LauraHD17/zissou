@@ -4,6 +4,7 @@ import { formatCompassBearing } from '../utils/bearings';
 import { useNowMs } from '../utils/clock';
 import { formatLat, formatLon, formatSpeedKnMph } from '../utils/units';
 import { ClockSunTide } from './ClockSunTide';
+import { MOBButton } from './MOBButton';
 import { ThemeToggle } from './ThemeToggle';
 
 /** GPS fix considered stale if no update in this many ms. Distinct from
@@ -60,6 +61,7 @@ export function StatusBar({ activeView, onViewChange }: Props) {
       </nav>
 
       <ThemeToggle />
+      <MOBButton onViewChange={onViewChange} />
     </header>
   );
 }
