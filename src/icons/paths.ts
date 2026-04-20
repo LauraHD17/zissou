@@ -49,6 +49,17 @@ export const ICON_PATHS = {
   // Three-dot kebab — "more" entry to waypoints panel.
   more:
     'M 12 5 m -1 0 a 1 1 0 1 0 2 0 a 1 1 0 1 0 -2 0 M 12 12 m -1 0 a 1 1 0 1 0 2 0 a 1 1 0 1 0 -2 0 M 12 19 m -1 0 a 1 1 0 1 0 2 0 a 1 1 0 1 0 -2 0',
+
+  // ── Waypoint category icons (sage when rendered on chart) ──────────
+  // Mooring buoy — small ball + vertical stem with eye on top.
+  mooringBuoy:
+    'M 12 16 m -4 0 a 4 4 0 1 0 8 0 a 4 4 0 1 0 -8 0 M 12 12 v -5 M 12 6 m -1 0 a 1 1 0 1 0 2 0 a 1 1 0 1 0 -2 0',
+  // Warning — `!` inside an upward triangle. International caution glyph.
+  warning:
+    'M 12 3 L 22 20 L 2 20 Z M 12 9 v 5 M 12 17 m -0.5 0 a 0.5 0.5 0 1 0 1 0 a 0.5 0.5 0 1 0 -1 0',
+  // Star — 5-point outline.
+  star:
+    'M 12 2 L 14.5 9 L 22 9 L 16 14 L 18 22 L 12 17.5 L 6 22 L 8 14 L 2 9 L 9.5 9 Z',
 } as const;
 
 export type IconName = keyof typeof ICON_PATHS;

@@ -14,11 +14,13 @@ import {
   clearDestination,
   useActiveDestination,
 } from '../../waypoints/destinationStore';
+import { SaveWaypointDialog } from '../../waypoints/SaveWaypointDialog';
 
 export function DestinationWidget() {
   const dest = useActiveDestination();
   const self = useSelf();
   const [actionsOpen, setActionsOpen] = useState(false);
+  const [saveOpen, setSaveOpen] = useState(false);
 
   if (!dest) return null;
 
@@ -63,15 +65,31 @@ export function DestinationWidget() {
               type="button"
               className="action-sheet__btn"
               onClick={() => {
+                setActionsOpen(false);
+                setSaveOpen(true);
+              }}
+            >
+              Save this spot to waypoints
+            </button>
+            <button
+              type="button"
+              className="action-sheet__btn"
+              onClick={() => {
                 clearDestination();
                 setActionsOpen(false);
               }}
             >
               Clear destination
             </button>
-            {/* Save to waypoints lands in Phase 2b */}
           </div>
         </SlidePanel>
+      )}
+
+      {saveOpen && dest && (
+        <SaveWaypointDialog
+          position={dest.position}
+          onClose={() => setSaveOpen(false)}
+        />
       )}
     </>
   );

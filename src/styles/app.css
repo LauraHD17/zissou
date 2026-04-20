@@ -548,6 +548,21 @@ html, body, #root {
   border-color: var(--surface-sand);
 }
 
+/* ── Saved waypoint markers (sage; icon by category) ───────────────── */
+
+.waypoint-marker {
+  color: var(--waypoint);
+  cursor: pointer;
+  transition: opacity 200ms ease-out;
+}
+
+.waypoint-marker svg {
+  display: block;
+  fill: var(--waypoint);
+  stroke: var(--bg-navy);
+  stroke-width: 1;
+}
+
 /* ── Destination marker + Go-To route ──────────────────────────────── */
 
 .destination-marker {
@@ -631,6 +646,123 @@ html, body, #root {
   text-align: left;
   cursor: pointer;
   min-height: 56px;
+}
+
+.action-sheet__btn--danger {
+  background: var(--alert-red);
+  color: var(--surface-sand);
+  border-color: var(--alert-red);
+}
+
+/* ── SaveWaypoint dialog ───────────────────────────────────────────── */
+
+.save-wp {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.save-wp__title {
+  font-family: var(--font-sans);
+  font-weight: 700;
+  font-size: 18px;
+  margin: 0;
+  color: var(--text-on-card);
+}
+
+.save-wp__pos {
+  font-family: var(--font-mono);
+  font-size: 13px;
+  color: var(--text-on-card-dim);
+  margin: 0 0 8px;
+}
+
+.save-wp__field {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-family: var(--font-sans);
+  font-weight: 600;
+  font-size: 13px;
+  color: var(--text-on-card);
+}
+
+.save-wp__field input {
+  padding: 12px;
+  font-family: var(--font-sans);
+  font-size: 16px;
+  border: 1px solid var(--bg-navy);
+  border-radius: 0;
+  background: var(--surface-sand);
+  color: var(--text-on-card);
+  min-height: 44px;
+}
+
+.save-wp__categories {
+  border: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.save-wp__categories legend {
+  font-family: var(--font-sans);
+  font-weight: 600;
+  font-size: 13px;
+  color: var(--text-on-card);
+  margin-bottom: 6px;
+}
+
+.save-wp__category-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 6px;
+}
+
+.save-wp__category {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px;
+  border: 1px solid var(--border-on-card);
+  cursor: pointer;
+  font-family: var(--font-sans);
+  font-weight: 600;
+  font-size: 14px;
+  color: var(--text-on-card);
+  min-height: 56px;
+}
+
+.save-wp__category--active {
+  background: rgba(20, 32, 56, 0.08);
+  border-color: var(--bg-navy);
+}
+
+.save-wp__category input {
+  width: 16px;
+  height: 16px;
+  accent-color: var(--bg-navy);
+}
+
+.save-wp__submit {
+  background: var(--bg-navy);
+  color: var(--text-primary);
+  border: 1px solid var(--bg-navy);
+  border-radius: 0;
+  padding: 14px;
+  font-family: var(--font-sans);
+  font-weight: 700;
+  font-size: 15px;
+  cursor: pointer;
+  min-height: 56px;
+  margin-top: 8px;
+}
+
+.save-wp__submit:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
 }
 
 /* ── Coordinate entry form ─────────────────────────────────────────── */

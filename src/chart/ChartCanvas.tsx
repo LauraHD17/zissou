@@ -11,6 +11,9 @@ import { useAISMarkers } from './markers/AISMarkers';
 import { ensureHeadingVectorLayer, useHeadingVector } from './markers/HeadingVector';
 import { useDestinationMarker } from './markers/DestinationMarker';
 import { ensureGoToRouteLayer, useGoToRoute } from './markers/GoToRoute';
+import { useWaypointMarkers } from './markers/WaypointMarkers';
+import { WaypointActionSheet } from '../waypoints/WaypointActionSheet';
+import type { SavedWaypoint } from '../types/nav';
 import { MapControls } from './controls/MapControls';
 import { ScaleBar } from './controls/ScaleBar';
 import { DropPinButton } from './controls/DropPinButton';
@@ -38,6 +41,7 @@ export function ChartCanvas() {
   const targets = useAISTargets();
   const { mode, setMode, modeRef } = useChartMode(mapRef, styleLoadedRef);
   const [dropPinArmed, setDropPinArmed] = useState(false);
+  const [tappedWaypoint, setTappedWaypoint] = useState<SavedWaypoint | null>(null);
 
   useEffect(() => {
     if (!containerRef.current) return;
@@ -84,6 +88,7 @@ export function ChartCanvas() {
   useHeadingVector(mapRef, self);
   useDestinationMarker(mapRef);
   useGoToRoute(mapRef);
+  useWaypointMarkers(mapRef, { onTap: setTappedWaypoint });
   useDropPinMode(mapRef, {
     armed: dropPinArmed,
     onDrop: () => setDropPinArmed(false),
@@ -123,6 +128,12 @@ export function ChartCanvas() {
       />
       <DestinationWidget />
       <ScaleBar mapRef={mapRef} />
+      {tappedWaypoint && (
+        <WaypointActionSheet
+          waypoint={tappedWaypoint}
+          onClose={() => setTappedWaypoint(null)}
+        />
+      )}
     </div>
   );
 }
