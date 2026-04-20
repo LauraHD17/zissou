@@ -30,6 +30,12 @@ export const ICON_PATHS = {
   tideFalling:
     'M 2 16 q 3 -3 6 0 t 6 0 t 6 0 M 19 4 v 7 M 16.5 8.5 L 19 11 L 21.5 8.5',
 
+  // ── Theme toggle (day / night) ─────────────────────────────────────
+  // Sun: filled-look circle with 8 short rays (rendered as stroke).
+  sun: 'M 12 12 m -3.5 0 a 3.5 3.5 0 1 0 7 0 a 3.5 3.5 0 1 0 -7 0 M 12 3 v 2 M 12 19 v 2 M 3 12 h 2 M 19 12 h 2 M 5.6 5.6 l 1.4 1.4 M 17 17 l 1.4 1.4 M 18.4 5.6 l -1.4 1.4 M 7 17 l -1.4 1.4',
+  // Crescent moon — single curved path.
+  moon: 'M 18 14 a 7 7 0 1 1 -8 -10 a 6 6 0 0 0 8 10 z',
+
   // ── Anchor (anchor-watch button + anchorage waypoint category) ─────
   // Minimal line-art: crown circle, vertical shank, horizontal stock,
   // two arc-arms sweeping down to imply flukes.

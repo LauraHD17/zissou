@@ -389,6 +389,77 @@ html, body, #root {
   gap: 6px;
 }
 
+.statusbar__theme-toggle {
+  background: transparent;
+  border: 1px solid var(--border-on-navy);
+  color: var(--text-primary);
+  padding: 0;
+  width: 44px;
+  height: 44px;
+  border-radius: 0;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.statusbar__theme-toggle:hover {
+  border-color: rgba(240, 235, 224, 0.28);
+}
+
+/* ── SlidePanel inner content patterns ──────────────────────────────── */
+
+.theme-panel__title {
+  font-family: var(--font-sans);
+  font-weight: 700;
+  font-size: 18px;
+  margin: 0 0 16px;
+  color: var(--text-on-card);
+}
+
+.theme-panel__choices {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.theme-panel__choice {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 4px 12px;
+  align-items: center;
+  padding: 12px 14px;
+  border: 1px solid var(--border-on-card);
+  cursor: pointer;
+  background: transparent;
+}
+
+.theme-panel__choice--active {
+  background: rgba(20, 32, 56, 0.08);
+  border-color: var(--bg-navy);
+}
+
+.theme-panel__choice input {
+  grid-row: 1 / span 2;
+  width: 18px;
+  height: 18px;
+  accent-color: var(--bg-navy);
+}
+
+.theme-panel__choice-label {
+  font-family: var(--font-sans);
+  font-weight: 700;
+  font-size: 15px;
+  color: var(--text-on-card);
+}
+
+.theme-panel__choice-desc {
+  grid-column: 2;
+  font-family: var(--font-sans);
+  font-size: 13px;
+  color: var(--text-on-card-dim);
+}
+
 .tab {
   background: transparent;
   border: 1px solid var(--border-on-navy);

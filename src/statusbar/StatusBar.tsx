@@ -4,6 +4,7 @@ import { formatCompassBearing } from '../utils/bearings';
 import { useNowMs } from '../utils/clock';
 import { formatLat, formatLon, formatSpeedKnMph } from '../utils/units';
 import { ClockSunTide } from './ClockSunTide';
+import { ThemeToggle } from './ThemeToggle';
 
 /** GPS fix considered stale if no update in this many ms. Distinct from
  *  AIS_STALE_MS (5 min) — own-fix tolerance is much tighter. */
@@ -57,6 +58,8 @@ export function StatusBar({ activeView, onViewChange }: Props) {
         <TabButton active={activeView === 'ais'} onClick={() => onViewChange('ais')}>AIS</TabButton>
         <TabButton active={activeView === 'chart'} onClick={() => onViewChange('chart')}>Chart</TabButton>
       </nav>
+
+      <ThemeToggle />
     </header>
   );
 }
