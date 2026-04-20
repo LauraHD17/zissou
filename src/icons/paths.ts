@@ -63,6 +63,21 @@ export const ICON_PATHS = {
   // Minimal gear: octagonal outline + center circle. Stroke-only so it
   // reads at the 20px StatusBar scale without visual weight.
   gear: 'M 10 3 h 4 l 0.5 2.2 l 2 1 l 2 -0.7 l 2 3.5 l -1.5 1.5 v 2 l 1.5 1.5 l -2 3.5 l -2 -0.7 l -2 1 l -0.5 2.2 h -4 l -0.5 -2.2 l -2 -1 l -2 0.7 l -2 -3.5 l 1.5 -1.5 v -2 l -1.5 -1.5 l 2 -3.5 l 2 0.7 l 2 -1 z M 12 12 m -2.5 0 a 2.5 2.5 0 1 0 5 0 a 2.5 2.5 0 1 0 -5 0',
+
+  // ── Label-priority button (chart controls) ─────────────────────────
+  // Luggage/price tag — pentagonal body with an angled corner and a small
+  // circular string-hole. Reads universally as "label" and makes the
+  // tri-state cycle (balanced / place / depth) obviously about annotations.
+  tag: 'M 20 12 l -8 8 l -10 -10 v -7 h 7 z M 7 7 m -1.3 0 a 1.3 1.3 0 1 0 2.6 0 a 1.3 1.3 0 1 0 -2.6 0',
+
+  // ── Hazard waypoint ────────────────────────────────────────────────
+  // Bold standalone "!" — tapered bar over a disc. Designed as a closed
+  // path so it renders filled (red) with a thick outline (yellow-green)
+  // per the waypoint-marker style override. No surrounding triangle —
+  // the color combo does the "watch out" signaling without geometry
+  // that could be confused with the own-ship triangle.
+  hazard:
+    'M 9.5 3 L 14.5 3 L 13 15 L 11 15 Z M 12 19 m -2 0 a 2 2 0 1 0 4 0 a 2 2 0 1 0 -4 0',
 } as const;
 
 export type IconName = keyof typeof ICON_PATHS;

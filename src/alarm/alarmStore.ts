@@ -5,7 +5,7 @@
 
 import { defineMemoryStore } from '../storage/localStore';
 
-export type AlarmKind = 'anchor-drag' | 'mob' | 'anchorage-drying';
+export type AlarmKind = 'anchor-drag' | 'mob' | 'anchorage-drying' | 'hazard-proximity';
 
 export interface ActiveAlarm {
   kind: AlarmKind;
@@ -19,6 +19,10 @@ const alarmStore = defineMemoryStore<ActiveAlarm | null>(null);
 
 export function useActiveAlarm() {
   return alarmStore.use();
+}
+
+export function readActiveAlarm(): ActiveAlarm | null {
+  return alarmStore.read();
 }
 
 export function raiseAlarm(input: { kind: AlarmKind; message: string }): void {

@@ -13,7 +13,7 @@ import { addWaypoint, updateWaypoint } from './waypointStore';
 const CATEGORIES: { value: WaypointCategory; icon: IconName; label: string }[] = [
   { value: 'mooring', icon: 'mooringBuoy', label: 'Mooring' },
   { value: 'anchorage', icon: 'anchor', label: 'Anchorage' },
-  { value: 'hazard', icon: 'warning', label: 'Hazard' },
+  { value: 'hazard', icon: 'hazard', label: 'Hazard' },
   { value: 'poi', icon: 'star', label: 'Favorite' },
 ];
 

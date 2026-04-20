@@ -1,5 +1,6 @@
 import { AIS_STALE_MS, isValidCogRad, isValidSogMs } from '../signalk/types';
 import type { Position, Vessel } from '../signalk/types';
+import type { SavedWaypoint } from '../types/nav';
 import { bearingRadians, haversineNm, isPlausiblePosition } from './geometry';
 import { formatAbsoluteBearing, formatCompassBearing, formatRelativeBearing } from './bearings';
 import { formatDistance, formatLat, formatLon, formatSpeedKnMph, msToKnots } from './units';
@@ -9,6 +10,33 @@ export interface VesselNarrative {
   movement: string | null;
   qualifier: string | null;
   rawFacts: string;
+}
+
+export function buildHazardNarrative(
+  waypoint: SavedWaypoint,
+  self: Vessel | undefined,
+): VesselNarrative {
+  const hazPos: Position = { latitude: waypoint.lat, longitude: waypoint.lon };
+  const selfPos = self?.position;
+
+  let location: string;
+  if (selfPos) {
+    const dist = haversineNm(selfPos, hazPos);
+    const absBearing = bearingRadians(selfPos, hazPos);
+    const direction = isValidCogRad(self?.cog)
+      ? formatRelativeBearing(absBearing - (self as Vessel).cog!)
+      : formatAbsoluteBearing(absBearing);
+    location = capitalize(`${formatDistance(dist)} ${direction}`);
+  } else {
+    location = 'Position unknown from here';
+  }
+
+  return {
+    location,
+    movement: null, // hazards are static — no movement line
+    qualifier: waypoint.notes?.trim() ? waypoint.notes.trim() : null,
+    rawFacts: `${formatLat(waypoint.lat)} ${formatLon(waypoint.lon)}`,
+  };
 }
 
 export function buildVesselNarrative(

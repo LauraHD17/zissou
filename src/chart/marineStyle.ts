@@ -34,6 +34,14 @@ export const BASE_STYLE_URL = 'https://tiles.openfreemap.org/styles/positron';
 // To switch regions, regenerate with the desired bundle and update this URL.
 const NOAA_PMTILES_URL = 'pmtiles:///charts/maine-nh-ma.pmtiles';
 
+// Read a CSS custom property off :root (falls back to the provided default if
+// the var is unset or we're running in a non-DOM environment like SSR/tests).
+function cssVar(name: string, fallback: string): string {
+  if (typeof document === 'undefined') return fallback;
+  const value = getComputedStyle(document.documentElement).getPropertyValue(name).trim();
+  return value || fallback;
+}
+
 const COLORS = {
   water: '#547A9E',
   land: '#F0EBE0',
@@ -42,10 +50,12 @@ const COLORS = {
   roadMinor: '#bfbfbf',
   labelStrong: '#142038',
   labelHalo: '#F0EBE0',
-  // Depth contour colors (per design spec — depths are meters in NOAA ENC).
-  depthShallow: '#FF3B1A', // < 1.83m (6ft)
-  depthModerate: '#FFD700', // 1.83 – 6.10m (6–20ft)
-  depthDeep: '#6FECB0', // > 6.10m (20ft+)
+  // Depth contour colors — sourced from :root CSS vars so tokens stay in one
+  // place. Defaults mirror the --depth-* tokens; fallback keeps the chart
+  // styled if CSS fails to load.
+  depthShallow: cssVar('--depth-shallow', '#FF3B1A'), // < 1.83m (6ft)
+  depthModerate: cssVar('--depth-mid', '#FFD700'), // 1.83 – 6.10m (6–20ft)
+  depthDeep: cssVar('--depth-deep', '#6FECB0'), // > 6.10m (20ft+)
   // Marine features
   buoy: '#E8B84D',
   buoyOutline: '#142038',

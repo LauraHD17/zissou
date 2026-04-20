@@ -7,6 +7,7 @@
 // itself is a plain tri-state cycle — tap = next mode, current mode is read
 // by screen readers via aria-label and visually via a small corner badge.
 
+import { Icon } from '../../icons';
 import { setChartLabelPriority, useUserPrefs } from '../../prefs/userPrefsStore';
 import type { ChartLabelPriority } from '../../types/nav';
 
@@ -33,7 +34,7 @@ export function LabelPriorityButton() {
       onClick={() => setChartLabelPriority(next)}
       aria-label={`Label priority: ${MODE_LABEL[mode]}. Tap to switch to ${MODE_LABEL[next]}.`}
     >
-      LBL
+      <Icon name="tag" size={24} />
     </button>
   );
 }

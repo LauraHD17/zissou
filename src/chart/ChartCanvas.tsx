@@ -18,6 +18,7 @@ import type { SavedWaypoint } from '../types/nav';
 import { ensureAnchorCircleLayers, useAnchorCircle } from './markers/AnchorCircle';
 import { AnchorButton } from '../anchor/AnchorButton';
 import { useAnchorDragWatch } from '../anchor/useAnchorDragWatch';
+import { useHazardProximityWatch } from '../waypoints/useHazardProximityWatch';
 import { useMOBMarker } from './markers/MOBMarker';
 import { AISDetailPanel } from './AISDetailPanel';
 import type { Vessel } from '../signalk/types';
@@ -39,6 +40,18 @@ import type { Position } from '../signalk/types';
 
 const FALLBACK_CENTER: [number, number] = [-68.8, 44.4]; // [lng, lat] mid-coast Maine
 const DEFAULT_ZOOM = 12;
+
+/** 90° corner brackets at the chart viewport — marine plotter / reticle feel. */
+function FiducialCorners() {
+  return (
+    <div className="chart-fiducials" aria-hidden="true">
+      <span className="chart-fiducials__corner chart-fiducials__corner--tl" />
+      <span className="chart-fiducials__corner chart-fiducials__corner--tr" />
+      <span className="chart-fiducials__corner chart-fiducials__corner--bl" />
+      <span className="chart-fiducials__corner chart-fiducials__corner--br" />
+    </div>
+  );
+}
 
 // Idempotent: pmtiles:// protocol only needs to be registered once per page.
 let pmtilesProtocolRegistered = false;
@@ -131,6 +144,7 @@ export function ChartCanvas() {
   useAnchorCircle(mapRef);
   useTideAwareContours(mapRef);
   useAnchorDragWatch();
+  useHazardProximityWatch();
   useMOBMarker(mapRef);
   useChartPickMode(mapRef, {
     armed: pickMode !== 'idle',
@@ -179,6 +193,7 @@ export function ChartCanvas() {
   return (
     <div className="chart-canvas">
       <div ref={containerRef} className="chart-map" />
+      <FiducialCorners />
       <MapControls
         mode={mode}
         following={following}

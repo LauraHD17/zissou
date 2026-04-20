@@ -147,8 +147,8 @@ Palette lives in `:root` of `src/styles/app.css`. Always reference variables, ne
 - `--vessel-name` `#0F0298` — electric blue. Used **only** for AIS vessel names.
 - `--alert-amber` `#E8B84D` — amber. Stale/caution indicators, qualifier lines, threat-band caution bar/pill, `GPS stale` fix indicator.
 - `--alert-red` `#A02418` — deep red for threat-band danger fills on sand cards (cream text on it ≥7:1). Distinct from `--danger` (which is for status text on dark navy).
-- `--ownship-accent` `#CCFF00` — tennis-ball yellow-green. Reserved for the own-ship triangle outline, pulsing ring, and heading vector. Never used elsewhere in the UI. Pairs with `--boat-icon` orange to make own-ship unmissable on any map background.
-- `--waypoint` `#6B9080` — sage. Reserved for future waypoints / route markers.
+- `--ownship-accent` `#CCFF00` — tennis-ball yellow-green. Used for the own-ship triangle outline, pulsing ring, and heading vector. Pairs with `--boat-icon` orange to make own-ship unmissable on any map background. Day-mode `--waypoint` shares this hex (see below); own-ship stays distinct through shape + motion, not color.
+- `--waypoint` `#CCFF00` day / `#AA6655` night — chart waypoint markers (star, anchor, mooring buoy, hazard). Chose yellow-green after sage `#6B9080` was getting lost on slate-blue water. Own-ship and waypoints share the day-mode hue but not the shape: own-ship is an oriented orange triangle with pulsing halo; waypoints are static navy-stroked glyphs. Waypoint list panels use navy ink (not the accent) so sand-card icons keep AAA contrast. Night palette shifts to warm red for dark adaptation.
 - `--ok` `#5BD891` / `--danger` `#FFA0A0` — universal green/red signals for system status text on navy (GPS OK / no fix). Brightened to pass AAA on the navy bg. Distinct from the brand palette; don't repurpose.
 
 **Interactive**

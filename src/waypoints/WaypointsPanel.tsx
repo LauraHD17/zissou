@@ -224,7 +224,7 @@ function iconForCategory(c: WaypointCategory): IconName {
     case 'anchorage':
       return 'anchor';
     case 'hazard':
-      return 'warning';
+      return 'hazard';
     case 'poi':
       return 'star';
   }

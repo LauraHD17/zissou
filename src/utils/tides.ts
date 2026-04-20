@@ -27,6 +27,9 @@ export interface TideEvent {
   time: Date;
   /** Whether the water is currently rising (toward high) or falling (toward low). */
   direction: 'rising' | 'falling';
+  /** True while the tide source is the M2 stub. Flip to false once NOAA harmonic
+   *  data is wired in. The UI dims and prefixes the event with `~` when set. */
+  isEstimate: boolean;
 }
 
 const M2_PERIOD_MS = 12.42 * 60 * 60 * 1000;
@@ -48,11 +51,11 @@ export function nextTideEvent(now: Date, _pos?: Position): TideEvent {
   if (phase < 0.5) {
     // Past high, water is falling, next event is low.
     const lowTime = REF_HIGH + cycleFloor * M2_PERIOD_MS + HALF_PERIOD_MS;
-    return { kind: 'low', time: new Date(lowTime), direction: 'falling' };
+    return { kind: 'low', time: new Date(lowTime), direction: 'falling', isEstimate: true };
   }
   // Past low, water is rising, next event is high.
   const highTime = REF_HIGH + (cycleFloor + 1) * M2_PERIOD_MS;
-  return { kind: 'high', time: new Date(highTime), direction: 'rising' };
+  return { kind: 'high', time: new Date(highTime), direction: 'rising', isEstimate: true };
 }
 
 /** Tide height relative to mean low water, in feet. 0 = lowest, +10 = highest

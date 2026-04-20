@@ -12,7 +12,7 @@ import type { SavedWaypoint, WaypointCategory } from '../../types/nav';
 const CATEGORY_ICON: Record<WaypointCategory, IconName> = {
   mooring: 'mooringBuoy',
   anchorage: 'anchor',
-  hazard: 'warning',
+  hazard: 'hazard',
   poi: 'star',
 };
 

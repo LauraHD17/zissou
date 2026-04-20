@@ -9,7 +9,14 @@
   --boat-icon: #ff6b35;
   --vessel-name: #0f0298;
   --alert-amber: #e8b84d;
-  --waypoint: #6b9080;
+  /* Waypoint accent — tennis-ball yellow-green. Sage #6B9080 was readable on
+     sand but got lost on slate-blue water; yellow-green pops against water,
+     land, and both palette surfaces. Day mode shares the hex with
+     --ownship-accent (shape language keeps the two distinct: own-ship is an
+     oriented triangle with a pulsing halo; waypoints are static anchor /
+     star / mooring-buoy / warning glyphs). Night mode is overridden to warm
+     red in src/theme/night.css to preserve dark adaptation. */
+  --waypoint: #ccff00;
 
   /* Interactive */
   --focus-ring: #e8b84d;
@@ -33,6 +40,14 @@
   /* Own-ship secondary accent — tennis-ball yellow-green. Used only for
      the own-ship outline, pulsing ring, and heading vector. Not for AIS or UI. */
   --ownship-accent: #ccff00;
+
+  /* Depth contour palette — NOAA VALDCO breakpoints. Used by the chart
+     (consumed at style-build time via getComputedStyle) and by the DepthLegend
+     UI. Night mode deliberately does NOT override these — chart depth must
+     stay readable in any theme. */
+  --depth-shallow: #ff3b1a;
+  --depth-mid: #ffd700;
+  --depth-deep: #6fecb0;
 
   /* Typography */
   --font-sans: 'Zalando Sans Expanded', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
@@ -332,6 +347,18 @@ body,
   color: var(--text-primary);
 }
 
+/* Tide is an M2 stub until NOAA harmonics wire in — dim it and prefix with `~`
+   so it never reads as authoritative for anchoring/grounding decisions. */
+.statusbar__tide--estimate {
+  color: var(--text-dim);
+}
+
+.statusbar__tide-estimate-mark {
+  font-family: var(--font-mono);
+  font-weight: 700;
+  margin-right: 1px;
+}
+
 .statusbar__sep {
   color: var(--text-dim);
 }
@@ -402,20 +429,25 @@ body,
 
 .statusbar__metric-value {
   font-family: var(--font-sans);
-  font-weight: 700;
-  font-size: 15px;
+  font-weight: 800;
+  /* Helm-scale: readable from ~3m / 10ft in sunlight on the 1024×600 Pi
+     touchscreen. Speed + Heading are the values that matter every 30s. */
+  font-size: 22px;
+  line-height: 1;
   white-space: nowrap;
   display: inline-flex;
   align-items: center;
-  gap: 6px;
+  gap: 8px;
   font-variant-numeric: tabular-nums;
   color: var(--text-primary);
 }
 
 .statusbar__metric-value--mono {
   font-family: var(--font-mono);
-  font-weight: 500;
-  font-size: 13px;
+  font-weight: 600;
+  /* Position is longer (lat · lon) so it scales less aggressively to keep
+     the metric row on one line at 1024×600 in split mode. */
+  font-size: 16px;
 }
 
 /* Separator inside multi-value metrics (e.g. Position: lat · lon). */
@@ -428,6 +460,10 @@ body,
 .heading-glyph {
   color: var(--boat-icon);
   flex-shrink: 0;
+  /* Scale with the helm-scale metric value. JSX width/height="16" is the
+     intrinsic SVG size; CSS wins for display. */
+  width: 20px;
+  height: 20px;
   transition: transform 0.3s ease-out;
 }
 
@@ -701,6 +737,53 @@ body,
   background: var(--bg-navy);
 }
 
+/* Fiducial corner brackets — marine plotter / reticle language. Decorative
+   framing for the chart viewport. Overlays MapLibre chrome but sits below
+   the own-ship marker. Pointer-events disabled so panning/zooming pass
+   through. */
+.chart-fiducials {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 2;
+}
+
+.chart-fiducials__corner {
+  position: absolute;
+  width: 20px;
+  height: 20px;
+  border: 0 solid var(--boat-icon);
+  opacity: 0.6;
+}
+
+.chart-fiducials__corner--tl {
+  top: 8px;
+  left: 8px;
+  border-top-width: 2px;
+  border-left-width: 2px;
+}
+
+.chart-fiducials__corner--tr {
+  top: 8px;
+  right: 8px;
+  border-top-width: 2px;
+  border-right-width: 2px;
+}
+
+.chart-fiducials__corner--bl {
+  bottom: 8px;
+  left: 8px;
+  border-bottom-width: 2px;
+  border-left-width: 2px;
+}
+
+.chart-fiducials__corner--br {
+  bottom: 8px;
+  right: 8px;
+  border-bottom-width: 2px;
+  border-right-width: 2px;
+}
+
 .chart-loading {
   height: 100%;
   display: flex;
@@ -766,12 +849,10 @@ body,
   border: 1px solid var(--bg-navy);
 }
 
-/* Label-priority button — text "LBL" instead of an icon so the tri-state is
-   unambiguous. Small corner badge signals the current mode; no badge = the
-   default Balanced (zoom-based) behavior. */
+/* Label-priority button — tag icon (universal "label" metaphor). Small
+   corner badge signals the current mode; no badge = the default Balanced
+   (zoom-based) behavior. */
 .map-control-btn--label-priority {
-  font-size: 13px;
-  letter-spacing: 0.08em;
   position: relative;
 }
 .map-control-btn--label-priority-place::after,
@@ -804,6 +885,16 @@ body,
   fill: var(--waypoint);
   stroke: var(--bg-navy);
   stroke-width: 1;
+}
+
+/* Hazard: saturated red fill with a neon yellow-green outline. The red
+   carries the "danger" semantic; the outline makes it unmissable against
+   slate water, sand land, and night-mode red-spectrum surfaces. Thicker
+   stroke than other waypoints so the outline clearly reads at chart scale. */
+.waypoint-marker--hazard svg {
+  fill: var(--alert-red);
+  stroke: var(--ownship-accent);
+  stroke-width: 2;
 }
 
 /* ── Destination marker + Go-To route ──────────────────────────────── */
@@ -1160,7 +1251,10 @@ body,
 }
 
 .wp-panel__row-main svg {
-  color: var(--waypoint);
+  /* Panel list icons render as navy ink on sand — the chart markers carry
+     the yellow-green brand; in the panel, legibility (AAA contrast against
+     sand) wins over chromatic consistency. */
+  color: var(--text-on-card);
   flex-shrink: 0;
 }
 
@@ -1733,15 +1827,15 @@ body,
 }
 
 .depth-legend__swatch--shallow {
-  background: #ff3b1a;
+  background: var(--depth-shallow);
 }
 
 .depth-legend__swatch--moderate {
-  background: #ffd700;
+  background: var(--depth-mid);
 }
 
 .depth-legend__swatch--deep {
-  background: #6fecb0;
+  background: var(--depth-deep);
 }
 
 .depth-legend__range {
@@ -2011,6 +2105,9 @@ body,
   border: 1px solid var(--bg-navy);
   border-radius: 0;
   padding: 16px;
+  /* WCAG 2.5.5 AAA (44×44) — future-proofs rows for when tap-to-expand
+     detail view lands; also tightens vertical rhythm at low data density. */
+  min-height: 44px;
   display: flex;
   flex-direction: column;
   gap: 6px;
@@ -2031,6 +2128,9 @@ body,
 
 .threat-pill {
   align-self: flex-start;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
   font-family: var(--font-sans);
   font-weight: 700;
   font-size: 10px;
@@ -2038,6 +2138,15 @@ body,
   letter-spacing: 0.1em;
   padding: 3px 8px;
   border-radius: 0;
+}
+
+/* Shape-mark glyph on threat pills — redundant with the color band so
+   color-blind operators and glance-scanning both resolve the threat level
+   without relying on hue alone. */
+.threat-pill__glyph {
+  font-size: 11px;
+  line-height: 1;
+  transform: translateY(-0.5px);
 }
 
 .threat-pill--caution {
@@ -2056,6 +2165,25 @@ body,
   font-size: 15px;
   letter-spacing: 0.01em;
   color: var(--vessel-name);
+}
+
+/* Hazard rows — same structure as vessels but the name reads in deep red
+   with a filled "!" glyph (red inside, neon outline) so it's unmistakable
+   against the otherwise vessel-blue list. */
+.ais-row__name--hazard {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--alert-red);
+}
+
+.ais-row__hazard-glyph {
+  /* Row-level twin of the chart-marker treatment: red fill + yellow-green
+     outline. currentColor paints the stroke; the fill is set explicitly. */
+  color: var(--ownship-accent);
+  fill: var(--alert-red);
+  stroke-width: 2;
+  flex-shrink: 0;
 }
 
 .ais-row__location {
@@ -2090,6 +2218,10 @@ body,
   font-weight: 400;
   font-size: 11px;
   color: var(--text-on-card-dim);
-  margin-top: 2px;
+  /* Thin rule separates primary narrative from raw-facts mono line —
+     makes the "plain language / datasheet" split structural. */
+  border-top: 1px solid var(--border-on-card);
+  margin-top: 4px;
+  padding-top: 6px;
   letter-spacing: 0.02em;
 }

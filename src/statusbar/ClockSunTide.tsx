@@ -31,13 +31,22 @@ export function ClockSunTide({ pos }: Props) {
           </span>
         </>
       )}
-      <span className="statusbar__tide">
+      <span
+        className={`statusbar__tide${tide.isEstimate ? ' statusbar__tide--estimate' : ''}`}
+        title={tide.isEstimate ? 'Approximate tide — NOAA harmonic data not yet wired' : undefined}
+      >
         <Icon name={tide.direction === 'rising' ? 'tideRising' : 'tideFalling'} size={20} />
         <span className="sr-only">
+          {tide.isEstimate ? 'Estimated ' : ''}
           {tide.direction === 'rising'
-            ? 'Tide rising, next high at '
-            : 'Tide falling, next low at '}
+            ? 'tide rising, next high at '
+            : 'tide falling, next low at '}
         </span>
+        {tide.isEstimate && (
+          <span aria-hidden="true" className="statusbar__tide-estimate-mark">
+            ~
+          </span>
+        )}
         {tide.kind === 'high' ? 'High' : 'Low'} {formatLocalTime(tide.time)}
       </span>
     </div>
