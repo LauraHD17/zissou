@@ -23,6 +23,7 @@ import type {
   LayerSpecification,
   Map as MapLibreMap,
 } from 'maplibre-gl';
+import type { ChartLabelPriority } from '../types/nav';
 
 export const BASE_STYLE_URL = 'https://tiles.openfreemap.org/styles/positron';
 
@@ -39,7 +40,7 @@ const COLORS = {
   coastline: '#142038',
   roadMajor: '#9a9a9a',
   roadMinor: '#bfbfbf',
-  label: '#6a6a6a',
+  labelStrong: '#142038',
   labelHalo: '#F0EBE0',
   // Depth contour colors (per design spec — depths are meters in NOAA ENC).
   depthShallow: '#FF3B1A', // < 1.83m (6ft)
@@ -110,18 +111,44 @@ export function applyMarineStyle(map: MapLibreMap): void {
   hideLayer(map, 'building');
   hideLayer(map, 'building-top');
 
-  // Labels — shrink and dim. Keep place names (city/town), drop the rest.
-  setPaint(map, 'place_label_city', 'text-color', COLORS.label);
-  setPaint(map, 'place_label_city', 'text-halo-color', COLORS.labelHalo);
-  setPaint(map, 'place_label_other', 'text-color', COLORS.label);
-  setPaint(map, 'place_label_other', 'text-halo-color', COLORS.labelHalo);
-  hideLayer(map, 'road_label');
+  // Place labels — promote. Marine-chart convention: islands and towns read as
+  // authoritative, uppercase, navy on sand with a strong halo so contour lines
+  // passing through the text bbox don't eat the letters. Positron ships these
+  // under `label_*` (not `place_label_*` — the prior IDs here were no-ops).
+  for (const id of PLACE_LABEL_LAYERS) {
+    setPaint(map, id, 'text-color', COLORS.labelStrong);
+    setPaint(map, id, 'text-halo-color', COLORS.labelHalo);
+    setPaint(map, id, 'text-halo-width', 2);
+    setLayout(map, id, 'text-transform', 'uppercase');
+    setLayout(map, id, 'text-letter-spacing', 0.08);
+  }
+
+  // Noise reduction — on a marine chart, route numbers and street names are
+  // pure clutter. Kill road-name labels outright and defer highway shields to
+  // deep-zoom only. Road *lines* remain as subtle land-texture context.
+  hideLayer(map, 'highway-name-path');
+  hideLayer(map, 'highway-name-minor');
+  hideLayer(map, 'highway-name-major');
+  for (const id of HIGHWAY_SHIELD_LAYERS) {
+    setLayerZoomRange(map, id, 14);
+  }
   hideLayer(map, 'poi_label');
   hideLayer(map, 'housenumber_label');
   hideLayer(map, 'waterway_label');
 
   addNoaaChartLayers(map);
+  // Layer z-order (place-on-top vs depth-on-top) is owned by `applyLabelPriority`
+  // — it's called right after this from ChartCanvas with the operator's tri-state
+  // preference.
 }
+
+const PLACE_LABEL_LAYERS = ['label_other', 'label_village', 'label_town', 'label_city'] as const;
+const HIGHWAY_SHIELD_LAYERS = [
+  'highway-shield-non-us',
+  'highway-shield-us-interstate',
+  'road_shield_us',
+] as const;
+const DEPTH_LABEL_LAYER = 'noaa-depth-contour-label';
 
 // ── NOAA ENC layers (depth contours, buoys, lights, wrecks, etc.) ─────
 
@@ -189,7 +216,7 @@ function addNoaaChartLayers(map: MapLibreMap): void {
   });
 
   addLayerIfMissing(map, {
-    id: 'noaa-depth-contour-label',
+    id: DEPTH_LABEL_LAYER,
     type: 'symbol',
     source: 'noaa',
     'source-layer': 'depcnt',
@@ -203,6 +230,10 @@ function addNoaaChartLayers(map: MapLibreMap): void {
       // color meaning is self-evident even when the labels are crowded.
       'text-size': 13,
       'text-letter-spacing': 0.05,
+      // Shallower contours (smaller VALDCO) are more safety-critical — let
+      // MapLibre place them first, so when labels crowd, the deepest ones are
+      // the first to drop.
+      'symbol-sort-key': ['to-number', ['get', 'VALDCO']],
     },
     paint: {
       'text-color': DEPTH_COLOR_EXPRESSION,
@@ -259,6 +290,69 @@ function addNoaaChartLayers(map: MapLibreMap): void {
   }
 }
 
+/**
+ * Apply the operator's label-priority preference. Controls which symbols win
+ * when place names and depth labels would collide. Safe to call repeatedly.
+ *
+ * The key move is `text-ignore-placement`: when set on a layer, *other* layers
+ * treat that layer's symbols as invisible for collision purposes. We never set
+ * `text-allow-overlap` (which would cause labels within a layer to stack on
+ * each other — the bug the earlier revision shipped). Each layer still avoids
+ * its own members. Layer z-order decides which layer wins pixel-wise when both
+ * land on the same spot.
+ *
+ * - `balanced`: at overview zoom (< 14), depth is invisible to place's
+ *   collision → every place label places. At approach zoom (≥ 14), default
+ *   collision resumes and depth can drop place where they'd overlap. Place is
+ *   always on top visually.
+ * - `place`: depth is always invisible to place. Place always renders, depth
+ *   shows where there's room beneath.
+ * - `depth`: place is invisible to depth. Depth always renders on top; place
+ *   shows where depth didn't claim space.
+ */
+export function applyLabelPriority(map: MapLibreMap, mode: ChartLabelPriority): void {
+  // Reset both layers to defaults so mode switches don't leave stale state.
+  for (const id of PLACE_LABEL_LAYERS) {
+    setLayout(map, id, 'text-allow-overlap', false);
+    setLayout(map, id, 'text-ignore-placement', false);
+  }
+  setLayout(map, DEPTH_LABEL_LAYER, 'text-allow-overlap', false);
+  setLayout(map, DEPTH_LABEL_LAYER, 'text-ignore-placement', false);
+
+  switch (mode) {
+    case 'balanced': {
+      const balancedDepthIgnore = [
+        'step',
+        ['zoom'],
+        true,
+        14,
+        false,
+      ] as unknown as ExpressionSpecification;
+      setLayout(map, DEPTH_LABEL_LAYER, 'text-ignore-placement', balancedDepthIgnore);
+      liftPlaceLabelsToTop(map);
+      break;
+    }
+    case 'place': {
+      setLayout(map, DEPTH_LABEL_LAYER, 'text-ignore-placement', true);
+      liftPlaceLabelsToTop(map);
+      break;
+    }
+    case 'depth': {
+      for (const id of PLACE_LABEL_LAYERS) {
+        setLayout(map, id, 'text-ignore-placement', true);
+      }
+      moveLayerToTop(map, DEPTH_LABEL_LAYER);
+      break;
+    }
+  }
+}
+
+function liftPlaceLabelsToTop(map: MapLibreMap): void {
+  for (const id of PLACE_LABEL_LAYERS) {
+    moveLayerToTop(map, id);
+  }
+}
+
 function addLayerIfMissing(map: MapLibreMap, layer: LayerSpecification): void {
   if (map.getLayer(layer.id)) return;
   try {
@@ -285,6 +379,37 @@ function hideLayer(map: MapLibreMap, layerId: string): void {
   if (!map.getLayer(layerId)) return;
   try {
     map.setLayoutProperty(layerId, 'visibility', 'none');
+  } catch {
+    // ignore
+  }
+}
+
+function setLayout(map: MapLibreMap, layerId: string, property: string, value: unknown): void {
+  if (!map.getLayer(layerId)) return;
+  try {
+    (map.setLayoutProperty as (l: string, p: string, v: unknown) => void)(
+      layerId,
+      property,
+      value,
+    );
+  } catch {
+    // ignore — positron schema can shift, best-effort tinting
+  }
+}
+
+function setLayerZoomRange(map: MapLibreMap, layerId: string, minzoom: number): void {
+  if (!map.getLayer(layerId)) return;
+  try {
+    map.setLayerZoomRange(layerId, minzoom, 24);
+  } catch {
+    // ignore
+  }
+}
+
+function moveLayerToTop(map: MapLibreMap, layerId: string): void {
+  if (!map.getLayer(layerId)) return;
+  try {
+    map.moveLayer(layerId);
   } catch {
     // ignore
   }

@@ -5,7 +5,8 @@ import { Protocol } from 'pmtiles';
 
 import { useAISTargets, useSelf } from '../signalk/useSignalK';
 import { isPlausiblePosition } from '../utils/geometry';
-import { BASE_STYLE_URL, applyMarineStyle } from './marineStyle';
+import { useUserPrefs } from '../prefs/userPrefsStore';
+import { BASE_STYLE_URL, applyLabelPriority, applyMarineStyle } from './marineStyle';
 import { useOwnShipMarker } from './markers/OwnShipMarker';
 import { useAISMarkers } from './markers/AISMarkers';
 import { ensureHeadingVectorLayer, useHeadingVector } from './markers/HeadingVector';
@@ -54,6 +55,9 @@ export function ChartCanvas() {
 
   const self = useSelf();
   const targets = useAISTargets();
+  const { chartLabelPriority } = useUserPrefs();
+  const labelPriorityRef = useRef(chartLabelPriority);
+  labelPriorityRef.current = chartLabelPriority;
   const { mode, setMode, modeRef } = useChartMode(mapRef, styleLoadedRef);
   const [pickMode, setPickMode] = useState<'idle' | 'destination' | 'waypoint'>('idle');
   const [saveAt, setSaveAt] = useState<Position | null>(null);
@@ -84,7 +88,10 @@ export function ChartCanvas() {
 
     map.on('style.load', () => {
       styleLoadedRef.current = true;
-      if (modeRef.current === 'marine') applyMarineStyle(map);
+      if (modeRef.current === 'marine') {
+        applyMarineStyle(map);
+        applyLabelPriority(map, labelPriorityRef.current);
+      }
       ensureHeadingVectorLayer(map);
       ensureGoToRouteLayer(map);
       ensureAnchorCircleLayers(map);
@@ -147,6 +154,16 @@ export function ChartCanvas() {
     if (!self?.position || !isPlausiblePosition(self.position)) return;
     map.setCenter([self.position.longitude, self.position.latitude]);
   }, [self?.position?.latitude, self?.position?.longitude, following]);
+
+  // Re-apply label priority when the user toggles the mode. style.load already
+  // applies it on first load and on mode switches; this covers the tri-state
+  // cycle in the LabelPriorityButton.
+  useEffect(() => {
+    const map = mapRef.current;
+    if (!map || !styleLoadedRef.current) return;
+    if (mode !== 'marine') return;
+    applyLabelPriority(map, chartLabelPriority);
+  }, [chartLabelPriority, mode]);
 
   const handleRecenter = () => {
     setFollowing(true);

@@ -3,6 +3,7 @@
 
 import { defineStore } from '../storage/localStore';
 import type {
+  ChartLabelPriority,
   HomeMooring,
   PropulsionPrefs,
   UserPrefs,
@@ -20,6 +21,7 @@ const INITIAL: UserPrefs = {
   weatherLimits: {},
   alarmVolumePct: 80,
   alarmTone: 'siren',
+  chartLabelPriority: 'balanced',
 };
 
 const store = defineStore<UserPrefs>('nav.userPrefs.v1', 1, INITIAL);
@@ -30,13 +32,17 @@ const store = defineStore<UserPrefs>('nav.userPrefs.v1', 1, INITIAL);
 (() => {
   const loaded = store.read() as Partial<UserPrefs>;
   const needsMigrate =
-    loaded.safetyMarginFt == null || loaded.propulsion == null || loaded.weatherLimits == null;
+    loaded.safetyMarginFt == null ||
+    loaded.propulsion == null ||
+    loaded.weatherLimits == null ||
+    loaded.chartLabelPriority == null;
   if (needsMigrate) {
     store.set({
       ...INITIAL,
       ...loaded,
       propulsion: { cruisingSpeedKn: loaded.propulsion?.cruisingSpeedKn },
       weatherLimits: { ...(loaded.weatherLimits ?? {}) },
+      chartLabelPriority: loaded.chartLabelPriority ?? 'balanced',
     } as UserPrefs);
   }
 })();
@@ -74,6 +80,10 @@ export function setHomeMooring(home: HomeMooring | undefined) {
 
 export function setWeatherLimits(patch: Partial<WeatherLimits>) {
   store.update((p) => ({ ...p, weatherLimits: { ...p.weatherLimits, ...patch } }));
+}
+
+export function setChartLabelPriority(mode: ChartLabelPriority) {
+  store.update((p) => ({ ...p, chartLabelPriority: mode }));
 }
 
 /** Resolved display name: user-set boat name > SignalK self.name > "—". */

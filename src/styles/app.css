@@ -766,6 +766,31 @@ body,
   border: 1px solid var(--bg-navy);
 }
 
+/* Label-priority button — text "LBL" instead of an icon so the tri-state is
+   unambiguous. Small corner badge signals the current mode; no badge = the
+   default Balanced (zoom-based) behavior. */
+.map-control-btn--label-priority {
+  font-size: 13px;
+  letter-spacing: 0.08em;
+  position: relative;
+}
+.map-control-btn--label-priority-place::after,
+.map-control-btn--label-priority-depth::after {
+  content: '';
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  width: 6px;
+  height: 6px;
+  border: 1px solid var(--bg-navy);
+}
+.map-control-btn--label-priority-place::after {
+  background: var(--surface-sand);
+}
+.map-control-btn--label-priority-depth::after {
+  background: var(--alert-amber);
+}
+
 /* ── Saved waypoint markers (sage; icon by category) ───────────────── */
 
 .waypoint-marker {

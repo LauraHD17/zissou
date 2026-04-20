@@ -65,6 +65,10 @@ export interface ThemePrefs {
 
 export type AlarmTone = 'siren' | 'chirp' | 'silent';
 
+/** Label-priority mode for the chart. Controls which layer wins when place
+ *  names and NOAA depth labels would overlap. */
+export type ChartLabelPriority = 'balanced' | 'place' | 'depth';
+
 /** Hull dimensions, in feet. All optional — a partial spec still informs the
  *  calcs that use whatever fields are set. For a centerboard boat, draft is
  *  the board-down maximum (the shallow-water floor). */
@@ -115,4 +119,8 @@ export interface UserPrefs {
   weatherLimits: WeatherLimits;
   alarmVolumePct: number; // 0–100
   alarmTone: AlarmTone;
+  /** Which label layer wins when place names and depth labels overlap on the
+   *  chart. Defaults to 'balanced' — place names at overview zoom, depth labels
+   *  at approach zoom. */
+  chartLabelPriority: ChartLabelPriority;
 }
