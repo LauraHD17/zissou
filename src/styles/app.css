@@ -855,7 +855,7 @@ body,
   display: flex;
   flex-direction: column;
   gap: 2px;
-  padding: 8px 32px 8px 14px; /* right pad leaves room for dismiss button */
+  padding: 8px 44px 8px 14px; /* right pad reserves room for 44×44 dismiss */
   background: rgba(20, 32, 56, 0.85);
   color: var(--text-primary);
   border-radius: 0;
@@ -865,13 +865,14 @@ body,
 }
 
 /* Dismiss "×" for chart-overlay pills. Text-only, no icon component, no
-   rounded bg — pure brutalist control. 32×32 hit area for gloved hands. */
+   rounded bg — pure brutalist control. 44×44 hit area satisfies WCAG 2.2
+   AAA 2.5.5 Target Size (Enhanced). "×" stays visually small via font-size. */
 .pill-dismiss {
   position: absolute;
   top: 0;
   right: 0;
-  width: 32px;
-  height: 32px;
+  width: 44px;
+  height: 44px;
   background: transparent;
   border: 0;
   color: var(--text-dim);
@@ -1682,8 +1683,7 @@ body,
   top: 16px;
   left: 16px;
   z-index: 10;
-  padding: 6px 8px 6px 8px;
-  padding-right: 22px; /* room for the × dismiss */
+  padding: 6px 44px 6px 8px; /* right pad reserves room for 44×44 dismiss */
   background: rgba(20, 32, 56, 0.88);
   color: var(--text-primary);
   border: 1px solid var(--border-on-navy);
@@ -1697,11 +1697,8 @@ body,
   min-width: 92px;
 }
 
-.depth-legend .pill-dismiss {
-  width: 22px;
-  height: 22px;
-  font-size: 14px;
-}
+/* Depth-legend dismiss inherits the base .pill-dismiss 44×44 target so
+   WCAG 2.2 AAA 2.5.5 is met without relying on the AA spacing exception. */
 
 .depth-legend__title {
   font-family: var(--font-sans);
