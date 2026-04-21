@@ -4,6 +4,7 @@
 import { defineStore } from '../storage/localStore';
 import type {
   ChartLabelPriority,
+  ChartLayerPrefs,
   HomeMooring,
   PropulsionPrefs,
   UserPrefs,
@@ -12,6 +13,14 @@ import type {
 } from '../types/nav';
 
 const DEFAULT_SAFETY_MARGIN_FT = 2;
+
+const DEFAULT_CHART_LAYERS: ChartLayerPrefs = {
+  contours: true,
+  soundings: true,
+  navaids: true,
+  lights: true,
+  hazards: true,
+};
 
 const INITIAL: UserPrefs = {
   boatName: '',
@@ -22,6 +31,7 @@ const INITIAL: UserPrefs = {
   alarmVolumePct: 80,
   alarmTone: 'siren',
   chartLabelPriority: 'balanced',
+  chartLayers: DEFAULT_CHART_LAYERS,
 };
 
 const store = defineStore<UserPrefs>('nav.userPrefs.v1', 1, INITIAL);
@@ -35,7 +45,8 @@ const store = defineStore<UserPrefs>('nav.userPrefs.v1', 1, INITIAL);
     loaded.safetyMarginFt == null ||
     loaded.propulsion == null ||
     loaded.weatherLimits == null ||
-    loaded.chartLabelPriority == null;
+    loaded.chartLabelPriority == null ||
+    loaded.chartLayers == null;
   if (needsMigrate) {
     store.set({
       ...INITIAL,
@@ -43,6 +54,7 @@ const store = defineStore<UserPrefs>('nav.userPrefs.v1', 1, INITIAL);
       propulsion: { cruisingSpeedKn: loaded.propulsion?.cruisingSpeedKn },
       weatherLimits: { ...(loaded.weatherLimits ?? {}) },
       chartLabelPriority: loaded.chartLabelPriority ?? 'balanced',
+      chartLayers: { ...DEFAULT_CHART_LAYERS, ...(loaded.chartLayers ?? {}) },
     } as UserPrefs);
   }
 })();
@@ -84,6 +96,16 @@ export function setWeatherLimits(patch: Partial<WeatherLimits>) {
 
 export function setChartLabelPriority(mode: ChartLabelPriority) {
   store.update((p) => ({ ...p, chartLabelPriority: mode }));
+}
+
+export function setChartLayerVisible(
+  layer: keyof ChartLayerPrefs,
+  visible: boolean,
+) {
+  store.update((p) => ({
+    ...p,
+    chartLayers: { ...p.chartLayers, [layer]: visible },
+  }));
 }
 
 /** Resolved display name: user-set boat name > SignalK self.name > "—". */

@@ -20,9 +20,9 @@ export function DepthLegend() {
   const moderateFt = metersToFeet(DEPTH_BREAK_MODERATE_M) + tideFt;
 
   return (
-    <div className="depth-legend" role="group" aria-label="Depth color key">
-      <span className="depth-legend__title">DEPTH</span>
-      <ul className="depth-legend__rows">
+    <div className="chart-legend depth-legend" role="group" aria-label="Depth color key">
+      <span className="chart-legend__title">DEPTH</span>
+      <ul className="chart-legend__rows">
         <Row color="shallow" label={`< ${formatFtCompact(shallowFt)}`} name="Shallow" />
         <Row
           color="moderate"
@@ -46,9 +46,9 @@ function Row({
   name: string;
 }) {
   return (
-    <li className="depth-legend__row">
+    <li className="chart-legend__row">
       <span className={`depth-legend__swatch depth-legend__swatch--${color}`} aria-label={name} />
-      <span className="depth-legend__range">{label}</span>
+      <span className="chart-legend__label">{label}</span>
     </li>
   );
 }

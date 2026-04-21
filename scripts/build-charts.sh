@@ -69,7 +69,21 @@ OUTPUT_DIR="$REPO_ROOT/public/charts"
 OUTPUT_FILE="$OUTPUT_DIR/${OUTPUT_REGION}.pmtiles"
 
 # ENC layers we extract. Skip dozens of less-critical administrative layers.
-LAYERS=(DEPCNT DEPARE COALNE BOYLAT BOYSAW LIGHTS WRECKS OBSTRN SOUNDG)
+#
+# S-57 object codes (per IHO S-57 Appendix A):
+#   DEPCNT — depth contour       DEPARE — depth area
+#   COALNE — coastline           SOUNDG — sounding (point depth)
+#   BOYLAT — lateral buoy        BOYSAW — safe-water buoy
+#   BOYCAR — cardinal buoy       BOYISD — isolated-danger buoy
+#   BOYSPP — special buoy        BCNLAT — lateral beacon (fixed)
+#   BCNSAW — safe-water beacon   BCNCAR — cardinal beacon
+#   BCNISD — isolated-danger bcn LIGHTS — navigational light
+#   WRECKS — wreck               OBSTRN — obstruction
+#   TOPMAR — topmark (symbol atop a buoy/beacon)
+LAYERS=(DEPCNT DEPARE COALNE \
+        BOYLAT BOYSAW BOYCAR BOYISD BOYSPP \
+        BCNLAT BCNSAW BCNCAR BCNISD \
+        LIGHTS WRECKS OBSTRN SOUNDG TOPMAR)
 
 trap 'rm -rf "$WORK_DIR"' EXIT
 
@@ -105,6 +119,15 @@ fi
 echo "[charts] Found $cell_count ENC cells across ${#BUNDLE_URLS[@]} bundle(s)"
 
 # ── Extract each target layer into one aggregated GeoJSON ─────────────
+#
+# GDAL S-57 driver config for SOUNDG: by default each SOUNDG feature is a
+# MultiPoint with depth in the Z coordinate, which MapLibre can't read from
+# a text-field expression. Setting these two env vars makes ogr2ogr split
+# the MultiPoint into individual Point features and promote Z into a DEPTH
+# attribute — which the sounding symbol layer in marineStyle.ts reads to
+# render plain-language "12 ft" labels.
+export OGR_S57_OPTIONS="SPLIT_MULTIPOINT=ON,ADD_SOUNDG_DEPTH=ON"
+
 echo "[charts] Extracting layers: ${LAYERS[*]}"
 for layer in "${LAYERS[@]}"; do
   out="$WORK_DIR/${layer}.geojson"

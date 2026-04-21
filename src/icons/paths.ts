@@ -72,6 +72,14 @@ export const ICON_PATHS = {
   // tri-state cycle (balanced / place / depth) obviously about annotations.
   tag: 'M 20 12 l -8 8 l -10 -10 v -7 h 7 z M 7 7 m -1.3 0 a 1.3 1.3 0 1 0 2.6 0 a 1.3 1.3 0 1 0 -2.6 0',
 
+  // ── Layers button (chart controls) ─────────────────────────────────
+  // Three stacked rhombi — top layer drawn closed, second and third as
+  // chevrons beneath. Reads as "stack of sheets" / map layers. Distinct
+  // from the wave icon (wavy horizontals) and marina glyphs. Used to
+  // open the chart-layers panel.
+  layers:
+    'M 12 3 L 21 9 L 12 15 L 3 9 Z M 3 13 L 12 19 L 21 13 M 3 17 L 12 21 L 21 17',
+
   // ── Hazard waypoint ────────────────────────────────────────────────
   // Bold standalone "!" — tapered bar over a disc. Designed as a closed
   // path so it renders filled (red) with a thick outline (yellow-green)

@@ -49,6 +49,22 @@
   --depth-mid: #ffd700;
   --depth-deep: #6fecb0;
 
+  /* Nav-aid palette (IALA Region B — US). Every token here is reserved for
+     chart navaids and must never be reused for UI state. The palette is
+     chosen so each mark type is distinguishable from every other mark AND
+     from the existing own-ship / AIS / route-pin / saved-waypoint vocabulary.
+     Notably: --navaid-port is magenta-biased (NOT --alert-red, which stays
+     reserved for MOB / hazard-waypoint / alarm banners) so a port-hand can
+     and an emergency-red pin can never be visually confused. */
+  --navaid-port: #c2185b;        /* lateral port-hand (red can) */
+  --navaid-starboard: #0e8c43;   /* lateral starboard-hand (green nun) */
+  --navaid-safe-water: #d62e38;  /* safe-water red/white stripes */
+  --navaid-cardinal: #f5b800;    /* cardinal yellow */
+  --navaid-isolated: #1a1a1a;    /* isolated-danger body (near-black) */
+  --navaid-special: #f5b800;     /* special buoy (IALA yellow; disambiguated by X glyph) */
+  --navaid-light-glow: #ff6fd8;  /* light halo — hot magenta, chart-exclusive */
+  --navaid-wreck: #7b1fa2;       /* wrecks/obstructions — deep purple */
+
   /* Typography */
   --font-sans: 'Zalando Sans Expanded', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
   --font-mono: 'Roboto Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
@@ -1848,14 +1864,26 @@ body,
   background: rgba(20, 32, 56, 0.06);
 }
 
-/* ── Depth legend (bottom-right corner of chart) ───────────────────── */
+/* ── Chart legends ──────────────────────────────────────────────────
+   Shared base rules for on-chart reference keys. DepthLegend, SoundingLegend
+   and NavaidLegend all carry the `.chart-legend` class so any aesthetic
+   tweak lands on all three at once. They stack in a single top-left
+   container (.chart-legend-stack) instead of each setting its own `top`,
+   so growth in one doesn't push off-screen the one below. */
 
-.depth-legend {
+.chart-legend-stack {
   position: absolute;
   top: 16px;
   left: 16px;
   z-index: 10;
-  /* Non-dismissible reference key — tight padding, no room reserved. */
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  pointer-events: none; /* inner legends re-enable via chart-legend */
+}
+
+.chart-legend {
+  position: relative;
   padding: 6px 10px;
   background: rgba(20, 32, 56, 0.88);
   color: var(--text-primary);
@@ -1867,9 +1895,10 @@ body,
   display: flex;
   flex-direction: column;
   gap: 3px;
+  pointer-events: auto;
 }
 
-.depth-legend__title {
+.chart-legend__title {
   font-family: var(--font-sans);
   font-weight: 700;
   font-size: 9px;
@@ -1878,7 +1907,7 @@ body,
   color: var(--text-dim);
 }
 
-.depth-legend__rows {
+.chart-legend__rows {
   list-style: none;
   margin: 0;
   padding: 0;
@@ -1887,18 +1916,76 @@ body,
   gap: 2px;
 }
 
-.depth-legend__row {
+.chart-legend__row {
   display: grid;
-  grid-template-columns: 10px 1fr;
+  grid-template-columns: 14px 1fr;
   align-items: center;
   gap: 6px;
   font-variant-numeric: tabular-nums;
+}
+
+.chart-legend__label {
+  font-family: var(--font-mono);
+  font-weight: 500;
+  font-size: 11px;
+  color: var(--text-primary);
+}
+
+/* Depth legend specifics — colored swatches. Position handled by the
+   shared .chart-legend-stack container above. */
+
+.depth-legend .chart-legend__row {
+  grid-template-columns: 10px 1fr;
 }
 
 .depth-legend__swatch {
   width: 10px;
   height: 10px;
   border: 1px solid var(--bg-navy);
+}
+
+/* Sounding legend — stand-alone key that connects the numbers scattered
+   across the water to their meaning. Sample numeral on the left, plain-
+   language caption on the right, secondary line beneath for the
+   tide-adjustment hint. */
+
+.sounding-legend__body {
+  display: grid;
+  grid-template-columns: 22px 1fr;
+  gap: 8px;
+  align-items: center;
+}
+
+.sounding-legend__sample {
+  font-family: var(--font-sans);
+  font-weight: 700;
+  font-size: 14px;
+  color: var(--depth-mid);
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+  line-height: 1;
+  letter-spacing: 0.02em;
+}
+
+.sounding-legend__text {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.sounding-legend__primary {
+  font-family: var(--font-mono);
+  font-weight: 500;
+  font-size: 11px;
+  color: var(--text-primary);
+  line-height: 1.15;
+}
+
+.sounding-legend__secondary {
+  font-family: var(--font-sans);
+  font-size: 10px;
+  color: var(--text-dim);
+  line-height: 1.15;
 }
 
 .depth-legend__swatch--shallow {
@@ -1913,13 +2000,6 @@ body,
   background: var(--depth-deep);
 }
 
-.depth-legend__range {
-  font-family: var(--font-mono);
-  font-weight: 500;
-  font-size: 11px;
-  color: var(--text-primary);
-}
-
 .depth-legend__footer {
   font-family: var(--font-mono);
   font-size: 9px;
@@ -1927,6 +2007,83 @@ body,
   border-top: 1px solid var(--border-on-navy);
   padding-top: 3px;
   margin-top: 1px;
+  letter-spacing: 0.02em;
+}
+
+/* Navaid legend — position handled by .chart-legend-stack. */
+
+.navaid-legend__glyph {
+  width: 14px;
+  height: 14px;
+  display: block;
+  color: var(--text-primary);
+}
+
+/* ── Navaid detail panel (tapped buoy / light / wreck) ─────────────── */
+
+.navaid-detail {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.navaid-detail__title {
+  font-family: var(--font-sans);
+  font-weight: 700;
+  font-size: 20px;
+  line-height: 1.2;
+  margin: 0;
+  color: var(--text-on-card);
+}
+
+.navaid-detail__kind {
+  font-family: var(--font-sans);
+  font-weight: 500;
+  font-size: 15px;
+  line-height: 1.35;
+  color: var(--text-on-card);
+  margin: 0;
+}
+
+.navaid-detail__light {
+  font-family: var(--font-sans);
+  font-weight: 600;
+  font-size: 14px;
+  color: var(--text-on-card);
+  background: rgba(255, 111, 216, 0.18);
+  border-left: 3px solid var(--navaid-light-glow);
+  padding: 4px 8px;
+  margin: 2px 0 0;
+}
+
+.navaid-detail__now {
+  font-family: var(--font-sans);
+  font-weight: 700;
+  font-size: 15px;
+  color: var(--text-on-card);
+  background: rgba(91, 216, 145, 0.18);
+  border-left: 3px solid var(--ok);
+  padding: 4px 8px;
+  margin: 2px 0 0;
+  font-variant-numeric: tabular-nums;
+}
+
+.navaid-detail__range {
+  font-family: var(--font-sans);
+  font-weight: 500;
+  font-size: 13px;
+  color: var(--text-on-card-dim);
+  margin: 0;
+}
+
+.navaid-detail__pos {
+  font-family: var(--font-mono);
+  font-weight: 400;
+  font-size: 12px;
+  color: var(--text-on-card-dim);
+  border-top: 1px solid var(--border-on-card);
+  margin-top: 4px;
+  padding-top: 6px;
   letter-spacing: 0.02em;
 }
 
@@ -2531,4 +2688,108 @@ body,
 .chart-canvas--picking .ais-target-marker,
 .chart-canvas--picking .waypoint-marker {
   pointer-events: none;
+}
+
+/* ── Chart layers panel ─────────────────────────────────────────────
+   Opens from the LayersButton in MapControls. Checkbox + radio rows
+   with plain-language subtitles. Matches the brutalist aesthetic
+   (hard rectangles, sand surface, navy chrome) and keeps rows at the
+   AAA 44px hit-target minimum. */
+
+.chart-layers {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.chart-layers__title {
+  font-family: var(--font-sans);
+  font-weight: 700;
+  font-size: 20px;
+  line-height: 1.2;
+  margin: 0;
+  color: var(--text-on-card);
+}
+
+.chart-layers__subtitle {
+  font-family: var(--font-sans);
+  font-weight: 700;
+  font-size: 14px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--text-on-card);
+  margin: 6px 0 0;
+  padding-top: 6px;
+  border-top: 1px solid var(--border-on-card);
+}
+
+.chart-layers__intro {
+  font-family: var(--font-sans);
+  font-weight: 500;
+  font-size: 13px;
+  line-height: 1.35;
+  color: var(--text-on-card-dim);
+  margin: 0;
+}
+
+.chart-layers__rows {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.chart-layers__row {
+  border-top: 1px solid var(--border-on-card);
+}
+
+.chart-layers__row:first-child {
+  border-top: none;
+}
+
+.chart-layers__label {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 10px 2px;
+  min-height: 44px;
+  cursor: pointer;
+}
+
+.chart-layers__label:hover {
+  background: rgba(20, 32, 56, 0.04);
+}
+
+.chart-layers__checkbox {
+  width: 22px;
+  height: 22px;
+  flex-shrink: 0;
+  margin-top: 2px;
+  accent-color: var(--bg-navy);
+  cursor: pointer;
+}
+
+.chart-layers__text {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  flex: 1 1 auto;
+}
+
+.chart-layers__heading {
+  font-family: var(--font-sans);
+  font-weight: 600;
+  font-size: 15px;
+  color: var(--text-on-card);
+  line-height: 1.3;
+}
+
+.chart-layers__description {
+  font-family: var(--font-sans);
+  font-weight: 400;
+  font-size: 13px;
+  color: var(--text-on-card-dim);
+  line-height: 1.35;
 }

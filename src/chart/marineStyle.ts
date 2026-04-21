@@ -189,13 +189,40 @@ export function depthColorExpressionForTide(
   ] as unknown as ExpressionSpecification;
 }
 
+/**
+ * Parallel color expression for spot-sounding labels. S-57 SOUNDG features
+ * carry their depth in either the VALSOU or DEPTH attribute (meters to MLLW)
+ * depending on how ogr2ogr was configured at PMTiles build time. Coalescing
+ * both keeps the style robust across rebuild variants.
+ */
+export function soundingColorExpressionForTide(
+  tideFt: number,
+): DataDrivenPropertyValueSpecification<string> {
+  const tideM = tideFt * 0.3048;
+  const shallowBreak = Math.max(0.01, DEPTH_BREAK_SHALLOW - tideM);
+  const moderateBreak = Math.max(shallowBreak + 0.01, DEPTH_BREAK_MODERATE - tideM);
+  return [
+    'step',
+    ['to-number', ['coalesce', ['get', 'VALSOU'], ['get', 'DEPTH']]],
+    COLORS.depthShallow,
+    shallowBreak,
+    COLORS.depthModerate,
+    moderateBreak,
+    COLORS.depthDeep,
+  ] as unknown as ExpressionSpecification;
+}
+
 export function applyTideToDepthContours(map: MapLibreMap, tideFt: number): void {
-  const expr = depthColorExpressionForTide(tideFt);
+  const contourExpr = depthColorExpressionForTide(tideFt);
   if (map.getLayer('noaa-depth-contour')) {
-    map.setPaintProperty('noaa-depth-contour', 'line-color', expr);
+    map.setPaintProperty('noaa-depth-contour', 'line-color', contourExpr);
   }
   if (map.getLayer('noaa-depth-contour-label')) {
-    map.setPaintProperty('noaa-depth-contour-label', 'text-color', expr);
+    map.setPaintProperty('noaa-depth-contour-label', 'text-color', contourExpr);
+  }
+  const soundingExpr = soundingColorExpressionForTide(tideFt);
+  if (map.getLayer('noaa-soundg-label')) {
+    map.setPaintProperty('noaa-soundg-label', 'text-color', soundingExpr);
   }
 }
 
@@ -252,52 +279,301 @@ function addNoaaChartLayers(map: MapLibreMap): void {
     },
   });
 
-  // Buoys (lateral + special) — small amber circles with navy stroke.
-  for (const src of ['boylat', 'boysaw']) {
-    addLayerIfMissing(map, {
-      id: `noaa-${src}`,
-      type: 'circle',
-      source: 'noaa',
-      'source-layer': src,
-      paint: {
-        'circle-radius': 4,
-        'circle-color': COLORS.buoy,
-        'circle-stroke-color': COLORS.buoyOutline,
-        'circle-stroke-width': 1,
-      },
-    });
-  }
+  // IALA Region B symbol layers — crisp glyphs with OBJNAM labels at all
+  // zooms from the overview (8) to approach (16+). Images are registered
+  // at runtime by useNavaidSpriteTheme so the sheet swaps between day and
+  // night palettes without restyling. No generic circle fallback — a
+  // single visual vocabulary is less confusing than a zoom-dependent swap.
+  addNavaidSymbolLayers(map);
 
-  // Lights — amber ring.
+  // Spot soundings (SOUNDG) — individual depth readings at MLLW that fill
+  // in between contour lines. Rendered as small feet-labels colored by the
+  // same tide-aware palette as the contours.
+  //
+  // Anti-clutter rules (otherwise a busy harbor is a wall of numbers):
+  //   1. minzoom 14 — only on true approach/harbor zoom. At overview the
+  //      contours already tell the depth story; numbers add noise.
+  //   2. Shallow-focus filter: only draw readings ≤ 10 m (~33 ft). Anything
+  //      deeper is rarely decision-relevant for a centerboard boat.
+  //   3. symbol-sort-key puts shallowest first — when labels crowd, the
+  //      deepest drop, so the safety-critical ones always win a tie.
+  //   4. Tap on a sounding opens a plain-language panel explaining what the
+  //      number means (see useNavaidTaps + navaidNarrative 'soundg' kind).
+  // NOAA ENC SOUNDG features store the depth in one of three places
+  // depending on how ogr2ogr was configured at extraction:
+  //   - VALSOU attribute (when OGR_S57_ADD_SOUNDG_DEPTH=ON at build)
+  //   - DEPTH attribute (older GDAL behaviour)
+  //   - Z coordinate of the point (default ogr2ogr, NOT queryable here)
+  // We coalesce the attribute names so either build config works; if neither
+  // is present (Z-only), no label renders — rebuild charts with the config
+  // flag added in scripts/build-charts.sh.
+  const soundingDepthM = ['coalesce', ['get', 'VALSOU'], ['get', 'DEPTH']] as unknown as ExpressionSpecification;
   addLayerIfMissing(map, {
-    id: 'noaa-lights',
-    type: 'circle',
+    id: 'noaa-soundg-label',
+    type: 'symbol',
     source: 'noaa',
-    'source-layer': 'lights',
+    'source-layer': 'soundg',
+    minzoom: 14,
+    filter: [
+      'any',
+      ['has', 'VALSOU'],
+      ['has', 'DEPTH'],
+    ],
+    layout: {
+      // Convert meters to feet and round — fractional feet on a chart label
+      // reads as noise, not precision.
+      'text-field': [
+        'to-string',
+        ['round', ['*', ['to-number', soundingDepthM], 3.28084]],
+      ],
+      'text-font': ['Noto Sans Bold'],
+      'text-size': 10,
+      'text-letter-spacing': 0.02,
+      // Shallowest first — when labels crowd at busy harbors, the deepest
+      // drop, so safety-critical numbers always win. No feet-threshold filter
+      // because MapLibre's collision engine plus this sort key already gives
+      // us controlled decay; hard-clipping at 10 m hid valuable anchor-depth
+      // readings.
+      'symbol-sort-key': ['to-number', soundingDepthM],
+    },
     paint: {
-      'circle-radius': 5,
-      'circle-color': 'transparent',
-      'circle-stroke-color': COLORS.buoy,
-      'circle-stroke-width': 2,
+      'text-color': soundingColorExpressionForTide(0),
+      'text-halo-color': COLORS.land,
+      'text-halo-width': 1.5,
     },
   });
+}
 
-  // Wrecks + obstructions — red X-style markers. Circle fill for v1; swap to
-  // proper icons if you hook up a sprite sheet later.
-  for (const src of ['wrecks', 'obstrn']) {
-    addLayerIfMissing(map, {
-      id: `noaa-${src}`,
-      type: 'circle',
-      source: 'noaa',
-      'source-layer': src,
-      paint: {
-        'circle-radius': 4,
-        'circle-color': COLORS.wreck,
-        'circle-stroke-color': COLORS.land,
-        'circle-stroke-width': 1,
-      },
-    });
+/**
+ * Add a MapLibre `symbol` layer with an icon-image expression + optional
+ * OBJNAM label. Shared across all navaid families so their styling stays
+ * locked to the same rules. `iconImage` can be a literal icon name or a
+ * full MapLibre expression for attribute-driven families (lateral, cardinal).
+ */
+function addNavaidSymbolLayer(
+  map: MapLibreMap,
+  opts: {
+    id: string;
+    sourceLayer: string;
+    iconImage: string | unknown[];
+    withLabel?: boolean;
+    lightLabel?: boolean;
+    filter?: unknown[];
+  },
+): void {
+  const layout: Record<string, unknown> = {
+    'icon-image': opts.iconImage,
+    // Scale glyphs from a small 0.45× overview (zoom 8) up to 1.1× at
+    // approach (zoom 16). Keeps dense harbors legible at zoom 12+ without
+    // clutter at overview, and avoids any generic-circle fallback tier.
+    'icon-size': ['interpolate', ['linear'], ['zoom'], 8, 0.45, 12, 0.8, 16, 1.1],
+    'icon-allow-overlap': true,
+    'icon-ignore-placement': false,
+  };
+  if (opts.withLabel) {
+    layout['text-field'] = ['to-string', ['get', 'OBJNAM']];
+    layout['text-font'] = ['Noto Sans Bold'];
+    layout['text-size'] = 11;
+    layout['text-offset'] = [0, 1.2];
+    layout['text-anchor'] = 'top';
+    layout['text-optional'] = true;
+    layout['symbol-sort-key'] = ['case', ['has', 'OBJNAM'], 0, 1];
   }
+  if (opts.lightLabel) {
+    // Lights get a short characteristic label beside the icon ("Fl R 4s")
+    // so a mariner can identify the light at a glance.
+    layout['text-field'] = buildLightLabelExpression();
+    layout['text-font'] = ['Noto Sans Bold'];
+    layout['text-size'] = 10;
+    layout['text-offset'] = [1.1, 0];
+    layout['text-anchor'] = 'left';
+    layout['text-optional'] = true;
+  }
+
+  const layer = {
+    id: opts.id,
+    type: 'symbol' as const,
+    source: 'noaa',
+    'source-layer': opts.sourceLayer,
+    minzoom: 8,
+    layout,
+    paint: {
+      'text-color': COLORS.coastline,
+      'text-halo-color': COLORS.land,
+      'text-halo-width': 1.5,
+    },
+    ...(opts.filter ? { filter: opts.filter } : {}),
+  } as unknown as Parameters<typeof addLayerIfMissing>[1];
+  addLayerIfMissing(map, layer);
+}
+
+function addNavaidSymbolLayers(map: MapLibreMap): void {
+  // Lateral buoys — icon by CATLAM (1=port, 2=starboard).
+  addNavaidSymbolLayer(map, {
+    id: 'noaa-boylat-symbol',
+    sourceLayer: 'boylat',
+    iconImage: [
+      'match',
+      ['to-number', ['get', 'CATLAM']],
+      1,
+      'lateral-port-buoy',
+      2,
+      'lateral-starboard-buoy',
+      'lateral-port-buoy',
+    ],
+    withLabel: true,
+  });
+  // Lateral beacons — same CATLAM switch, beacon silhouette.
+  addNavaidSymbolLayer(map, {
+    id: 'noaa-bcnlat-symbol',
+    sourceLayer: 'bcnlat',
+    iconImage: [
+      'match',
+      ['to-number', ['get', 'CATLAM']],
+      1,
+      'lateral-port-beacon',
+      2,
+      'lateral-starboard-beacon',
+      'lateral-port-beacon',
+    ],
+    withLabel: true,
+  });
+  // Safe-water buoys + beacons.
+  addNavaidSymbolLayer(map, {
+    id: 'noaa-boysaw-symbol',
+    sourceLayer: 'boysaw',
+    iconImage: 'safe-water-buoy',
+    withLabel: true,
+  });
+  addNavaidSymbolLayer(map, {
+    id: 'noaa-bcnsaw-symbol',
+    sourceLayer: 'bcnsaw',
+    iconImage: 'safe-water-beacon',
+    withLabel: true,
+  });
+  // Cardinal buoys — icon by CATCAM (1=N, 2=E, 3=S, 4=W).
+  const cardinalSwitch = [
+    'match',
+    ['to-number', ['get', 'CATCAM']],
+    1,
+    'cardinal-north',
+    2,
+    'cardinal-east',
+    3,
+    'cardinal-south',
+    4,
+    'cardinal-west',
+    'cardinal-north',
+  ];
+  addNavaidSymbolLayer(map, {
+    id: 'noaa-boycar-symbol',
+    sourceLayer: 'boycar',
+    iconImage: cardinalSwitch,
+    withLabel: true,
+  });
+  addNavaidSymbolLayer(map, {
+    id: 'noaa-bcncar-symbol',
+    sourceLayer: 'bcncar',
+    iconImage: cardinalSwitch,
+    withLabel: true,
+  });
+  // Isolated-danger buoys + beacons.
+  addNavaidSymbolLayer(map, {
+    id: 'noaa-boyisd-symbol',
+    sourceLayer: 'boyisd',
+    iconImage: 'isolated-danger',
+    withLabel: true,
+  });
+  addNavaidSymbolLayer(map, {
+    id: 'noaa-bcnisd-symbol',
+    sourceLayer: 'bcnisd',
+    iconImage: 'isolated-danger',
+    withLabel: true,
+  });
+  // Special-purpose buoys.
+  addNavaidSymbolLayer(map, {
+    id: 'noaa-boyspp-symbol',
+    sourceLayer: 'boyspp',
+    iconImage: 'special-buoy',
+    withLabel: true,
+  });
+  // Lights — only render the glyph + characteristic label when lit
+  // (VALNMR > 0). Unlit objects carry LIGHTS records but don't need the ring.
+  addNavaidSymbolLayer(map, {
+    id: 'noaa-lights-symbol',
+    sourceLayer: 'lights',
+    iconImage: 'light',
+    lightLabel: true,
+    filter: ['>', ['to-number', ['coalesce', ['get', 'VALNMR'], 0]], 0],
+  });
+  // Wrecks + obstructions.
+  addNavaidSymbolLayer(map, {
+    id: 'noaa-wrecks-symbol',
+    sourceLayer: 'wrecks',
+    iconImage: 'wreck',
+    withLabel: true,
+  });
+  addNavaidSymbolLayer(map, {
+    id: 'noaa-obstrn-symbol',
+    sourceLayer: 'obstrn',
+    iconImage: 'obstruction',
+    withLabel: true,
+  });
+}
+
+// Build a MapLibre text-field expression that assembles a light's
+// characteristic label from LITCHR (pattern), COLOUR, and SIGPER. Examples:
+//   "Fl R 4s", "Oc G 6s", "Q R", "Iso W".
+// Falls back to "" when LITCHR is missing so text-optional skips the label.
+function buildLightLabelExpression(): unknown[] {
+  const pattern = [
+    'match',
+    ['to-number', ['coalesce', ['get', 'LITCHR'], 0]],
+    1,
+    'F',
+    2,
+    'Fl',
+    3,
+    'LFl',
+    4,
+    'Q',
+    5,
+    'VQ',
+    6,
+    'UQ',
+    7,
+    'Iso',
+    8,
+    'Oc',
+    11,
+    'Gp Fl',
+    12,
+    'Mo',
+    25,
+    'Al',
+    '',
+  ];
+  const colorLetter = [
+    'match',
+    // First colour code only — COLOUR comes through as a comma string.
+    ['slice', ['to-string', ['coalesce', ['get', 'COLOUR'], '']], 0, 1],
+    '1',
+    ' W',
+    '3',
+    ' R',
+    '4',
+    ' G',
+    '6',
+    ' Y',
+    '',
+  ];
+  const period = [
+    'case',
+    ['>', ['to-number', ['coalesce', ['get', 'SIGPER'], 0]], 0],
+    ['concat', ' ', ['to-string', ['get', 'SIGPER']], 's'],
+    '',
+  ];
+  return ['concat', pattern, colorLetter, period];
 }
 
 /**

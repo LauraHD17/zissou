@@ -83,6 +83,19 @@ export type AlarmTone = 'siren' | 'chirp' | 'silent';
  *  names and NOAA depth labels would overlap. */
 export type ChartLabelPriority = 'balanced' | 'place' | 'depth';
 
+/** Visibility toggles for NOAA chart data groups. Lets the operator hide
+ *  detail they don't want on screen (e.g. turn soundings off in crowded
+ *  harbors). Personal state — saved waypoints, own-ship, AIS targets —
+ *  is NOT toggled here; those stay visible since they're session context,
+ *  not chart content. */
+export interface ChartLayerPrefs {
+  contours: boolean;
+  soundings: boolean;
+  navaids: boolean;
+  lights: boolean;
+  hazards: boolean;
+}
+
 /** Hull dimensions, in feet. All optional — a partial spec still informs the
  *  calcs that use whatever fields are set. For a centerboard boat, draft is
  *  the board-down maximum (the shallow-water floor). */
@@ -137,4 +150,7 @@ export interface UserPrefs {
    *  chart. Defaults to 'balanced' — place names at overview zoom, depth labels
    *  at approach zoom. */
   chartLabelPriority: ChartLabelPriority;
+  /** Per-group visibility for NOAA chart data. All default to true; toggled
+   *  from the Layers panel when the operator wants a cleaner view. */
+  chartLayers: ChartLayerPrefs;
 }

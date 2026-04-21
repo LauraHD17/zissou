@@ -36,6 +36,19 @@
 
   /* Focus ring stays warm */
   --focus-ring: #ffbb44;
+
+  /* Nav-aid palette — warm-red-spectrum to preserve dark adaptation.
+     Paired with a warm-palette sprite sheet (public/sprites/navaid-night.*)
+     that the useNavaidSpriteTheme hook swaps in on theme change, so the
+     on-chart glyphs actually match these tokens instead of just fading. */
+  --navaid-port: #b33a4a;
+  --navaid-starboard: #995522;
+  --navaid-safe-water: #cc5544;
+  --navaid-cardinal: #cc6622;
+  --navaid-isolated: #331010;
+  --navaid-special: #cc6622;
+  --navaid-light-glow: #ff7744;
+  --navaid-wreck: #992233;
 }
 
 /* Brightness filter — scoped to <main> so safety alarms keep full intensity. */

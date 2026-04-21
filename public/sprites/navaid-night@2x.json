@@ -1,0 +1,107 @@
+{
+  "cardinal-east": {
+    "width": 40,
+    "height": 40,
+    "x": 0,
+    "y": 0,
+    "pixelRatio": 2
+  },
+  "cardinal-north": {
+    "width": 40,
+    "height": 40,
+    "x": 0,
+    "y": 40,
+    "pixelRatio": 2
+  },
+  "cardinal-south": {
+    "width": 40,
+    "height": 40,
+    "x": 0,
+    "y": 80,
+    "pixelRatio": 2
+  },
+  "cardinal-west": {
+    "width": 40,
+    "height": 40,
+    "x": 0,
+    "y": 120,
+    "pixelRatio": 2
+  },
+  "isolated-danger": {
+    "width": 40,
+    "height": 40,
+    "x": 0,
+    "y": 160,
+    "pixelRatio": 2
+  },
+  "lateral-port-beacon": {
+    "width": 40,
+    "height": 40,
+    "x": 0,
+    "y": 200,
+    "pixelRatio": 2
+  },
+  "lateral-port-buoy": {
+    "width": 40,
+    "height": 40,
+    "x": 0,
+    "y": 240,
+    "pixelRatio": 2
+  },
+  "lateral-starboard-beacon": {
+    "width": 40,
+    "height": 40,
+    "x": 0,
+    "y": 280,
+    "pixelRatio": 2
+  },
+  "lateral-starboard-buoy": {
+    "width": 40,
+    "height": 40,
+    "x": 0,
+    "y": 320,
+    "pixelRatio": 2
+  },
+  "light": {
+    "width": 40,
+    "height": 40,
+    "x": 0,
+    "y": 360,
+    "pixelRatio": 2
+  },
+  "obstruction": {
+    "width": 40,
+    "height": 40,
+    "x": 0,
+    "y": 400,
+    "pixelRatio": 2
+  },
+  "safe-water-beacon": {
+    "width": 40,
+    "height": 40,
+    "x": 0,
+    "y": 440,
+    "pixelRatio": 2
+  },
+  "safe-water-buoy": {
+    "width": 40,
+    "height": 40,
+    "x": 0,
+    "y": 480,
+    "pixelRatio": 2
+  },
+  "special-buoy": {
+    "width": 40,
+    "height": 40,
+    "x": 0,
+    "y": 520,
+    "pixelRatio": 2
+  },
+  "wreck": {
+    "width": 40,
+    "height": 40,
+    "x": 0,
+    "y": 560,
+    "pixelRatio": 2
+  }
+}

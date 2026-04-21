@@ -21,10 +21,13 @@ import { useAnchorDragWatch } from '../anchor/useAnchorDragWatch';
 import { useHazardProximityWatch } from '../waypoints/useHazardProximityWatch';
 import { useMOBMarker } from './markers/MOBMarker';
 import { AISDetailPanel } from './AISDetailPanel';
+import { NavaidDetailPanel, type NavaidFeature } from './NavaidDetailPanel';
 import type { Vessel } from '../signalk/types';
 import { MapControls } from './controls/MapControls';
 import { ScaleBar } from './controls/ScaleBar';
 import { DepthLegend } from './controls/DepthLegend';
+import { NavaidLegend } from './controls/NavaidLegend';
+import { SoundingLegend } from './controls/SoundingLegend';
 import { DropPinButton } from './controls/DropPinButton';
 import { SaveWaypointButton } from './controls/SaveWaypointButton';
 import { DestinationWidget } from './controls/DestinationWidget';
@@ -36,6 +39,9 @@ import { WeatherPill } from '../weather/WeatherPill';
 import { useChartMode } from './hooks/useChartMode';
 import { useChartPickMode } from './hooks/useChartPickMode';
 import { useTideAwareContours } from './hooks/useTideAwareContours';
+import { useNavaidTaps } from './hooks/useNavaidTaps';
+import { useNavaidSpriteTheme } from './hooks/useNavaidSpriteTheme';
+import { useChartLayerVisibility } from './hooks/useChartLayerVisibility';
 import { appendWaypoint, removeWaypoint } from '../waypoints/routeStore';
 import { useRouteViaMarkers } from './markers/RouteViaMarkers';
 import type { RouteWaypoint } from '../types/nav';
@@ -77,10 +83,15 @@ export function ChartCanvas() {
   labelPriorityRef.current = chartLabelPriority;
   const { mode, setMode, modeRef } = useChartMode(mapRef, styleLoadedRef);
   const [pickMode, setPickMode] = useState<'idle' | 'destination' | 'waypoint'>('idle');
+  // Ref mirror of pickMode so useNavaidTaps can skip handling while a pick
+  // mode is armed without being recreated on every mode change.
+  const pickModeRef = useRef(pickMode);
+  pickModeRef.current = pickMode;
   const [saveAt, setSaveAt] = useState<Position | null>(null);
   const [tappedWaypoint, setTappedWaypoint] = useState<SavedWaypoint | null>(null);
   const [tappedRouteWp, setTappedRouteWp] = useState<RouteWaypoint | null>(null);
   const [tappedVessel, setTappedVessel] = useState<Vessel | null>(null);
+  const [tappedNavaid, setTappedNavaid] = useState<NavaidFeature | null>(null);
   // Auto-recenter vs free-pan. User drag/zoom suspends tracking; Recenter
   // button re-engages it.
   const [following, setFollowing] = useState(true);
@@ -151,6 +162,9 @@ export function ChartCanvas() {
   useAnchorDragWatch();
   useHazardProximityWatch();
   useMOBMarker(mapRef);
+  useNavaidSpriteTheme(mapRef);
+  useNavaidTaps(mapRef, { onTap: setTappedNavaid, pickModeRef });
+  useChartLayerVisibility(mapRef);
   // Vias remove directly on tap — intermediate pins are cheap to re-drop and
   // an extra confirmation felt like noise. Destination removal still goes
   // through the action sheet (below) because losing the final destination is
@@ -182,7 +196,7 @@ export function ChartCanvas() {
 
   // Re-apply label priority when the user toggles the mode. style.load already
   // applies it on first load and on mode switches; this covers the tri-state
-  // cycle in the LabelPriorityButton.
+  // cycle in the ChartLayersPanel's label-priority section.
   useEffect(() => {
     const map = mapRef.current;
     if (!map || !styleLoadedRef.current) return;
@@ -235,7 +249,11 @@ export function ChartCanvas() {
         <SafeReturnPill />
       </div>
       <ScaleBar mapRef={mapRef} />
-      <DepthLegend />
+      <div className="chart-legend-stack">
+        <DepthLegend />
+        <SoundingLegend />
+        <NavaidLegend />
+      </div>
       {pickMode === 'destination' && <RouteBuildPill onDone={() => setPickMode('idle')} />}
       {tappedWaypoint && (
         <WaypointActionSheet waypoint={tappedWaypoint} onClose={() => setTappedWaypoint(null)} />
@@ -248,6 +266,9 @@ export function ChartCanvas() {
       )}
       {tappedVessel && (
         <AISDetailPanel vessel={tappedVessel} onClose={() => setTappedVessel(null)} />
+      )}
+      {tappedNavaid && (
+        <NavaidDetailPanel feature={tappedNavaid} onClose={() => setTappedNavaid(null)} />
       )}
       {saveAt && <WaypointEditor mode="create" position={saveAt} onClose={() => setSaveAt(null)} />}
     </div>

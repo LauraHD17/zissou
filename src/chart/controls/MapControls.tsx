@@ -1,6 +1,6 @@
 import { Icon } from '../../icons';
 import type { ChartMode } from '../hooks/useChartMode';
-import { LabelPriorityButton } from './LabelPriorityButton';
+import { LayersButton } from './LayersButton';
 
 interface Props {
   mode: ChartMode;
@@ -51,7 +51,7 @@ export function MapControls({
       >
         <Icon name={mode === 'marine' ? 'wave' : 'streets'} size={24} />
       </ControlButton>
-      <LabelPriorityButton />
+      <LayersButton />
       {dropPinSlot}
       {saveWaypointSlot}
       {anchorSlot}

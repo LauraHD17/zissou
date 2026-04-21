@@ -12,6 +12,7 @@
     "test:watch": "vitest",
     "test:e2e": "playwright test",
     "test:bundle": "node scripts/check-bundle-size.mjs",
+    "build:sprites": "node scripts/generate-navaid-sprites.mjs && node scripts/build-navaid-sprites.mjs",
     "lint": "eslint . --max-warnings=0",
     "format": "prettier --write .",
     "format:check": "prettier --check ."
@@ -35,6 +36,7 @@
     "eslint-plugin-react-refresh": "^0.5.2",
     "globals": "^17.5.0",
     "prettier": "^3.8.3",
+    "sharp": "^0.34.5",
     "typescript": "^5.6.3",
     "typescript-eslint": "^8.58.2",
     "vite": "^8.0.8",
