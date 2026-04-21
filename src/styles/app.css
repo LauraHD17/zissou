@@ -347,16 +347,11 @@ body,
   color: var(--text-primary);
 }
 
-/* Tide is an M2 stub until NOAA harmonics wire in — dim it and prefix with `~`
-   so it never reads as authoritative for anchoring/grounding decisions. */
+/* Tide is an M2 stub until NOAA harmonics wire in — dim it so it never
+   reads as authoritative for anchoring/grounding decisions. Screen readers
+   get "Estimated…" via the sr-only text; hover gets a tooltip. */
 .statusbar__tide--estimate {
   color: var(--text-dim);
-}
-
-.statusbar__tide-estimate-mark {
-  font-family: var(--font-mono);
-  font-weight: 700;
-  margin-right: 1px;
 }
 
 .statusbar__sep {

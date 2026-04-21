@@ -42,11 +42,6 @@ export function ClockSunTide({ pos }: Props) {
             ? 'tide rising, next high at '
             : 'tide falling, next low at '}
         </span>
-        {tide.isEstimate && (
-          <span aria-hidden="true" className="statusbar__tide-estimate-mark">
-            ~
-          </span>
-        )}
         {tide.kind === 'high' ? 'High' : 'Low'} {formatLocalTime(tide.time)}
       </span>
     </div>
