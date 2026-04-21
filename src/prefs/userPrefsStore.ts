@@ -3,7 +3,6 @@
 
 import { defineStore } from '../storage/localStore';
 import type {
-  ChartLabelPriority,
   ChartLayerPrefs,
   HomeMooring,
   PropulsionPrefs,
@@ -30,7 +29,6 @@ const INITIAL: UserPrefs = {
   weatherLimits: {},
   alarmVolumePct: 80,
   alarmTone: 'siren',
-  chartLabelPriority: 'balanced',
   chartLayers: DEFAULT_CHART_LAYERS,
 };
 
@@ -45,15 +43,17 @@ const store = defineStore<UserPrefs>('nav.userPrefs.v1', 1, INITIAL);
     loaded.safetyMarginFt == null ||
     loaded.propulsion == null ||
     loaded.weatherLimits == null ||
-    loaded.chartLabelPriority == null ||
     loaded.chartLayers == null;
   if (needsMigrate) {
+    // chartLabelPriority (tri-state balanced/place/depth) was removed with
+    // the WCAG depth-label rework. We intentionally do NOT strip stored
+    // copies of that key — defineStore's versioned envelope will just
+    // ignore it, and a future migration can hard-prune if we bump version.
     store.set({
       ...INITIAL,
       ...loaded,
       propulsion: { cruisingSpeedKn: loaded.propulsion?.cruisingSpeedKn },
       weatherLimits: { ...(loaded.weatherLimits ?? {}) },
-      chartLabelPriority: loaded.chartLabelPriority ?? 'balanced',
       chartLayers: { ...DEFAULT_CHART_LAYERS, ...(loaded.chartLayers ?? {}) },
     } as UserPrefs);
   }
@@ -92,10 +92,6 @@ export function setHomeMooring(home: HomeMooring | undefined) {
 
 export function setWeatherLimits(patch: Partial<WeatherLimits>) {
   store.update((p) => ({ ...p, weatherLimits: { ...p.weatherLimits, ...patch } }));
-}
-
-export function setChartLabelPriority(mode: ChartLabelPriority) {
-  store.update((p) => ({ ...p, chartLabelPriority: mode }));
 }
 
 export function setChartLayerVisible(

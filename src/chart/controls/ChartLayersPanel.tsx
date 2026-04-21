@@ -10,15 +10,8 @@
 // toggle on the StatusBar.
 
 import { SlidePanel } from '../../ui/SlidePanel';
-import {
-  setChartLabelPriority,
-  setChartLayerVisible,
-  useUserPrefs,
-} from '../../prefs/userPrefsStore';
-import type {
-  ChartLabelPriority,
-  ChartLayerPrefs,
-} from '../../types/nav';
+import { setChartLayerVisible, useUserPrefs } from '../../prefs/userPrefsStore';
+import type { ChartLayerPrefs } from '../../types/nav';
 
 interface LayerRow {
   key: keyof ChartLayerPrefs;
@@ -54,12 +47,6 @@ const LAYERS: LayerRow[] = [
     title: 'Wrecks & obstructions',
     description: 'Things that will stop your boat.',
   },
-];
-
-const LABEL_PRIORITY_OPTIONS: { value: ChartLabelPriority; label: string; sub: string }[] = [
-  { value: 'balanced', label: 'Balanced', sub: 'places at low zoom, depths at high zoom' },
-  { value: 'place', label: 'Place names', sub: 'always visible; depth drops on crowd' },
-  { value: 'depth', label: 'Depth numbers', sub: 'always visible; place names drop on crowd' },
 ];
 
 interface Props {
@@ -98,30 +85,6 @@ export function ChartLayersPanel({ onClose }: Props) {
           ))}
         </ul>
 
-        <h3 className="chart-layers__subtitle">Label priority</h3>
-        <p className="chart-layers__intro">
-          When labels crowd — place names or depth numbers — decide which wins.
-        </p>
-        <ul className="chart-layers__rows">
-          {LABEL_PRIORITY_OPTIONS.map((opt) => (
-            <li key={opt.value} className="chart-layers__row">
-              <label className="chart-layers__label">
-                <input
-                  type="radio"
-                  name="chart-label-priority"
-                  value={opt.value}
-                  checked={prefs.chartLabelPriority === opt.value}
-                  onChange={() => setChartLabelPriority(opt.value)}
-                  className="chart-layers__checkbox"
-                />
-                <span className="chart-layers__text">
-                  <span className="chart-layers__heading">{opt.label}</span>
-                  <span className="chart-layers__description">{opt.sub}</span>
-                </span>
-              </label>
-            </li>
-          ))}
-        </ul>
       </article>
     </SlidePanel>
   );

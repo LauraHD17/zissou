@@ -5,8 +5,7 @@ import { Protocol } from 'pmtiles';
 
 import { useAISTargets, useSelf } from '../signalk/useSignalK';
 import { isPlausiblePosition } from '../utils/geometry';
-import { useUserPrefs } from '../prefs/userPrefsStore';
-import { applyLabelPriority, applyMarineStyle } from './marineStyle';
+import { applyMarineStyle } from './marineStyle';
 import { buildOfflineStyle } from './offlineStyle';
 import { useOwnShipMarker } from './markers/OwnShipMarker';
 import { useAISMarkers } from './markers/AISMarkers';
@@ -79,9 +78,6 @@ export function ChartCanvas() {
 
   const self = useSelf();
   const targets = useAISTargets();
-  const { chartLabelPriority } = useUserPrefs();
-  const labelPriorityRef = useRef(chartLabelPriority);
-  labelPriorityRef.current = chartLabelPriority;
   const { mode, setMode, modeRef } = useChartMode(mapRef, styleLoadedRef);
   const [pickMode, setPickMode] = useState<'idle' | 'destination' | 'waypoint'>('idle');
   // Ref mirror of pickMode so useNavaidTaps can skip handling while a pick
@@ -120,7 +116,6 @@ export function ChartCanvas() {
       styleLoadedRef.current = true;
       if (modeRef.current === 'marine') {
         applyMarineStyle(map);
-        applyLabelPriority(map, labelPriorityRef.current);
       }
       ensureHeadingVectorLayer(map);
       ensureGoToRouteLayer(map);
@@ -194,16 +189,6 @@ export function ChartCanvas() {
     if (!self?.position || !isPlausiblePosition(self.position)) return;
     map.setCenter([self.position.longitude, self.position.latitude]);
   }, [self?.position?.latitude, self?.position?.longitude, following]);
-
-  // Re-apply label priority when the user toggles the mode. style.load already
-  // applies it on first load and on mode switches; this covers the tri-state
-  // cycle in the ChartLayersPanel's label-priority section.
-  useEffect(() => {
-    const map = mapRef.current;
-    if (!map || !styleLoadedRef.current) return;
-    if (mode !== 'marine') return;
-    applyLabelPriority(map, chartLabelPriority);
-  }, [chartLabelPriority, mode]);
 
   const handleRecenter = () => {
     setFollowing(true);

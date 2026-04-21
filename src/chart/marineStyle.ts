@@ -23,7 +23,6 @@ import type {
   LayerSpecification,
   Map as MapLibreMap,
 } from 'maplibre-gl';
-import type { ChartLabelPriority } from '../types/nav';
 
 // NOAA chart data served as a single PMTiles file from our public/ dir.
 // Built by scripts/build-charts.sh — see docs/charts.md for regen instructions.
@@ -84,11 +83,6 @@ export function applyMarineStyle(map: MapLibreMap): void {
   // preference.
 }
 
-// Landmark label layer from the offline base style. Treated as the "place
-// name" tier for label-priority collision — lighthouses and conspicuous
-// features shouldn't get buried under depth contour labels, and vice versa.
-const PLACE_LABEL_LAYERS = ['landmark-lndmrk'] as const;
-const DEPTH_LABEL_LAYER = 'noaa-depth-contour-label';
 
 // ── NOAA ENC layers (depth contours, buoys, lights, wrecks, etc.) ─────
 
@@ -512,49 +506,6 @@ function buildLightLabelExpression(): unknown[] {
  * - `depth`: place is invisible to depth. Depth always renders on top; place
  *   shows where depth didn't claim space.
  */
-export function applyLabelPriority(map: MapLibreMap, mode: ChartLabelPriority): void {
-  // Reset both layers to defaults so mode switches don't leave stale state.
-  for (const id of PLACE_LABEL_LAYERS) {
-    setLayout(map, id, 'text-allow-overlap', false);
-    setLayout(map, id, 'text-ignore-placement', false);
-  }
-  setLayout(map, DEPTH_LABEL_LAYER, 'text-allow-overlap', false);
-  setLayout(map, DEPTH_LABEL_LAYER, 'text-ignore-placement', false);
-
-  switch (mode) {
-    case 'balanced': {
-      const balancedDepthIgnore = [
-        'step',
-        ['zoom'],
-        true,
-        14,
-        false,
-      ] as unknown as ExpressionSpecification;
-      setLayout(map, DEPTH_LABEL_LAYER, 'text-ignore-placement', balancedDepthIgnore);
-      liftPlaceLabelsToTop(map);
-      break;
-    }
-    case 'place': {
-      setLayout(map, DEPTH_LABEL_LAYER, 'text-ignore-placement', true);
-      liftPlaceLabelsToTop(map);
-      break;
-    }
-    case 'depth': {
-      for (const id of PLACE_LABEL_LAYERS) {
-        setLayout(map, id, 'text-ignore-placement', true);
-      }
-      moveLayerToTop(map, DEPTH_LABEL_LAYER);
-      break;
-    }
-  }
-}
-
-function liftPlaceLabelsToTop(map: MapLibreMap): void {
-  for (const id of PLACE_LABEL_LAYERS) {
-    moveLayerToTop(map, id);
-  }
-}
-
 function addLayerIfMissing(map: MapLibreMap, layer: LayerSpecification): void {
   if (map.getLayer(layer.id)) return;
   try {
@@ -564,31 +515,3 @@ function addLayerIfMissing(map: MapLibreMap, layer: LayerSpecification): void {
   }
 }
 
-// ── helpers ────────────────────────────────────────────────────────────
-
-// setLayout stays — applyLabelPriority uses it to toggle text-ignore-placement
-// on the depth-label and landmark layers. All other positron-schema helpers
-// (setPaint / hideLayer / setLayerZoomRange) were removed when we dropped the
-// OpenFreeMap inheritance — the base style is now declared in offlineStyle.ts.
-
-function setLayout(map: MapLibreMap, layerId: string, property: string, value: unknown): void {
-  if (!map.getLayer(layerId)) return;
-  try {
-    (map.setLayoutProperty as (l: string, p: string, v: unknown) => void)(
-      layerId,
-      property,
-      value,
-    );
-  } catch {
-    // ignore — layer schema may shift across theme/mode transitions
-  }
-}
-
-function moveLayerToTop(map: MapLibreMap, layerId: string): void {
-  if (!map.getLayer(layerId)) return;
-  try {
-    map.moveLayer(layerId);
-  } catch {
-    // ignore
-  }
-}
