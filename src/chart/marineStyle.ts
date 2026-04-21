@@ -120,29 +120,6 @@ export function depthColorExpressionForTide(
 }
 
 /**
- * Parallel color expression for spot-sounding labels. S-57 SOUNDG features
- * carry their depth in either the VALSOU or DEPTH attribute (meters to MLLW)
- * depending on how ogr2ogr was configured at PMTiles build time. Coalescing
- * both keeps the style robust across rebuild variants.
- */
-export function soundingColorExpressionForTide(
-  tideFt: number,
-): DataDrivenPropertyValueSpecification<string> {
-  const tideM = tideFt * 0.3048;
-  const shallowBreak = Math.max(0.01, DEPTH_BREAK_SHALLOW - tideM);
-  const moderateBreak = Math.max(shallowBreak + 0.01, DEPTH_BREAK_MODERATE - tideM);
-  return [
-    'step',
-    ['to-number', ['coalesce', ['get', 'VALSOU'], ['get', 'DEPTH']]],
-    COLORS.depthShallow,
-    shallowBreak,
-    COLORS.depthModerate,
-    moderateBreak,
-    COLORS.depthDeep,
-  ] as unknown as ExpressionSpecification;
-}
-
-/**
  * Text-field expression for spot-depth labels. Adds the current tide
  * height to the charted (low-tide) value so the on-chart number is the
  * depth an operator will see under their keel RIGHT NOW — no mental math
@@ -170,13 +147,12 @@ export function applyTideToDepthContours(map: MapLibreMap, tideFt: number): void
   if (map.getLayer('noaa-depth-contour')) {
     map.setPaintProperty('noaa-depth-contour', 'line-color', contourExpr);
   }
-  if (map.getLayer('noaa-depth-contour-label')) {
-    map.setPaintProperty('noaa-depth-contour-label', 'text-color', contourExpr);
-  }
-  const soundingColor = soundingColorExpressionForTide(tideFt);
+  // Contour-label layer was removed on WCAG grounds; only the line color is
+  // tide-shifted now. The sounding labels stay text-colored navy for AAA
+  // contrast (see addNoaaChartLayers); the tide refresh only updates the
+  // text-field so the number itself reflects current water depth.
   const soundingLabel = soundingLabelExpressionForTide(tideFt);
   if (map.getLayer('noaa-soundg-label')) {
-    map.setPaintProperty('noaa-soundg-label', 'text-color', soundingColor);
     map.setLayoutProperty('noaa-soundg-label', 'text-field', soundingLabel);
   }
 }
@@ -207,32 +183,15 @@ function addNoaaChartLayers(map: MapLibreMap): void {
     },
   });
 
-  addLayerIfMissing(map, {
-    id: DEPTH_LABEL_LAYER,
-    type: 'symbol',
-    source: 'noaa',
-    'source-layer': 'depcnt',
-    minzoom: 12,
-    layout: {
-      'symbol-placement': 'line',
-      'text-field': ['concat', ['to-string', ['get', 'VALDCO']], ' m'],
-      'text-font': ['Noto Sans Bold'],
-      // Bumped from 11 → 13 with a thicker halo so numbers stay readable at
-      // the helm in glare. Paired with the DepthLegend component so the
-      // color meaning is self-evident even when the labels are crowded.
-      'text-size': 13,
-      'text-letter-spacing': 0.05,
-      // Shallower contours (smaller VALDCO) are more safety-critical — let
-      // MapLibre place them first, so when labels crowd, the deepest ones are
-      // the first to drop.
-      'symbol-sort-key': ['to-number', ['get', 'VALDCO']],
-    },
-    paint: {
-      'text-color': DEPTH_COLOR_EXPRESSION,
-      'text-halo-color': COLORS.land,
-      'text-halo-width': 2.5,
-    },
-  });
+  // NOTE: the per-contour meter label that used to sit along each line
+  // was removed — it rendered the depth number in the same bright tier
+  // color the LINE uses, which only has ~1:1 contrast against the sand
+  // halo (fails WCAG 2.2 AAA AND AA). The line color + DepthLegend
+  // together communicate the tier; for exact readings, the spot-depth
+  // numbers (noaa-soundg-label) carry the per-point depth already, in
+  // navy text that passes 15:1 against the sand halo. Keeping the
+  // contour-label layer ID out of the map entirely is simpler than
+  // retaining an invisible layer.
 
   // IALA Region B symbol layers — crisp glyphs with OBJNAM labels at all
   // zooms from the overview (8) to approach (16+). Images are registered
@@ -288,7 +247,13 @@ function addNoaaChartLayers(map: MapLibreMap): void {
       'symbol-sort-key': ['to-number', soundingDepthM],
     },
     paint: {
-      'text-color': soundingColorExpressionForTide(0),
+      // Navy text, sand halo — 15.3:1 contrast passes WCAG 2.2 AAA for
+      // normal text. Earlier iterations used a tide-adjusted 3-tier color
+      // scheme here (red/amber/mint mirroring the contour-line palette);
+      // that failed 7:1 badly against the sand halo (mint + sand is 1.1:1).
+      // The nearby contour-line color still carries the tier story; the
+      // number itself just needs to be READABLE.
+      'text-color': COLORS.coastline,
       'text-halo-color': COLORS.land,
       'text-halo-width': 1.5,
     },
