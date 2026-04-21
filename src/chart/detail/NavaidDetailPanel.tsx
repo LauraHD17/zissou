@@ -8,17 +8,18 @@
 // painted on the chart), with the charted low-tide value + tide offset
 // underneath for reference.
 
-import { useSelf } from '../signalk/useSignalK';
-import { useNow } from '../utils/clock';
-import { FALLBACK_POS } from '../utils/geometry';
-import { tideHeightFt } from '../utils/tides';
-import { SlidePanel } from '../ui/SlidePanel';
+import { useSelf } from '../../signalk/useSignalK';
+import { useNow } from '../../utils/clock';
+import { FALLBACK_POS } from '../../utils/geometry';
+import { tideHeightFt } from '../../utils/tides';
+import { SlidePanel } from '../../ui/SlidePanel';
 import {
   buildNavaidNarrative,
+  formatLatLon,
   soundingNowFeet,
   type NavaidKind,
   type NavaidProperties,
-} from '../utils/navaidNarrative';
+} from '../../utils/navaidNarrative';
 
 export interface NavaidFeature {
   kind: NavaidKind;
@@ -97,18 +98,6 @@ function useSoundingParts(feature: NavaidFeature): SoundingParts | null {
     nowFt,
     lowFt,
     tideLabel,
-    position: formatLatLonShort(feature.lat, feature.lng),
+    position: formatLatLon(feature.lat, feature.lng),
   };
-}
-
-function formatLatLonShort(lat: number, lng: number): string {
-  const la = Math.abs(lat);
-  const lo = Math.abs(lng);
-  const laD = Math.floor(la);
-  const laM = (la - laD) * 60;
-  const loD = Math.floor(lo);
-  const loM = (lo - loD) * 60;
-  const laH = lat >= 0 ? 'N' : 'S';
-  const loH = lng >= 0 ? 'E' : 'W';
-  return `${laD}°${laM.toFixed(1)}′${laH} · ${loD}°${loM.toFixed(1)}′${loH}`;
 }

@@ -11,7 +11,7 @@
 import { useEffect, useRef, useState } from 'react';
 import type { MutableRefObject, RefObject } from 'react';
 import type maplibregl from 'maplibre-gl';
-import { buildOfflineStyle } from '../offlineStyle';
+import { buildOfflineStyle } from '../style/offlineStyle';
 
 export type ChartMode = 'marine' | 'harbor';
 

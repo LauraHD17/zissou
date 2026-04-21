@@ -7,7 +7,7 @@ import { useNow } from '../../utils/clock';
 import { FALLBACK_POS } from '../../utils/geometry';
 import { metersToFeet } from '../../utils/units';
 import { tideHeightFt } from '../../utils/tides';
-import { DEPTH_BREAK_MODERATE_M, DEPTH_BREAK_SHALLOW_M } from '../marineStyle';
+import { DEPTH_BREAK_MODERATE_M, DEPTH_BREAK_SHALLOW_M } from '../style/marineStyle';
 
 // Non-dismissible — the depth key is a chart-reading reference, not a
 // transient notification, so it stays permanent at the top-left.

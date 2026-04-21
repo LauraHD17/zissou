@@ -3,12 +3,12 @@
 // operator gets both the summary and the raw facts in one place.
 
 import { useMemo } from 'react';
-import { SlidePanel } from '../ui/SlidePanel';
-import { useSelf } from '../signalk/useSignalK';
-import type { Vessel } from '../signalk/types';
-import { buildVesselNarrative } from '../utils/narrative';
-import { AIS_STALE_MS } from '../signalk/types';
-import { computeThreatBand } from '../utils/threat';
+import { SlidePanel } from '../../ui/SlidePanel';
+import { useSelf } from '../../signalk/useSignalK';
+import type { Vessel } from '../../signalk/types';
+import { buildVesselNarrative } from '../../utils/narrative';
+import { AIS_STALE_MS } from '../../signalk/types';
+import { computeThreatBand } from '../../utils/threat';
 
 interface Props {
   vessel: Vessel;

@@ -1,21 +1,14 @@
-// Marine-style runtime layer additions + palette for the NOAA overlay.
+// Marine-style runtime layers + palette for the NOAA overlay.
 //
-// The base-map skeleton (background, water, land, coastline, built-up areas)
-// is defined declaratively in offlineStyle.ts — that style is the entire
-// style the map boots with, so nothing in this module depends on an
-// external CDN (former OpenFreeMap positron dependency has been removed).
+// Owns:
+//   - Depth contour + sounding color / label expressions (dynamic on tide)
+//   - addNoaaChartLayers — runtime-added NOAA symbol layers (buoys, lights,
+//     wrecks, obstructions, cardinals, soundings, etc.)
 //
-// This module still owns:
-//   - Depth contour + sounding color expressions (they need CSS vars +
-//     live tide updates, so they can't be static in offlineStyle.ts)
-//   - addNoaaChartLayers — runtime-added NOAA symbol layers with
-//     expressions, filters, and text-field expressions
-//   - applyLabelPriority tri-state — modulates z-order between place
-//     and depth labels at the operator's preference
-//
-// If the NOAA PMTiles aren't present (fresh clone before running
-// build-charts.sh), the style silently degrades: sand background +
-// whatever tiles exist. App still works.
+// The static base-map skeleton (background, water, land, coastline,
+// built-up areas) lives in offlineStyle.ts and is the style the map boots
+// with. If the NOAA PMTiles isn't present, this module's layers are
+// silently skipped and only the base map renders.
 
 import type {
   DataDrivenPropertyValueSpecification,
@@ -25,9 +18,8 @@ import type {
 } from 'maplibre-gl';
 
 // NOAA chart data served as a single PMTiles file from our public/ dir.
-// Built by scripts/build-charts.sh — see docs/charts.md for regen instructions.
-// If the file isn't present, the NOAA source will fail silently and only the
-// OpenFreeMap base tiles render (no depth contours / buoys).
+// Built by scripts/build-charts.sh. If missing, the NOAA source fails
+// silently and only the offline base tiles render.
 // To switch regions, regenerate with the desired bundle and update this URL.
 const NOAA_PMTILES_URL = 'pmtiles:///charts/maine.pmtiles';
 
@@ -141,10 +133,6 @@ export function applyTideToDepthContours(map: MapLibreMap, tideFt: number): void
   if (map.getLayer('noaa-depth-contour')) {
     map.setPaintProperty('noaa-depth-contour', 'line-color', contourExpr);
   }
-  // Contour-label layer was removed on WCAG grounds; only the line color is
-  // tide-shifted now. The sounding labels stay text-colored navy for AAA
-  // contrast (see addNoaaChartLayers); the tide refresh only updates the
-  // text-field so the number itself reflects current water depth.
   const soundingLabel = soundingLabelExpressionForTide(tideFt);
   if (map.getLayer('noaa-soundg-label')) {
     map.setLayoutProperty('noaa-soundg-label', 'text-field', soundingLabel);
@@ -177,15 +165,9 @@ function addNoaaChartLayers(map: MapLibreMap): void {
     },
   });
 
-  // NOTE: the per-contour meter label that used to sit along each line
-  // was removed — it rendered the depth number in the same bright tier
-  // color the LINE uses, which only has ~1:1 contrast against the sand
-  // halo (fails WCAG 2.2 AAA AND AA). The line color + DepthLegend
-  // together communicate the tier; for exact readings, the spot-depth
-  // numbers (noaa-soundg-label) carry the per-point depth already, in
-  // navy text that passes 15:1 against the sand halo. Keeping the
-  // contour-label layer ID out of the map entirely is simpler than
-  // retaining an invisible layer.
+  // Per-contour meter labels deliberately omitted — the line color carries
+  // the tier (shallow/moderate/deep) and the spot-depth numbers give exact
+  // values. See WCAG notes in commit e9bcb7f.
 
   // IALA Region B symbol layers — crisp glyphs with OBJNAM labels at all
   // zooms from the overview (8) to approach (16+). Images are registered
@@ -241,12 +223,8 @@ function addNoaaChartLayers(map: MapLibreMap): void {
       'symbol-sort-key': ['to-number', soundingDepthM],
     },
     paint: {
-      // Navy text, sand halo — 15.3:1 contrast passes WCAG 2.2 AAA for
-      // normal text. Earlier iterations used a tide-adjusted 3-tier color
-      // scheme here (red/amber/mint mirroring the contour-line palette);
-      // that failed 7:1 badly against the sand halo (mint + sand is 1.1:1).
-      // The nearby contour-line color still carries the tier story; the
-      // number itself just needs to be READABLE.
+      // Navy on sand — 15.3:1 for WCAG 2.2 AAA. Tier is carried by the
+      // nearby contour line color; see commit e9bcb7f.
       'text-color': COLORS.coastline,
       'text-halo-color': COLORS.land,
       'text-halo-width': 1.5,

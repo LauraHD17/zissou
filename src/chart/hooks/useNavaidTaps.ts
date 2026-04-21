@@ -11,28 +11,10 @@
 import { useEffect, useRef } from 'react';
 import type { RefObject } from 'react';
 import type maplibregl from 'maplibre-gl';
-import type { NavaidFeature } from '../NavaidDetailPanel';
+import type { NavaidFeature } from '../detail/NavaidDetailPanel';
 import type { NavaidKind, NavaidProperties } from '../../utils/navaidNarrative';
 
-// Match map.getStyle()'s layer IDs exactly. Kept in a single const so
-// marineStyle.ts and this hook can't drift.
-export const NAVAID_LAYER_IDS = [
-  'noaa-boylat-symbol',
-  'noaa-boysaw-symbol',
-  'noaa-boycar-symbol',
-  'noaa-boyisd-symbol',
-  'noaa-boyspp-symbol',
-  'noaa-bcnlat-symbol',
-  'noaa-bcnsaw-symbol',
-  'noaa-bcncar-symbol',
-  'noaa-bcnisd-symbol',
-  'noaa-lights-symbol',
-  'noaa-wrecks-symbol',
-  'noaa-obstrn-symbol',
-  // Spot soundings get the same tap-to-detail treatment so the plain-language
-  // explainer teaches the operator what the numbers mean in context.
-  'noaa-soundg-label',
-] as const;
+import { NAVAID_TAPPABLE_LAYER_IDS } from '../style/layerIds';
 
 // Half of the WCAG 2.5.8 AAA 44×44 touch target. A 22px radius around the
 // tap center becomes a 44×44 hit bbox — hands on a rocking deck get a much
@@ -66,7 +48,7 @@ export function useNavaidTaps(
       ];
       // Only query layers that actually exist (the style may not have them
       // all yet during hot-reload or before the PMTiles fetch resolves).
-      const liveLayers = NAVAID_LAYER_IDS.filter((id) => map.getLayer(id));
+      const liveLayers = NAVAID_TAPPABLE_LAYER_IDS.filter((id) => map.getLayer(id));
       if (liveLayers.length === 0) return;
       const features = map.queryRenderedFeatures(bbox, { layers: liveLayers });
       if (features.length === 0) return;
@@ -91,14 +73,14 @@ export function useNavaidTaps(
     };
 
     map.on('click', handler);
-    for (const id of NAVAID_LAYER_IDS) {
+    for (const id of NAVAID_TAPPABLE_LAYER_IDS) {
       map.on('mouseenter', id, cursorEnter);
       map.on('mouseleave', id, cursorLeave);
     }
 
     return () => {
       map.off('click', handler);
-      for (const id of NAVAID_LAYER_IDS) {
+      for (const id of NAVAID_TAPPABLE_LAYER_IDS) {
         map.off('mouseenter', id, cursorEnter);
         map.off('mouseleave', id, cursorLeave);
       }
