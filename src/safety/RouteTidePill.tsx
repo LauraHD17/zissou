@@ -2,7 +2,7 @@ import type { RefObject } from 'react';
 import type maplibregl from 'maplibre-gl';
 import { useRouteTideAlert } from './useRouteTideAlert';
 import { formatLocalTime } from '../utils/clock';
-import { useActiveDestination } from '../waypoints/destinationStore';
+import { useActiveRoute } from '../waypoints/routeStore';
 import { OverlayPill } from '../ui/OverlayPill';
 
 interface Props {
@@ -11,9 +11,12 @@ interface Props {
 
 export function RouteTidePill({ mapRef }: Props) {
   const alert = useRouteTideAlert(mapRef);
-  const dest = useActiveDestination();
+  const route = useActiveRoute();
   if (!alert || alert.severity === 'clear') return null;
 
+  const destWp = route && route.waypoints.length > 0
+    ? route.waypoints[route.waypoints.length - 1]
+    : null;
   const { minEffectiveFt, requiredFt, severity, safeUntil, nextSafeFrom } = alert;
 
   let headline: string;
@@ -27,8 +30,10 @@ export function RouteTidePill({ mapRef }: Props) {
     headline = 'Shallow water on route';
   }
 
-  const dismissKey = dest
-    ? `route-tide:${dest.setAt}:${dest.position.latitude.toFixed(4)}:${dest.position.longitude.toFixed(4)}`
+  // Dismiss is per-route (scoped to the destination fingerprint + createdAt)
+  // so setting a new route clears the dismissed state.
+  const dismissKey = destWp && route
+    ? `route-tide:${route.createdAt}:${destWp.position.latitude.toFixed(4)}:${destWp.position.longitude.toFixed(4)}`
     : 'route-tide:none';
 
   return (

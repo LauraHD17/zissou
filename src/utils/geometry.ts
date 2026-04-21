@@ -64,6 +64,49 @@ export function projectPosition(start: Position, bearingRad: number, distanceM: 
   };
 }
 
+/**
+ * Sample a polyline (sequence of waypoint positions) evenly along its total
+ * length, returning `samples + 1` points from the first to the last. Used to
+ * scan charted depth under a multi-leg route without biasing long legs over
+ * short ones. For `positions.length < 2`, echoes the input as-is.
+ */
+export function samplePolyline(positions: Position[], samples: number): Position[] {
+  if (positions.length === 0) return [];
+  if (positions.length === 1) return [positions[0]];
+  if (samples <= 0) return [positions[0], positions[positions.length - 1]];
+
+  const legLens: number[] = [];
+  let total = 0;
+  for (let i = 0; i < positions.length - 1; i++) {
+    const dLat = positions[i + 1].latitude - positions[i].latitude;
+    const dLon = positions[i + 1].longitude - positions[i].longitude;
+    const len = Math.hypot(dLat, dLon);
+    legLens.push(len);
+    total += len;
+  }
+  if (total === 0) return [positions[0]];
+
+  const out: Position[] = [];
+  for (let i = 0; i <= samples; i++) {
+    const target = (i / samples) * total;
+    let accum = 0;
+    for (let j = 0; j < legLens.length; j++) {
+      const next = accum + legLens[j];
+      if (target <= next || j === legLens.length - 1) {
+        const t = legLens[j] === 0 ? 0 : (target - accum) / legLens[j];
+        out.push({
+          latitude: positions[j].latitude + (positions[j + 1].latitude - positions[j].latitude) * t,
+          longitude:
+            positions[j].longitude + (positions[j + 1].longitude - positions[j].longitude) * t,
+        });
+        break;
+      }
+      accum = next;
+    }
+  }
+  return out;
+}
+
 function toRad(d: number) {
   return (d * Math.PI) / 180;
 }

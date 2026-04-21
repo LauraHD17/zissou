@@ -924,6 +924,71 @@ body,
   fill: var(--alert-red);
 }
 
+/* Intermediate route waypoints (RouteViaMarkers). Small amber disc with navy
+   stroke — distinct from the destination pin, saved waypoints (yellow-green),
+   and AIS markers. Button element so it's keyboard-focusable and announces
+   as interactive. */
+.route-via-marker {
+  width: 16px;
+  height: 16px;
+  padding: 0;
+  border: 2px solid var(--bg-navy);
+  border-radius: 50%;
+  background: var(--alert-amber);
+  cursor: pointer;
+}
+
+.route-via-marker:focus-visible {
+  outline: 3px solid var(--focus-ring);
+  outline-offset: 2px;
+}
+
+/* ── Route-build pill (mode indicator + Done) ──────────────────────── */
+
+.route-build-pill {
+  position: absolute;
+  bottom: 24px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 12;
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: 6px 8px 6px 14px;
+  background: rgba(20, 32, 56, 0.92);
+  color: var(--text-primary);
+  border: 1px solid var(--border-on-navy);
+  border-radius: 0;
+  font-family: var(--font-sans);
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.route-build-pill__label {
+  letter-spacing: 0.02em;
+}
+
+.route-build-pill__done {
+  min-width: 44px;
+  min-height: 44px;
+  padding: 6px 14px;
+  border: 1px solid var(--alert-amber);
+  background: var(--alert-amber);
+  color: var(--text-on-card);
+  border-radius: 0;
+  font-family: var(--font-sans);
+  font-weight: 700;
+  font-size: 13px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  cursor: pointer;
+}
+
+.route-build-pill__done:focus-visible {
+  outline: 3px solid var(--focus-ring);
+  outline-offset: 2px;
+}
+
 /* ── Destination widget (top-right pill) ───────────────────────────── */
 
 /* Right-side overlay stack — destination widget sits in top-right; pills
@@ -1777,7 +1842,8 @@ body,
   top: 16px;
   left: 16px;
   z-index: 10;
-  padding: 6px 44px 6px 8px; /* right pad reserves room for 44×44 dismiss */
+  /* Non-dismissible reference key — tight padding, no room reserved. */
+  padding: 6px 10px;
   background: rgba(20, 32, 56, 0.88);
   color: var(--text-primary);
   border: 1px solid var(--border-on-navy);
@@ -1788,11 +1854,7 @@ body,
   display: flex;
   flex-direction: column;
   gap: 3px;
-  min-width: 92px;
 }
-
-/* Depth-legend dismiss inherits the base .pill-dismiss 44×44 target so
-   WCAG 2.2 AAA 2.5.5 is met without relying on the AA spacing exception. */
 
 .depth-legend__title {
   font-family: var(--font-sans);

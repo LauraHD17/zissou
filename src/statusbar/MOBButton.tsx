@@ -14,7 +14,7 @@ import { useSelf } from '../signalk/useSignalK';
 import { isPlausiblePosition } from '../utils/geometry';
 import { SlidePanel } from '../ui/SlidePanel';
 import { activateMOB, clearMOB, useMOB } from '../mob/mobStore';
-import { setDestination, clearDestination, readDestination } from '../waypoints/destinationStore';
+import { clearRoute, readRoute, replaceRouteWithSingle } from '../waypoints/routeStore';
 import { playMobConfirmTone, playMobActivePulse } from '../alarm/useAlarmAudio';
 import type { ViewMode } from './StatusBar';
 
@@ -74,11 +74,10 @@ export function MOBButton({ onViewChange }: Props) {
     if (!canActivate) return;
     const pos = self!.position!;
     activateMOB(pos);
-    setDestination({
+    replaceRouteWithSingle({
       source: 'mob',
       position: pos,
       label: 'MOB',
-      setAt: Date.now(),
     });
     playMobConfirmTone();
     onViewChange('chart');
@@ -87,10 +86,10 @@ export function MOBButton({ onViewChange }: Props) {
 
   const onClear = () => {
     clearMOB();
-    // Clear the destination only if it was the MOB destination — operator may
-    // have set a new one mid-emergency.
-    const d = readDestination();
-    if (d?.source === 'mob') clearDestination();
+    // Clear the route only if it was still the MOB route — operator may have
+    // set a new destination mid-emergency and we don't want to stomp it.
+    const r = readRoute();
+    if (r?.source === 'mob') clearRoute();
   };
 
   if (mob) {

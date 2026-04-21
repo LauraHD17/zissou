@@ -18,17 +18,31 @@ export interface SavedWaypoint {
   createdAt: number;
 }
 
-// ── Destination (active Go-To) ─────────────────────────────────────────
+// ── Active Route (Go-To + multi-pin) ───────────────────────────────────
 
-export type DestinationSource = 'goto-pin' | 'goto-coords' | 'saved' | 'recent' | 'mob';
+export type RouteSource = 'drop-pin' | 'goto-coords' | 'saved' | 'recent' | 'mob';
 
-export interface Destination {
-  source: DestinationSource;
-  /** Set when source === 'saved'; lets us track which waypoint is active. */
-  savedId?: string;
+/** A single waypoint in an active route. First waypoint is the closest leg
+ *  from own-ship; last waypoint is the destination. */
+export interface RouteWaypoint {
+  id: string;
   position: Position;
+  /** Optional label — set for saved waypoints and recents, blank for
+   *  drop-pin waypoints. The destination widget uses it when present. */
   label?: string;
+  /** Saved-waypoint id when the waypoint came from the saved set; lets us
+   *  reflect "this saved waypoint is currently routed to" in the UI. */
+  savedId?: string;
   setAt: number;
+}
+
+export interface ActiveRoute {
+  /** Ordered; `waypoints[waypoints.length - 1]` is the destination. A single
+   *  element represents today's legacy single-pin Go-To. */
+  waypoints: RouteWaypoint[];
+  /** Provenance of the first waypoint. Subsequent appends don't change it. */
+  source: RouteSource;
+  createdAt: number;
 }
 
 export interface RecentDestination {

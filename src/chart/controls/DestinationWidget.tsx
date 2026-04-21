@@ -1,39 +1,44 @@
-// Top-right pill displayed when a Go-To destination is active.
-// Format: → 087° E · 2.3 nm · 22 min
+// Top-right pill displayed when a route (1..N waypoints) is active.
+// Single-pin: → 087° E · 2.3 nm · 22 min
+// Multi-pin: → 3 legs · 4.2 nm · 42 min
 // Tap → action sheet with Save / Clear options.
 
 import { useState } from 'react';
 import { useSelf } from '../../signalk/useSignalK';
-import { isValidSogMs } from '../../signalk/types';
-import { bearingRadians, haversineNm, isPlausiblePosition } from '../../utils/geometry';
+import { bearingRadians, isPlausiblePosition } from '../../utils/geometry';
 import { formatCompassBearing } from '../../utils/bearings';
-import { formatDistance, msToKnots } from '../../utils/units';
+import { formatDistance } from '../../utils/units';
 import { formatLocalTime } from '../../utils/clock';
 import { SlidePanel } from '../../ui/SlidePanel';
-import { clearDestination, useActiveDestination } from '../../waypoints/destinationStore';
+import { clearRoute, useActiveRoute } from '../../waypoints/routeStore';
 import { WaypointEditor } from '../../waypoints/WaypointEditor';
+import { computeRouteEta } from '../../utils/routeEta';
 
 export function DestinationWidget() {
-  const dest = useActiveDestination();
+  const route = useActiveRoute();
   const self = useSelf();
   const [actionsOpen, setActionsOpen] = useState(false);
   const [saveOpen, setSaveOpen] = useState(false);
 
-  if (!dest) return null;
+  if (!route || route.waypoints.length === 0) return null;
 
+  const destWp = route.waypoints[route.waypoints.length - 1];
+  const legCount = route.waypoints.length;
   const ownPos = self?.position;
-  let bearing = '—';
-  let distance = '—';
-  let eta = '—';
+  const ownKnown = !!ownPos && isPlausiblePosition(ownPos);
 
-  if (ownPos && isPlausiblePosition(ownPos)) {
-    const distNm = haversineNm(ownPos, dest.position);
-    distance = formatDistance(distNm);
-    bearing = formatCompassBearing(bearingRadians(ownPos, dest.position));
-    eta = formatEta(distNm, self?.sog);
-  }
+  const { totalNm, minutes } = computeRouteEta(route.waypoints, self);
+  const distance = ownKnown ? formatDistance(totalNm) : '—';
+  const etaText = ownKnown ? formatEtaMinutes(minutes) : '—';
 
-  const label = dest.label ?? 'destination';
+  // Single-pin routes keep the classic bearing readout; multi-pin shows leg
+  // count (bearing across a polyline isn't meaningful).
+  const primary: string =
+    legCount === 1 && ownKnown
+      ? formatCompassBearing(bearingRadians(ownPos!, destWp.position))
+      : `${legCount} ${legCount === 1 ? 'leg' : 'legs'}`;
+
+  const label = destWp.label ?? 'destination';
 
   return (
     <>
@@ -41,14 +46,14 @@ export function DestinationWidget() {
         type="button"
         className="destination-widget"
         onClick={() => setActionsOpen(true)}
-        aria-label={`Destination ${label}: ${bearing}, ${distance}, ${eta}. Tap for options.`}
+        aria-label={`Route to ${label}: ${primary}, ${distance}, ${etaText}. Tap for options.`}
       >
         <span aria-hidden="true">→ </span>
-        <span className="destination-widget__bearing">{bearing}</span>
+        <span className="destination-widget__bearing">{primary}</span>
         <span aria-hidden="true"> · </span>
         <span className="destination-widget__distance">{distance}</span>
         <span aria-hidden="true"> · </span>
-        <span className="destination-widget__eta">{eta}</span>
+        <span className="destination-widget__eta">{etaText}</span>
       </button>
 
       {actionsOpen && (
@@ -57,7 +62,7 @@ export function DestinationWidget() {
             {label}
           </h2>
           <p className="action-sheet__meta">
-            {bearing} · {distance} · {eta}
+            {primary} · {distance} · {etaText}
           </p>
           <div className="action-sheet__buttons">
             <button
@@ -74,35 +79,36 @@ export function DestinationWidget() {
               type="button"
               className="action-sheet__btn"
               onClick={() => {
-                clearDestination();
+                clearRoute();
                 setActionsOpen(false);
               }}
             >
-              Clear destination
+              {legCount > 1 ? 'Clear route' : 'Clear destination'}
             </button>
           </div>
         </SlidePanel>
       )}
 
-      {saveOpen && dest && (
-        <WaypointEditor mode="create" position={dest.position} onClose={() => setSaveOpen(false)} />
+      {saveOpen && (
+        <WaypointEditor
+          mode="create"
+          position={destWp.position}
+          onClose={() => setSaveOpen(false)}
+        />
       )}
     </>
   );
 }
 
-function formatEta(distNm: number, sogMs: number | undefined): string {
-  if (!isValidSogMs(sogMs)) return '—';
-  const sogKn = msToKnots(sogMs);
-  if (sogKn < 0.5) return 'drifting';
-  const etaMin = (distNm / sogKn) * 60;
-  if (etaMin < 60) return `${Math.round(etaMin)} min`;
-  if (etaMin < 120) {
-    const h = Math.floor(etaMin / 60);
-    const m = Math.round(etaMin % 60);
+function formatEtaMinutes(minutes: number | null): string {
+  if (minutes == null) return '—';
+  if (minutes < 60) return `${Math.round(minutes)} min`;
+  if (minutes < 120) {
+    const h = Math.floor(minutes / 60);
+    const m = Math.round(minutes % 60);
     return `${h}h ${m}m`;
   }
   // Long range: clock time, more honest than minute counts
-  const arrival = new Date(Date.now() + etaMin * 60_000);
+  const arrival = new Date(Date.now() + minutes * 60_000);
   return `ETA ${formatLocalTime(arrival)}`;
 }

@@ -7,9 +7,10 @@ import { useNow } from '../../utils/clock';
 import { FALLBACK_POS } from '../../utils/geometry';
 import { metersToFeet } from '../../utils/units';
 import { tideHeightFt } from '../../utils/tides';
-import { OverlayPill } from '../../ui/OverlayPill';
 import { DEPTH_BREAK_MODERATE_M, DEPTH_BREAK_SHALLOW_M } from '../marineStyle';
 
+// Non-dismissible — the depth key is a chart-reading reference, not a
+// transient notification, so it stays permanent at the top-left.
 export function DepthLegend() {
   const self = useSelf();
   const now = useNow(5 * 60 * 1000);
@@ -19,13 +20,7 @@ export function DepthLegend() {
   const moderateFt = metersToFeet(DEPTH_BREAK_MODERATE_M) + tideFt;
 
   return (
-    <OverlayPill
-      className="depth-legend"
-      dismissKey="depth-legend"
-      dismissLabel="Hide depth key"
-      role="group"
-      ariaLabel="Depth color key"
-    >
+    <div className="depth-legend" role="group" aria-label="Depth color key">
       <span className="depth-legend__title">DEPTH</span>
       <ul className="depth-legend__rows">
         <Row color="shallow" label={`< ${formatFtCompact(shallowFt)}`} name="Shallow" />
@@ -37,7 +32,7 @@ export function DepthLegend() {
         <Row color="deep" label={`${formatFtCompact(moderateFt)}+`} name="Deep" />
       </ul>
       <span className="depth-legend__footer">tide +{tideFt.toFixed(1)}</span>
-    </OverlayPill>
+    </div>
   );
 }
 

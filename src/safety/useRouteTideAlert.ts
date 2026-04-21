@@ -7,9 +7,9 @@
 import { useEffect, useMemo, useState } from 'react';
 import type { RefObject } from 'react';
 import type maplibregl from 'maplibre-gl';
-import { useActiveDestination } from '../waypoints/destinationStore';
+import { useActiveRoute } from '../waypoints/routeStore';
 import { useSelf } from '../signalk/useSignalK';
-import { isPlausiblePosition } from '../utils/geometry';
+import { isPlausiblePosition, samplePolyline } from '../utils/geometry';
 import { metersToFeet } from '../utils/units';
 import { useUserPrefs } from '../prefs/userPrefsStore';
 import { useNow } from '../utils/clock';
@@ -29,20 +29,33 @@ export interface RouteTideAlert {
 }
 
 export function useRouteTideAlert(mapRef: RefObject<maplibregl.Map | null>): RouteTideAlert | null {
-  const dest = useActiveDestination();
+  const activeRoute = useActiveRoute();
   const self = useSelf();
   const prefs = useUserPrefs();
   const now = useNow(5 * 60 * 1000);
   const [minCharted, setMinCharted] = useState<number | null>(null);
 
   // Quantize to ~0.001° (~100 m) so GPS jitter doesn't re-fire the sampling
-  // effect on every 1 Hz tick. Destination coords are user-set (stable).
+  // effect on every 1 Hz tick. Waypoint coords are user-set (stable).
   const selfLatQ = self?.position ? Math.round(self.position.latitude * 1000) : null;
   const selfLonQ = self?.position ? Math.round(self.position.longitude * 1000) : null;
+  // Fingerprint the waypoint sequence so any change (append, remove,
+  // reorder) triggers a resample — but identical reference doesn't.
+  const waypointsKey = activeRoute
+    ? activeRoute.waypoints
+        .map((w) => `${w.position.latitude.toFixed(4)},${w.position.longitude.toFixed(4)}`)
+        .join('|')
+    : '';
 
   useEffect(() => {
     const map = mapRef.current;
-    if (!map || !dest || !self?.position || !isPlausiblePosition(self.position)) {
+    if (
+      !map ||
+      !activeRoute ||
+      activeRoute.waypoints.length === 0 ||
+      !self?.position ||
+      !isPlausiblePosition(self.position)
+    ) {
       setMinCharted(null);
       return;
     }
@@ -51,7 +64,8 @@ export function useRouteTideAlert(mapRef: RefObject<maplibregl.Map | null>): Rou
       return;
     }
 
-    const route = samplePositions(self.position, dest.position, SAMPLES_ALONG_ROUTE);
+    const polyline = [self.position, ...activeRoute.waypoints.map((w) => w.position)];
+    const route = samplePolyline(polyline, SAMPLES_ALONG_ROUTE);
     let minM = Infinity;
     let hits = 0;
 
@@ -98,7 +112,7 @@ export function useRouteTideAlert(mapRef: RefObject<maplibregl.Map | null>): Rou
     }
 
     setMinCharted(hits > 0 ? metersToFeet(minM) : null);
-  }, [mapRef, dest?.position.latitude, dest?.position.longitude, selfLatQ, selfLonQ, now]);
+  }, [mapRef, waypointsKey, selfLatQ, selfLonQ, now]);
 
   return useMemo((): RouteTideAlert | null => {
     if (minCharted == null) return null;
@@ -161,19 +175,3 @@ function extractCoords(g: GeoJSON.Geometry | null): [number, number][] | null {
   return null;
 }
 
-function samplePositions(
-  a: { latitude: number; longitude: number },
-  b: { latitude: number; longitude: number },
-  n: number,
-) {
-  // Linear interp in lat/lon — fine for short legs (< a few nm).
-  const out: { latitude: number; longitude: number }[] = [];
-  for (let i = 0; i <= n; i++) {
-    const t = i / n;
-    out.push({
-      latitude: a.latitude + (b.latitude - a.latitude) * t,
-      longitude: a.longitude + (b.longitude - a.longitude) * t,
-    });
-  }
-  return out;
-}

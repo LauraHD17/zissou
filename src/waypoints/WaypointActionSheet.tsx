@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { SlidePanel } from '../ui/SlidePanel';
 import type { SavedWaypoint } from '../types/nav';
-import { setDestination } from './destinationStore';
+import { replaceRouteWithSingle } from './routeStore';
 import { removeWaypoint } from './waypointStore';
 import { WaypointEditor } from './WaypointEditor';
 
@@ -39,12 +39,11 @@ export function WaypointActionSheet({ waypoint, onClose }: Props) {
           type="button"
           className="action-sheet__btn"
           onClick={() => {
-            setDestination({
+            replaceRouteWithSingle({
               source: 'saved',
               savedId: waypoint.id,
               position: { latitude: waypoint.lat, longitude: waypoint.lon },
               label: waypoint.label,
-              setAt: Date.now(),
             });
             onClose();
           }}

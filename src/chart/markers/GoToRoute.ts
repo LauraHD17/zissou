@@ -1,6 +1,8 @@
-// Amber line from own-ship to active destination. GeoJSON LineString layer
-// (geographic, scales with zoom). Same self-listening style.load pattern as
-// HeadingVector so the layer survives Marine/Harbor swaps.
+// Amber polyline from own-ship through every route waypoint. GeoJSON
+// LineString layer (geographic, scales with zoom). Same self-listening
+// style.load pattern as HeadingVector so the layer survives Marine/Harbor
+// swaps. A single-waypoint route renders identically to the old single-pin
+// Go-To (own-ship → destination).
 
 import { useEffect } from 'react';
 import type { RefObject } from 'react';
@@ -8,7 +10,9 @@ import type maplibregl from 'maplibre-gl';
 import type { Map as MapLibreMap, GeoJSONSource } from 'maplibre-gl';
 import { useSelf } from '../../signalk/useSignalK';
 import { isPlausiblePosition } from '../../utils/geometry';
-import { useActiveDestination } from '../../waypoints/destinationStore';
+import { useActiveRoute } from '../../waypoints/routeStore';
+import type { Position } from '../../signalk/types';
+import type { RouteWaypoint } from '../../types/nav';
 
 const SOURCE_ID = 'goto-route';
 const LAYER_ID = 'goto-route-line';
@@ -32,7 +36,7 @@ export function ensureGoToRouteLayer(map: MapLibreMap): void {
 
 export function useGoToRoute(mapRef: RefObject<maplibregl.Map | null>) {
   const self = useSelf();
-  const dest = useActiveDestination();
+  const route = useActiveRoute();
 
   useEffect(() => {
     const map = mapRef.current;
@@ -41,7 +45,7 @@ export function useGoToRoute(mapRef: RefObject<maplibregl.Map | null>) {
     const update = () => {
       const source = map.getSource(SOURCE_ID) as GeoJSONSource | undefined;
       if (!source) return;
-      source.setData(buildFeature(self?.position, dest?.position));
+      source.setData(buildFeature(self?.position, route?.waypoints ?? []));
     };
 
     update();
@@ -53,21 +57,24 @@ export function useGoToRoute(mapRef: RefObject<maplibregl.Map | null>) {
     mapRef,
     self?.position?.latitude,
     self?.position?.longitude,
-    dest?.position.latitude,
-    dest?.position.longitude,
+    route?.waypoints,
   ]);
 }
 
-function buildFeature(
-  ownPos: { latitude: number; longitude: number } | undefined,
-  destPos: { latitude: number; longitude: number } | undefined,
+export function buildFeature(
+  ownPos: Position | undefined,
+  waypoints: RouteWaypoint[],
 ): GeoJSON.FeatureCollection<GeoJSON.LineString> {
   const empty: GeoJSON.FeatureCollection<GeoJSON.LineString> = {
     type: 'FeatureCollection',
     features: [],
   };
   if (!ownPos || !isPlausiblePosition(ownPos)) return empty;
-  if (!destPos) return empty;
+  if (waypoints.length === 0) return empty;
+  const coordinates: [number, number][] = [
+    [ownPos.longitude, ownPos.latitude],
+    ...waypoints.map((w) => [w.position.longitude, w.position.latitude] as [number, number]),
+  ];
   return {
     type: 'FeatureCollection',
     features: [
@@ -76,10 +83,7 @@ function buildFeature(
         properties: {},
         geometry: {
           type: 'LineString',
-          coordinates: [
-            [ownPos.longitude, ownPos.latitude],
-            [destPos.longitude, destPos.latitude],
-          ],
+          coordinates,
         },
       },
     ],

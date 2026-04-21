@@ -28,13 +28,17 @@ import { DepthLegend } from './controls/DepthLegend';
 import { DropPinButton } from './controls/DropPinButton';
 import { SaveWaypointButton } from './controls/SaveWaypointButton';
 import { DestinationWidget } from './controls/DestinationWidget';
+import { RouteBuildPill } from './controls/RouteBuildPill';
+import { RouteWaypointActionSheet } from './controls/RouteWaypointActionSheet';
 import { SafeReturnPill } from '../safety/SafeReturnPill';
 import { RouteTidePill } from '../safety/RouteTidePill';
 import { WeatherPill } from '../weather/WeatherPill';
 import { useChartMode } from './hooks/useChartMode';
 import { useChartPickMode } from './hooks/useChartPickMode';
 import { useTideAwareContours } from './hooks/useTideAwareContours';
-import { setDestination } from '../waypoints/destinationStore';
+import { appendWaypoint } from '../waypoints/routeStore';
+import { useRouteViaMarkers } from './markers/RouteViaMarkers';
+import type { RouteWaypoint } from '../types/nav';
 import { WaypointEditor } from '../waypoints/WaypointEditor';
 import type { Position } from '../signalk/types';
 
@@ -75,6 +79,7 @@ export function ChartCanvas() {
   const [pickMode, setPickMode] = useState<'idle' | 'destination' | 'waypoint'>('idle');
   const [saveAt, setSaveAt] = useState<Position | null>(null);
   const [tappedWaypoint, setTappedWaypoint] = useState<SavedWaypoint | null>(null);
+  const [tappedRouteWp, setTappedRouteWp] = useState<RouteWaypoint | null>(null);
   const [tappedVessel, setTappedVessel] = useState<Vessel | null>(null);
   // Auto-recenter vs free-pan. User drag/zoom suspends tracking; Recenter
   // button re-engages it.
@@ -146,12 +151,14 @@ export function ChartCanvas() {
   useAnchorDragWatch();
   useHazardProximityWatch();
   useMOBMarker(mapRef);
+  useRouteViaMarkers(mapRef, { onTap: setTappedRouteWp });
   useChartPickMode(mapRef, {
     armed: pickMode !== 'idle',
     onPick: (pos) => {
       if (pickMode === 'destination') {
-        setDestination({ source: 'goto-pin', position: pos, setAt: Date.now() });
-        setPickMode('idle');
+        // Route-build mode: each tap appends to the route. Mode stays armed
+        // until the operator taps Done (or toggles drop-pin off).
+        appendWaypoint({ position: pos, source: 'drop-pin' });
       } else if (pickMode === 'waypoint') {
         setSaveAt(pos);
         setPickMode('idle');
@@ -223,8 +230,15 @@ export function ChartCanvas() {
       </div>
       <ScaleBar mapRef={mapRef} />
       <DepthLegend />
+      {pickMode === 'destination' && <RouteBuildPill onDone={() => setPickMode('idle')} />}
       {tappedWaypoint && (
         <WaypointActionSheet waypoint={tappedWaypoint} onClose={() => setTappedWaypoint(null)} />
+      )}
+      {tappedRouteWp && (
+        <RouteWaypointActionSheet
+          waypoint={tappedRouteWp}
+          onClose={() => setTappedRouteWp(null)}
+        />
       )}
       {tappedVessel && (
         <AISDetailPanel vessel={tappedVessel} onClose={() => setTappedVessel(null)} />

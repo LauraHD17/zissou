@@ -1,5 +1,11 @@
 import { describe, expect, it } from 'vitest';
-import { bearingRadians, haversineNm, isPlausiblePosition, projectPosition } from './geometry';
+import {
+  bearingRadians,
+  haversineNm,
+  isPlausiblePosition,
+  projectPosition,
+  samplePolyline,
+} from './geometry';
 
 const CASTINE = { latitude: 44.4, longitude: -68.8 };
 
@@ -93,5 +99,47 @@ describe('projectPosition', () => {
   it('moving 0 meters returns essentially the same point', () => {
     const end = projectPosition(CASTINE, 0, 0);
     expect(haversineNm(CASTINE, end)).toBeCloseTo(0, 5);
+  });
+});
+
+describe('samplePolyline', () => {
+  const A = { latitude: 44.0, longitude: -68.0 };
+  const B = { latitude: 44.1, longitude: -68.0 };
+  const C = { latitude: 44.1, longitude: -68.1 };
+
+  it('returns one point for a single-position input', () => {
+    expect(samplePolyline([A], 10)).toEqual([A]);
+  });
+
+  it('returns empty for empty input', () => {
+    expect(samplePolyline([], 10)).toEqual([]);
+  });
+
+  it('returns samples+1 points for a straight segment', () => {
+    const out = samplePolyline([A, B], 10);
+    expect(out.length).toBe(11);
+    expect(out[0]).toEqual(A);
+    expect(out[out.length - 1]).toEqual(B);
+  });
+
+  it('distributes samples across a multi-leg polyline by length', () => {
+    // A→B and B→C are both 0.1° — equal legs.
+    const out = samplePolyline([A, B, C], 10);
+    expect(out.length).toBe(11);
+    expect(out[0]).toEqual(A);
+    expect(out[out.length - 1]).toEqual(C);
+    // The midpoint of the polyline by arc length falls right at B.
+    const mid = out[5];
+    expect(mid.latitude).toBeCloseTo(B.latitude, 5);
+    expect(mid.longitude).toBeCloseTo(B.longitude, 5);
+  });
+
+  it('handles degenerate (total-length-zero) polylines without NaN', () => {
+    const out = samplePolyline([A, A, A], 4);
+    // One point is acceptable; no NaN anywhere.
+    for (const p of out) {
+      expect(Number.isFinite(p.latitude)).toBe(true);
+      expect(Number.isFinite(p.longitude)).toBe(true);
+    }
   });
 });

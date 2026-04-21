@@ -21,10 +21,12 @@ export const ICON_PATHS = {
   sunrise: 'M 2 18 h 20 M 7 18 a 5 5 0 0 1 10 0 M 12 8 v -5 M 9.5 5.5 L 12 3 L 14.5 5.5',
   // Sun half above horizon + down arrow.
   sunset: 'M 2 18 h 20 M 7 18 a 5 5 0 0 1 10 0 M 12 3 v 5 M 9.5 5.5 L 12 8 L 14.5 5.5',
-  // Wave + up arrow.
-  tideRising: 'M 2 16 q 3 -3 6 0 t 6 0 t 6 0 M 19 11 v -7 M 16.5 6.5 L 19 4 L 21.5 6.5',
-  // Wave + down arrow.
-  tideFalling: 'M 2 16 q 3 -3 6 0 t 6 0 t 6 0 M 19 4 v 7 M 16.5 8.5 L 19 11 L 21.5 8.5',
+  // One three-crowned wave + NE-diagonal arrow (↗) for rising tide.
+  tideRising:
+    'M 2 16 q 3 -3 6 0 t 6 0 t 6 0 M 14 11 L 21 4 M 21 8 L 21 4 L 17 4',
+  // One three-crowned wave + SE-diagonal arrow (↘) for falling tide.
+  tideFalling:
+    'M 2 16 q 3 -3 6 0 t 6 0 t 6 0 M 14 4 L 21 11 M 21 7 L 21 11 L 17 11',
 
   // ── Theme toggle (day / night) ─────────────────────────────────────
   // Sun: filled-look circle with 8 short rays (rendered as stroke).

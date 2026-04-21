@@ -11,7 +11,7 @@ import { useSelf } from '../signalk/useSignalK';
 import { formatAgo } from '../utils/clock';
 import { isPlausiblePosition } from '../utils/geometry';
 import type { SavedWaypoint, RecentDestination, WaypointCategory } from '../types/nav';
-import { setDestination } from './destinationStore';
+import { replaceRouteWithSingle } from './routeStore';
 import { useWaypoints } from './waypointStore';
 import { useRecents } from './recentsStore';
 import { WaypointActionSheet } from './WaypointActionSheet';
@@ -63,20 +63,18 @@ export function WaypointsPanel({ onClose }: Props) {
     label: string | undefined,
     saved?: SavedWaypoint,
   ) => {
-    setDestination(
+    replaceRouteWithSingle(
       saved
         ? {
             source: 'saved',
             savedId: saved.id,
             position,
             label: saved.label,
-            setAt: Date.now(),
           }
         : {
             source: 'recent',
             position,
             label,
-            setAt: Date.now(),
           },
     );
     onClose();

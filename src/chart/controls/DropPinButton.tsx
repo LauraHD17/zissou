@@ -6,7 +6,7 @@
 import { useState } from 'react';
 import { Icon } from '../../icons';
 import { SlidePanel } from '../../ui/SlidePanel';
-import { setDestination } from '../../waypoints/destinationStore';
+import { replaceRouteWithSingle } from '../../waypoints/routeStore';
 
 interface Props {
   armed: boolean;
@@ -84,11 +84,10 @@ function CoordinateEntryForm({ onSubmit }: { onSubmit: () => void }) {
       setErr('Longitude must be a number between -180 and 180.');
       return;
     }
-    setDestination({
+    replaceRouteWithSingle({
       source: 'goto-coords',
       position: { latitude: latN, longitude: lonN },
       label: `${latN.toFixed(4)}, ${lonN.toFixed(4)}`,
-      setAt: Date.now(),
     });
     onSubmit();
   };
