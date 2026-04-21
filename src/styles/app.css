@@ -922,20 +922,38 @@ body,
 /* Intermediate route waypoints (RouteViaMarkers). Small amber disc with navy
    stroke — distinct from the destination pin, saved waypoints (yellow-green),
    and AIS markers. Button element so it's keyboard-focusable and announces
-   as interactive. */
+   as interactive.
+
+   Hit target is 44×44 (AAA 2.5.8) with the disc rendered via ::before so the
+   visible mark stays ~16px on the chart. Tap-to-remove is direct (no
+   confirmation), so the generous hit area keeps accidental deletes rare. */
 .route-via-marker {
+  width: 44px;
+  height: 44px;
+  padding: 0;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  position: relative;
+}
+
+.route-via-marker::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
   width: 16px;
   height: 16px;
-  padding: 0;
   border: 2px solid var(--bg-navy);
   border-radius: 50%;
   background: var(--alert-amber);
-  cursor: pointer;
 }
 
 .route-via-marker:focus-visible {
   outline: 3px solid var(--focus-ring);
   outline-offset: 2px;
+  border-radius: 50%;
 }
 
 /* ── Route-build pill (mode indicator + Done) ──────────────────────── */
@@ -2281,4 +2299,236 @@ body,
   margin-top: 4px;
   padding-top: 6px;
   letter-spacing: 0.02em;
+}
+
+/* ── Marine keypad ─────────────────────────────────────────────────────
+   On-screen keyboard docked at the bottom of the viewport. Brutalist:
+   hard rectangles, 1px navy borders, no animations, token-driven so the
+   whole thing flips to warm red when the app switches to night mode.
+
+   Key size 64px exceeds AAA 44px min — sized for wet fingers on a
+   moving deck. Bottom-action keys are taller (72px) so Done/Cancel are
+   unambiguous under the thumbs.
+────────────────────────────────────────────────────────────────────── */
+
+.marine-keypad {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 2000;
+  background: var(--bg-navy);
+  color: var(--text-primary);
+  border-top: 2px solid var(--surface-sand);
+  padding: 10px 12px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  font-family: var(--font-sans);
+  outline: none;
+}
+
+.marine-keypad__readout {
+  background: var(--surface-sand);
+  color: var(--text-on-card);
+  border: 1px solid var(--bg-navy);
+  min-height: 56px;
+  padding: 10px 14px;
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  font-family: var(--font-sans);
+  font-weight: 700;
+  font-size: 28px;
+  font-variant-numeric: tabular-nums;
+  line-height: 1;
+  overflow-x: auto;
+  white-space: nowrap;
+}
+
+.marine-keypad__value {
+  color: var(--text-on-card);
+}
+
+.marine-keypad__placeholder {
+  display: inline-block;
+  width: 1ch;
+}
+
+.marine-keypad__caret {
+  display: inline-block;
+  width: 2px;
+  height: 30px;
+  background: var(--text-on-card);
+  /* No blink. Boat UI is deliberately still — a solid bar is the cursor. */
+}
+
+.marine-keypad__chips {
+  display: flex;
+  gap: 6px;
+  overflow-x: auto;
+  padding-bottom: 2px;
+}
+
+.marine-keypad__chip {
+  background: var(--surface-sand);
+  color: var(--text-on-card);
+  border: 1px solid var(--bg-navy);
+  border-radius: 0;
+  padding: 10px 18px;
+  min-height: 44px;
+  font-family: var(--font-sans);
+  font-weight: 600;
+  font-size: 15px;
+  white-space: nowrap;
+  cursor: pointer;
+  box-shadow: inset 4px 0 0 var(--alert-amber);
+}
+
+.marine-keypad__grid {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.marine-keypad__row {
+  display: flex;
+  gap: 6px;
+  justify-content: center;
+}
+
+.marine-keypad__row--indent {
+  padding-left: 34px;
+  padding-right: 34px;
+}
+
+.marine-keypad__key {
+  flex: 1 1 0;
+  min-width: 0;
+  min-height: 64px;
+  background: var(--surface-sand);
+  color: var(--text-on-card);
+  border: 1px solid var(--bg-navy);
+  border-radius: 0;
+  font-family: var(--font-sans);
+  font-weight: 700;
+  font-size: 22px;
+  text-transform: none;
+  cursor: pointer;
+  padding: 0;
+  -webkit-tap-highlight-color: transparent;
+  -webkit-user-select: none;
+  user-select: none;
+  touch-action: manipulation;
+}
+
+.marine-keypad__key:active {
+  background: var(--bg-navy);
+  color: var(--surface-sand);
+}
+
+.marine-keypad__key--back {
+  flex: 1.4 1 0;
+  font-size: 22px;
+}
+
+.marine-keypad__key--shift {
+  flex: 1.2 1 0;
+}
+
+.marine-keypad__key--shift-on {
+  background: var(--bg-navy);
+  color: var(--alert-amber);
+  border-color: var(--alert-amber);
+}
+
+.marine-keypad__key--shift-off {
+  box-shadow: inset 4px 0 0 var(--bg-navy);
+}
+
+.marine-keypad__key--num {
+  min-height: 72px;
+  font-family: var(--font-mono);
+  font-size: 28px;
+  font-variant-numeric: tabular-nums;
+}
+
+.marine-keypad__grid--numeric {
+  max-width: 520px;
+  margin: 0 auto;
+  width: 100%;
+}
+
+.marine-keypad__actions {
+  display: flex;
+  gap: 6px;
+  margin-top: 2px;
+}
+
+.marine-keypad__action {
+  min-height: 72px;
+  padding: 0 18px;
+  background: var(--surface-sand);
+  color: var(--text-on-card);
+  border: 1px solid var(--bg-navy);
+  border-radius: 0;
+  font-family: var(--font-sans);
+  font-weight: 700;
+  font-size: 17px;
+  letter-spacing: 0.02em;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+}
+
+.marine-keypad__action--mode {
+  flex: 0 0 96px;
+  font-family: var(--font-mono);
+  font-size: 20px;
+}
+
+.marine-keypad__action--space {
+  flex: 1 1 auto;
+  font-weight: 500;
+  letter-spacing: 0.3em;
+  color: var(--text-on-card-dim);
+}
+
+.marine-keypad__action--cancel {
+  flex: 0 0 120px;
+  background: var(--bg-navy);
+  color: var(--text-primary);
+  border-color: var(--surface-sand);
+}
+
+.marine-keypad__action--done {
+  flex: 0 0 140px;
+  background: var(--alert-amber);
+  color: var(--bg-navy);
+  border-color: var(--bg-navy);
+  font-size: 18px;
+}
+
+.marine-keypad__action:active {
+  background: var(--bg-navy);
+  color: var(--surface-sand);
+}
+
+.marine-keypad__action--done:active {
+  background: var(--bg-navy);
+  color: var(--alert-amber);
+}
+
+:root[data-theme="night"] .marine-keypad {
+  border-top-color: var(--text-on-card);
+}
+
+/* While the chart is armed for route-build or save-waypoint, AIS targets
+   and saved-waypoint markers must not intercept taps. They sit on top of
+   the canvas and would otherwise open a detail sheet whenever the operator
+   tries to drop a pin near a vessel or existing waypoint. Route via pins
+   stay clickable so the remove-pin flow still works. */
+.chart-canvas--picking .ais-target-marker,
+.chart-canvas--picking .waypoint-marker {
+  pointer-events: none;
 }

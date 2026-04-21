@@ -36,7 +36,7 @@ import { WeatherPill } from '../weather/WeatherPill';
 import { useChartMode } from './hooks/useChartMode';
 import { useChartPickMode } from './hooks/useChartPickMode';
 import { useTideAwareContours } from './hooks/useTideAwareContours';
-import { appendWaypoint } from '../waypoints/routeStore';
+import { appendWaypoint, removeWaypoint } from '../waypoints/routeStore';
 import { useRouteViaMarkers } from './markers/RouteViaMarkers';
 import type { RouteWaypoint } from '../types/nav';
 import { WaypointEditor } from '../waypoints/WaypointEditor';
@@ -143,7 +143,7 @@ export function ChartCanvas() {
   useOwnShipMarker(mapRef, self);
   useAISMarkers(mapRef, targets, self, { onTap: setTappedVessel });
   useHeadingVector(mapRef, self);
-  useDestinationMarker(mapRef);
+  useDestinationMarker(mapRef, { onTap: setTappedRouteWp });
   useGoToRoute(mapRef);
   useWaypointMarkers(mapRef, { onTap: setTappedWaypoint });
   useAnchorCircle(mapRef);
@@ -151,7 +151,11 @@ export function ChartCanvas() {
   useAnchorDragWatch();
   useHazardProximityWatch();
   useMOBMarker(mapRef);
-  useRouteViaMarkers(mapRef, { onTap: setTappedRouteWp });
+  // Vias remove directly on tap — intermediate pins are cheap to re-drop and
+  // an extra confirmation felt like noise. Destination removal still goes
+  // through the action sheet (below) because losing the final destination is
+  // more disruptive.
+  useRouteViaMarkers(mapRef, { onTap: (wp) => removeWaypoint(wp.id) });
   useChartPickMode(mapRef, {
     armed: pickMode !== 'idle',
     onPick: (pos) => {
@@ -198,7 +202,9 @@ export function ChartCanvas() {
   };
 
   return (
-    <div className="chart-canvas">
+    <div
+      className={`chart-canvas${pickMode !== 'idle' ? ' chart-canvas--picking' : ''}`}
+    >
       <div ref={containerRef} className="chart-map" />
       <FiducialCorners />
       <MapControls

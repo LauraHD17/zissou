@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { SlidePanel } from '../ui/SlidePanel';
 import type { SavedWaypoint } from '../types/nav';
-import { replaceRouteWithSingle } from './routeStore';
+import { appendWaypoint } from './routeStore';
 import { removeWaypoint } from './waypointStore';
 import { WaypointEditor } from './WaypointEditor';
 
@@ -39,7 +39,12 @@ export function WaypointActionSheet({ waypoint, onClose }: Props) {
           type="button"
           className="action-sheet__btn"
           onClick={() => {
-            replaceRouteWithSingle({
+            // Append to the existing route instead of replacing it so that
+            // operators who built a multi-pin path ending at a saved spot
+            // don't lose their vias. If no route is active, appendWaypoint
+            // starts a new one — same end state as the old replace behavior
+            // for the single-pin case.
+            appendWaypoint({
               source: 'saved',
               savedId: waypoint.id,
               position: { latitude: waypoint.lat, longitude: waypoint.lon },

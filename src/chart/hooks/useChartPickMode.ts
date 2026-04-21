@@ -1,7 +1,15 @@
 // Generic chart pick-position gesture. When armed, the chart is captured
 // for picking a point: pan/zoom disable, a ghost pin tracks the cursor, and
-// release fires `onPick` with the lat/lon. Callers decide what to do with
-// the picked point — set a destination, save a waypoint, etc.
+// a confirmed tap fires `onPick` with the lat/lon.
+//
+// Tap detection uses MapLibre's own mouse + touch events paired with a
+// down/up distance + time threshold. We deliberately do NOT subscribe to
+// `click`:
+//   - `click` drops taps that move a handful of pixels between down and up.
+//     On a rocking deck that's every other tap — they came out as "no
+//     marker, have to tap twice."
+//   - Subscribing to `click` AND `touchend` also double-fires on touch.
+// One down/up pair per gesture, across mouse + touch, with generous slop.
 
 import { useEffect, useRef } from 'react';
 import type { RefObject } from 'react';
@@ -14,12 +22,19 @@ interface Options {
   onPick: (pos: Position) => void;
 }
 
+// Max pixel drift between down and up that still counts as a tap. A deck
+// roll or a fat-finger wobble of under ~12px shouldn't swallow the commit.
+const TAP_SLOP_PX = 12;
+// Max press duration that still counts as a tap (long-press is a separate
+// gesture and not routed here).
+const TAP_MAX_MS = 700;
+
+type MapEvent = maplibregl.MapMouseEvent | maplibregl.MapTouchEvent;
+
 export function useChartPickMode(
   mapRef: RefObject<maplibregl.Map | null>,
   { armed, onPick }: Options,
 ): void {
-  // Route onPick through a ref so a freshly-created callback from the caller
-  // doesn't re-trigger the effect and tear down listeners mid-gesture.
   const onPickRef = useRef(onPick);
   onPickRef.current = onPick;
 
@@ -29,7 +44,8 @@ export function useChartPickMode(
 
     map.dragPan.disable();
     map.doubleClickZoom.disable();
-    map.getCanvas().style.cursor = 'crosshair';
+    const canvas = map.getCanvas();
+    canvas.style.cursor = 'crosshair';
 
     const ghostEl = document.createElement('div');
     ghostEl.className = 'destination-marker destination-marker--ghost';
@@ -39,35 +55,49 @@ export function useChartPickMode(
       .addTo(map);
     ghost.getElement().style.visibility = 'hidden';
 
-    const showGhostAt = (e: maplibregl.MapMouseEvent | maplibregl.MapTouchEvent) => {
+    const showGhostAt = (e: MapEvent) => {
       ghost.setLngLat(e.lngLat);
       ghost.getElement().style.visibility = 'visible';
     };
 
-    const commit = (e: maplibregl.MapMouseEvent | maplibregl.MapTouchEvent) => {
+    // Single down-state shared by mouse and touch. MapLibre fires mouse
+    // events on desktop and touch events on touchscreens; they don't overlap
+    // on the same gesture, so a shared slot is safe.
+    let down: { x: number; y: number; at: number } | null = null;
+
+    const onDown = (e: MapEvent) => {
+      down = { x: e.point.x, y: e.point.y, at: performance.now() };
+      showGhostAt(e);
+    };
+
+    const onUp = (e: MapEvent) => {
+      const d = down;
+      down = null;
+      if (!d) return;
+      const dist = Math.hypot(e.point.x - d.x, e.point.y - d.y);
+      const held = performance.now() - d.at;
+      if (dist > TAP_SLOP_PX || held > TAP_MAX_MS) return;
       onPickRef.current({ latitude: e.lngLat.lat, longitude: e.lngLat.lng });
     };
 
     map.on('mousemove', showGhostAt);
     map.on('touchmove', showGhostAt);
-    map.on('mousedown', showGhostAt);
-    map.on('touchstart', showGhostAt);
-    // `click` fires on mouse and normalized touch taps; `touchend` covers
-    // drag-release on touchscreens where `click` sometimes doesn't emit.
-    map.on('click', commit);
-    map.on('touchend', commit);
+    map.on('mousedown', onDown);
+    map.on('mouseup', onUp);
+    map.on('touchstart', onDown);
+    map.on('touchend', onUp);
 
     return () => {
       map.off('mousemove', showGhostAt);
       map.off('touchmove', showGhostAt);
-      map.off('mousedown', showGhostAt);
-      map.off('touchstart', showGhostAt);
-      map.off('click', commit);
-      map.off('touchend', commit);
+      map.off('mousedown', onDown);
+      map.off('mouseup', onUp);
+      map.off('touchstart', onDown);
+      map.off('touchend', onUp);
       ghost.remove();
       map.dragPan.enable();
       map.doubleClickZoom.enable();
-      map.getCanvas().style.cursor = '';
+      canvas.style.cursor = '';
     };
   }, [mapRef, armed]);
 }

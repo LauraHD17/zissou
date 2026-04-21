@@ -6,6 +6,7 @@
 import { useState } from 'react';
 import { Icon, type IconName } from '../icons';
 import { SlidePanel } from '../ui/SlidePanel';
+import { MarineKeypad } from '../ui/MarineKeypad';
 import type { Position } from '../signalk/types';
 import type { SavedWaypoint, WaypointCategory } from '../types/nav';
 import { addWaypoint, updateWaypoint } from './waypointStore';
@@ -31,6 +32,9 @@ export function WaypointEditor(props: Props) {
 
   const [label, setLabel] = useState(initialLabel);
   const [category, setCategory] = useState<WaypointCategory>(initialCategory);
+  const [keypadOpen, setKeypadOpen] = useState(false);
+  // Snapshot of the label at keypad-open, so Cancel reverts cleanly.
+  const [labelAtOpen, setLabelAtOpen] = useState('');
 
   const submit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -66,10 +70,18 @@ export function WaypointEditor(props: Props) {
           <span>Label</span>
           <input
             type="text"
+            // inputMode="none" suppresses the OS virtual keyboard on touch
+            // devices while the field is still editable from a physical USB
+            // keyboard plugged into the Pi. The MarineKeypad opens on focus
+            // and provides the on-screen input.
+            inputMode="none"
             value={label}
             onChange={(e) => setLabel(e.target.value)}
+            onFocus={() => {
+              setLabelAtOpen(label);
+              setKeypadOpen(true);
+            }}
             placeholder="Camden mooring 14"
-            autoFocus
             maxLength={40}
           />
         </label>
@@ -100,6 +112,19 @@ export function WaypointEditor(props: Props) {
           {submitText}
         </button>
       </form>
+      <MarineKeypad
+        open={keypadOpen}
+        value={label}
+        onChange={setLabel}
+        onDone={() => setKeypadOpen(false)}
+        onCancel={() => {
+          setLabel(labelAtOpen);
+          setKeypadOpen(false);
+        }}
+        fieldKey="waypoint.label"
+        maxLength={40}
+        label="Keyboard: waypoint name"
+      />
     </SlidePanel>
   );
 }
