@@ -3,9 +3,10 @@
 // SlidePanels with focus trap / Escape / swipe-down / tap-outside already
 // handled by the shared component. S-57 → English lives in navaidNarrative.ts.
 //
-// For spot soundings specifically, the panel ALSO renders a live "right now"
-// depth line that adds the current tide to the charted low-tide number, so
-// a novice operator can learn what the chart-number means while using it.
+// For spot soundings, the panel overrides the generic narrative with a
+// tide-aware breakdown — title shows the CURRENT depth (matching what's
+// painted on the chart), with the charted low-tide value + tide offset
+// underneath for reference.
 
 import { useSelf } from '../signalk/useSignalK';
 import { useNow } from '../utils/clock';
@@ -32,9 +33,28 @@ interface Props {
 }
 
 export function NavaidDetailPanel({ feature, onClose }: Props) {
-  const narrative = buildNavaidNarrative(feature);
-  const soundingNow = useSoundingNowLine(feature);
+  const sounding = useSoundingParts(feature);
 
+  // Sounding path: fully tide-aware, renders its own title + breakdown so
+  // the chart number and the panel number always agree.
+  if (sounding) {
+    return (
+      <SlidePanel open onClose={onClose} labelledBy="navaid-detail-title">
+        <article className="navaid-detail">
+          <h2 id="navaid-detail-title" className="navaid-detail__title">
+            {sounding.nowFt} ft here right now
+          </h2>
+          <p className="navaid-detail__kind">Depth under your keel at this spot.</p>
+          <p className="navaid-detail__breakdown">
+            Charted low-tide depth: {sounding.lowFt} ft · tide is {sounding.tideLabel} ft
+          </p>
+          <p className="navaid-detail__pos">{sounding.position}</p>
+        </article>
+      </SlidePanel>
+    );
+  }
+
+  const narrative = buildNavaidNarrative(feature);
   return (
     <SlidePanel open onClose={onClose} labelledBy="navaid-detail-title">
       <article className="navaid-detail">
@@ -42,7 +62,6 @@ export function NavaidDetailPanel({ feature, onClose }: Props) {
           {narrative.title}
         </h2>
         <p className="navaid-detail__kind">{narrative.kind}</p>
-        {soundingNow && <p className="navaid-detail__now">{soundingNow}</p>}
         {narrative.light && <p className="navaid-detail__light">{narrative.light}</p>}
         {narrative.range && <p className="navaid-detail__range">{narrative.range}</p>}
         {narrative.position && <p className="navaid-detail__pos">{narrative.position}</p>}
@@ -51,17 +70,45 @@ export function NavaidDetailPanel({ feature, onClose }: Props) {
   );
 }
 
-// Computes the "About N ft right now (tide is +X ft)" line for soundings.
-// Returns null for any other nav-mark kind so the panel skips it.
-function useSoundingNowLine(feature: NavaidFeature): string | null {
+interface SoundingParts {
+  nowFt: number;
+  lowFt: number;
+  tideLabel: string;
+  position: string;
+}
+
+/**
+ * Collects everything the sounding panel needs: current-depth feet,
+ * charted low-tide feet, formatted tide offset, and lat/lon. Returns
+ * null for any non-sounding feature.
+ */
+function useSoundingParts(feature: NavaidFeature): SoundingParts | null {
   const self = useSelf();
   const now = useNow(5 * 60 * 1000);
   if (feature.kind !== 'soundg') return null;
-  const meters = feature.properties.VALSOU;
+  const meters = feature.properties.VALSOU ?? feature.properties.DEPTH;
   if (meters == null) return null;
   const pos = self?.position ?? FALLBACK_POS;
   const tideFt = tideHeightFt(now, pos);
   const nowFt = Math.round(soundingNowFeet(meters, tideFt));
+  const lowFt = Math.round(meters * 3.28084);
   const tideLabel = tideFt >= 0 ? `+${tideFt.toFixed(1)}` : tideFt.toFixed(1);
-  return `About ${nowFt} ft right now (tide is ${tideLabel} ft)`;
+  return {
+    nowFt,
+    lowFt,
+    tideLabel,
+    position: formatLatLonShort(feature.lat, feature.lng),
+  };
+}
+
+function formatLatLonShort(lat: number, lng: number): string {
+  const la = Math.abs(lat);
+  const lo = Math.abs(lng);
+  const laD = Math.floor(la);
+  const laM = (la - laD) * 60;
+  const loD = Math.floor(lo);
+  const loM = (lo - loD) * 60;
+  const laH = lat >= 0 ? 'N' : 'S';
+  const loH = lng >= 0 ? 'E' : 'W';
+  return `${laD}°${laM.toFixed(1)}′${laH} · ${loD}°${loM.toFixed(1)}′${loH}`;
 }

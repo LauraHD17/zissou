@@ -6,7 +6,8 @@ import { Protocol } from 'pmtiles';
 import { useAISTargets, useSelf } from '../signalk/useSignalK';
 import { isPlausiblePosition } from '../utils/geometry';
 import { useUserPrefs } from '../prefs/userPrefsStore';
-import { BASE_STYLE_URL, applyLabelPriority, applyMarineStyle } from './marineStyle';
+import { applyLabelPriority, applyMarineStyle } from './marineStyle';
+import { buildOfflineStyle } from './offlineStyle';
 import { useOwnShipMarker } from './markers/OwnShipMarker';
 import { useAISMarkers } from './markers/AISMarkers';
 import { ensureHeadingVectorLayer, useHeadingVector } from './markers/HeadingVector';
@@ -109,7 +110,7 @@ export function ChartCanvas() {
 
     const map = new maplibregl.Map({
       container: containerRef.current,
-      style: BASE_STYLE_URL,
+      style: buildOfflineStyle(),
       center: initialCenter,
       zoom: DEFAULT_ZOOM,
       attributionControl: { compact: false },

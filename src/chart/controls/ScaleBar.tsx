@@ -10,13 +10,18 @@ const M_PER_MILE = 1609.344;
 interface Scale {
   widthPx: number;
   label: string;
+  zoomLabel: string;
 }
 
 export function ScaleBar({ mapRef }: { mapRef: RefObject<maplibregl.Map | null> }) {
   const scale = useScale(mapRef);
   if (!scale) return null;
   return (
-    <div className="map-scalebar" aria-label={`Map scale ${scale.label}`}>
+    <div
+      className="map-scalebar"
+      aria-label={`Map scale ${scale.label}, ${scale.zoomLabel} view`}
+    >
+      <span className="map-scalebar__zoom">{scale.zoomLabel}</span>
       <div className="map-scalebar__line" style={{ width: `${scale.widthPx}px` }}>
         <span className="map-scalebar__tick map-scalebar__tick--left" aria-hidden="true" />
         <span className="map-scalebar__tick map-scalebar__tick--right" aria-hidden="true" />
@@ -24,6 +29,20 @@ export function ScaleBar({ mapRef }: { mapRef: RefObject<maplibregl.Map | null> 
       <span className="map-scalebar__label">{scale.label}</span>
     </div>
   );
+}
+
+/**
+ * Plain-language name for the current chart zoom. Mariners think in
+ * "approach / harbor / close-up" bands, not numeric zoom levels.
+ * Also a hint for which chart details activate where: spot depths turn on
+ * at "approach" (z12), which this label now communicates implicitly.
+ */
+function zoomLabelFor(zoom: number): string {
+  if (zoom < 9) return 'coast';
+  if (zoom < 11) return 'bay';
+  if (zoom < 13) return 'approach';
+  if (zoom < 15) return 'harbor';
+  return 'close-up';
 }
 
 function useScale(mapRef: RefObject<maplibregl.Map | null>): Scale | null {
@@ -39,7 +58,8 @@ function useScale(mapRef: RefObject<maplibregl.Map | null>): Scale | null {
       setScale((prev) =>
         prev != null &&
         Math.round(prev.widthPx) === Math.round(next.widthPx) &&
-        prev.label === next.label
+        prev.label === next.label &&
+        prev.zoomLabel === next.zoomLabel
           ? prev
           : next,
       );
@@ -82,5 +102,9 @@ function computeScale(map: maplibregl.Map): Scale {
   const nmStr = chosenNm < 1 ? chosenNm.toFixed(2).replace(/0$/, '') : String(chosenNm);
   const miStr =
     mi < 1 ? mi.toFixed(2).replace(/0$/, '') : mi < 10 ? mi.toFixed(1) : String(Math.round(mi));
-  return { widthPx, label: `${nmStr} nm (${miStr} mi)` };
+  return {
+    widthPx,
+    label: `${nmStr} nm (${miStr} mi)`,
+    zoomLabel: zoomLabelFor(zoom),
+  };
 }

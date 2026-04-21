@@ -34,8 +34,10 @@ export interface NavaidProperties {
   SIGPER?: number;
   VALNMR?: number;
   TOPSHP?: number;
-  /** Soundings: depth in meters referenced to mean lower low water. */
+  /** Soundings: depth in meters referenced to mean lower low water. Some
+   *  NOAA builds write it as VALSOU, others as DEPTH — both handled. */
   VALSOU?: number;
+  DEPTH?: number;
 }
 
 export interface NavaidNarrative {
@@ -76,8 +78,10 @@ function buildTitle(kind: NavaidKind, p: NavaidProperties): string {
   const number = name ? ` — ${name}` : '';
 
   if (kind === 'soundg') {
-    const ft = p.VALSOU != null ? Math.round(p.VALSOU * 3.28084) : null;
-    return ft != null ? `${ft} ft spot depth` : 'Spot depth';
+    // Title is filled in by the panel with the tide-adjusted value — the
+    // narrative util doesn't know the current tide height, so we leave a
+    // generic placeholder the panel overrides.
+    return 'Spot depth';
   }
   if (kind === 'boylat' || kind === 'bcnlat') {
     const side = p.CATLAM === 1 ? 'port hand' : p.CATLAM === 2 ? 'starboard hand' : null;
@@ -109,7 +113,10 @@ function buildTitle(kind: NavaidKind, p: NavaidProperties): string {
 
 function buildKindLine(kind: NavaidKind, p: NavaidProperties): string {
   if (kind === 'soundg') {
-    return 'Depth at low tide · add the current tide height for depth now';
+    // Kind-line is overridden by the panel with the tide breakdown, since it
+    // needs the live tide value. This generic text only shows if a caller
+    // uses the narrative util outside the panel.
+    return 'Water depth at this spot';
   }
   if (kind === 'boylat' || kind === 'bcnlat') {
     if (p.CATLAM === 1) return 'Lateral mark · keep to your left when returning from sea';

@@ -1,21 +1,21 @@
-// Marine-style overrides applied on top of OpenFreeMap's hosted "positron" style.
+// Marine-style runtime layer additions + palette for the NOAA overlay.
 //
-// OpenFreeMap (https://openfreemap.org) serves OpenMapTiles vector tiles + base
-// styles (positron/liberty/bright) for free, no API key. We use their positron
-// style URL as the baseline so we inherit their correctly-versioned tile
-// references, then override paint properties to shift the palette toward our
-// brutalist marine design (slate-blue water, sand land, navy coastlines).
+// The base-map skeleton (background, water, land, coastline, built-up areas)
+// is defined declaratively in offlineStyle.ts — that style is the entire
+// style the map boots with, so nothing in this module depends on an
+// external CDN (former OpenFreeMap positron dependency has been removed).
 //
-// When we eventually have NOAA raster MBTiles on the Pi, this whole module
-// becomes obsolete — Marine Mode swaps to an MBTiles source and the proper
-// NOAA rendering (depth contours, buoys, navaids) takes over.
+// This module still owns:
+//   - Depth contour + sounding color expressions (they need CSS vars +
+//     live tide updates, so they can't be static in offlineStyle.ts)
+//   - addNoaaChartLayers — runtime-added NOAA symbol layers with
+//     expressions, filters, and text-field expressions
+//   - applyLabelPriority tri-state — modulates z-order between place
+//     and depth labels at the operator's preference
 //
-// LIMITATION (dev only): OpenMapTiles has NO bathymetric data — no depth
-// contours, no soundings, no marine navaids. Those are NOAA-only. For
-// dev-time marine annotations, an OpenSeaMap raster overlay
-// (https://tiles.openseamap.org/seamark/{z}/{x}/{y}.png) can be layered on
-// top and shows buoys + lights + ferries + sparse depth notes. Not added by
-// default because it's coverage-incomplete; opt-in if useful in dev.
+// If the NOAA PMTiles aren't present (fresh clone before running
+// build-charts.sh), the style silently degrades: sand background +
+// whatever tiles exist. App still works.
 
 import type {
   DataDrivenPropertyValueSpecification,
@@ -24,8 +24,6 @@ import type {
   Map as MapLibreMap,
 } from 'maplibre-gl';
 import type { ChartLabelPriority } from '../types/nav';
-
-export const BASE_STYLE_URL = 'https://tiles.openfreemap.org/styles/positron';
 
 // NOAA chart data served as a single PMTiles file from our public/ dir.
 // Built by scripts/build-charts.sh — see docs/charts.md for regen instructions.
@@ -69,95 +67,27 @@ const DEPTH_BREAK_SHALLOW = DEPTH_BREAK_SHALLOW_M;
 const DEPTH_BREAK_MODERATE = DEPTH_BREAK_MODERATE_M;
 
 /**
- * Apply marine palette overrides to a MapLibre map after its style has loaded.
- * Safe to call repeatedly (e.g., after a mode toggle re-sets the style).
+ * Add runtime NOAA chart layers (depth contours + labels, symbol layers
+ * for buoys/lights/wrecks, soundings) on top of the base map defined in
+ * offlineStyle.ts. Safe to call repeatedly — addLayerIfMissing silently
+ * skips anything already present, which makes this idempotent across
+ * Marine/Harbor style reloads.
  *
- * Also layers on NOAA chart data (depth contours, buoys, lights, wrecks) if
- * the PMTiles file is available. Missing PMTiles silently degrades to just
- * the tinted base — app still works, no contours until the script is run.
+ * If the NOAA PMTiles isn't present, the source creation throws inside
+ * addNoaaChartLayers and the function returns early — app still works
+ * with just the base-map skeleton.
  */
 export function applyMarineStyle(map: MapLibreMap): void {
-  // Background / anything not otherwise painted → sand.
-  setPaint(map, 'background', 'background-color', COLORS.land);
-
-  // Water polygons → slate blue. OpenMapTiles' water layer covers lakes,
-  // rivers, and near-coast ocean masks.
-  setPaint(map, 'water', 'fill-color', COLORS.water);
-
-  // Every fill-type layer that positron uses for land-like surfaces gets sanded.
-  // We enumerate the common ones; missing layers are no-ops.
-  const landLayers = [
-    'landcover',
-    'landcover-grass',
-    'landcover-wood',
-    'landcover-ice',
-    'landuse',
-    'landuse-residential',
-    'park',
-    'park_outline',
-    'wetland',
-    'sand',
-  ];
-  for (const id of landLayers) {
-    setPaint(map, id, 'fill-color', COLORS.land);
-  }
-
-  // Coastline — where water meets land. Styled as a hard 1px navy stroke.
-  setPaint(map, 'water_outline', 'line-color', COLORS.coastline);
-  setPaint(map, 'water_outline', 'line-width', 1);
-
-  // Roads — minimize. Hide minor, dim major.
-  hideLayer(map, 'road_minor');
-  hideLayer(map, 'road_path');
-  hideLayer(map, 'road_service');
-  hideLayer(map, 'road_service_casing');
-  setPaint(map, 'road_major_casing', 'line-color', COLORS.roadMinor);
-  setPaint(map, 'road_major', 'line-color', COLORS.roadMajor);
-  setPaint(map, 'road_major_rail', 'line-color', COLORS.roadMajor);
-  setPaint(map, 'road_trunk', 'line-color', COLORS.roadMajor);
-  setPaint(map, 'road_trunk_casing', 'line-color', COLORS.roadMinor);
-
-  // Buildings — hide in marine mode (not relevant on water).
-  hideLayer(map, 'building');
-  hideLayer(map, 'building-top');
-
-  // Place labels — promote. Marine-chart convention: islands and towns read as
-  // authoritative, uppercase, navy on sand with a strong halo so contour lines
-  // passing through the text bbox don't eat the letters. Positron ships these
-  // under `label_*` (not `place_label_*` — the prior IDs here were no-ops).
-  for (const id of PLACE_LABEL_LAYERS) {
-    setPaint(map, id, 'text-color', COLORS.labelStrong);
-    setPaint(map, id, 'text-halo-color', COLORS.labelHalo);
-    setPaint(map, id, 'text-halo-width', 2);
-    setLayout(map, id, 'text-transform', 'uppercase');
-    setLayout(map, id, 'text-letter-spacing', 0.08);
-  }
-
-  // Noise reduction — on a marine chart, route numbers and street names are
-  // pure clutter. Kill road-name labels outright and defer highway shields to
-  // deep-zoom only. Road *lines* remain as subtle land-texture context.
-  hideLayer(map, 'highway-name-path');
-  hideLayer(map, 'highway-name-minor');
-  hideLayer(map, 'highway-name-major');
-  for (const id of HIGHWAY_SHIELD_LAYERS) {
-    setLayerZoomRange(map, id, 14);
-  }
-  hideLayer(map, 'poi_label');
-  hideLayer(map, 'housenumber_label');
-  hideLayer(map, 'waterway_label');
-
   addNoaaChartLayers(map);
   // Layer z-order (place-on-top vs depth-on-top) is owned by `applyLabelPriority`
   // — it's called right after this from ChartCanvas with the operator's tri-state
   // preference.
 }
 
-const PLACE_LABEL_LAYERS = ['label_other', 'label_village', 'label_town', 'label_city'] as const;
-const HIGHWAY_SHIELD_LAYERS = [
-  'highway-shield-non-us',
-  'highway-shield-us-interstate',
-  'road_shield_us',
-] as const;
+// Landmark label layer from the offline base style. Treated as the "place
+// name" tier for label-priority collision — lighthouses and conspicuous
+// features shouldn't get buried under depth contour labels, and vice versa.
+const PLACE_LABEL_LAYERS = ['landmark-lndmrk'] as const;
 const DEPTH_LABEL_LAYER = 'noaa-depth-contour-label';
 
 // ── NOAA ENC layers (depth contours, buoys, lights, wrecks, etc.) ─────
@@ -212,6 +142,29 @@ export function soundingColorExpressionForTide(
   ] as unknown as ExpressionSpecification;
 }
 
+/**
+ * Text-field expression for spot-depth labels. Adds the current tide
+ * height to the charted (low-tide) value so the on-chart number is the
+ * depth an operator will see under their keel RIGHT NOW — no mental math
+ * at the helm. Gets recomputed on every tide-refresh tick by
+ * applyTideToDepthContours.
+ */
+export function soundingLabelExpressionForTide(
+  tideFt: number,
+): DataDrivenPropertyValueSpecification<string> {
+  return [
+    'to-string',
+    [
+      'round',
+      [
+        '+',
+        ['*', ['to-number', ['coalesce', ['get', 'VALSOU'], ['get', 'DEPTH']]], 3.28084],
+        tideFt,
+      ],
+    ],
+  ] as unknown as DataDrivenPropertyValueSpecification<string>;
+}
+
 export function applyTideToDepthContours(map: MapLibreMap, tideFt: number): void {
   const contourExpr = depthColorExpressionForTide(tideFt);
   if (map.getLayer('noaa-depth-contour')) {
@@ -220,9 +173,11 @@ export function applyTideToDepthContours(map: MapLibreMap, tideFt: number): void
   if (map.getLayer('noaa-depth-contour-label')) {
     map.setPaintProperty('noaa-depth-contour-label', 'text-color', contourExpr);
   }
-  const soundingExpr = soundingColorExpressionForTide(tideFt);
+  const soundingColor = soundingColorExpressionForTide(tideFt);
+  const soundingLabel = soundingLabelExpressionForTide(tideFt);
   if (map.getLayer('noaa-soundg-label')) {
-    map.setPaintProperty('noaa-soundg-label', 'text-color', soundingExpr);
+    map.setPaintProperty('noaa-soundg-label', 'text-color', soundingColor);
+    map.setLayoutProperty('noaa-soundg-label', 'text-field', soundingLabel);
   }
 }
 
@@ -313,27 +268,23 @@ function addNoaaChartLayers(map: MapLibreMap): void {
     type: 'symbol',
     source: 'noaa',
     'source-layer': 'soundg',
-    minzoom: 14,
+    minzoom: 12,
     filter: [
       'any',
       ['has', 'VALSOU'],
       ['has', 'DEPTH'],
     ],
     layout: {
-      // Convert meters to feet and round — fractional feet on a chart label
-      // reads as noise, not precision.
-      'text-field': [
-        'to-string',
-        ['round', ['*', ['to-number', soundingDepthM], 3.28084]],
-      ],
+      // Numbers on the chart show depth RIGHT NOW (charted low-tide value
+      // plus current tide height, rounded to feet). useTideAwareContours
+      // refreshes this expression every 5 min so the numbers stay in sync
+      // with the tide — no mental math at the helm.
+      'text-field': soundingLabelExpressionForTide(0),
       'text-font': ['Noto Sans Bold'],
       'text-size': 10,
       'text-letter-spacing': 0.02,
       // Shallowest first — when labels crowd at busy harbors, the deepest
-      // drop, so safety-critical numbers always win. No feet-threshold filter
-      // because MapLibre's collision engine plus this sort key already gives
-      // us controlled decay; hard-clipping at 10 m hid valuable anchor-depth
-      // readings.
+      // drop, so safety-critical numbers always win.
       'symbol-sort-key': ['to-number', soundingDepthM],
     },
     paint: {
@@ -650,25 +601,10 @@ function addLayerIfMissing(map: MapLibreMap, layer: LayerSpecification): void {
 
 // ── helpers ────────────────────────────────────────────────────────────
 
-function setPaint(map: MapLibreMap, layerId: string, property: string, value: unknown): void {
-  if (!map.getLayer(layerId)) return;
-  try {
-    // OpenFreeMap's positron schema can shift; tinting is best-effort, and
-    // each (layer, property) pair is dynamic so we can't statically type it.
-    (map.setPaintProperty as (l: string, p: string, v: unknown) => void)(layerId, property, value);
-  } catch {
-    // ignore
-  }
-}
-
-function hideLayer(map: MapLibreMap, layerId: string): void {
-  if (!map.getLayer(layerId)) return;
-  try {
-    map.setLayoutProperty(layerId, 'visibility', 'none');
-  } catch {
-    // ignore
-  }
-}
+// setLayout stays — applyLabelPriority uses it to toggle text-ignore-placement
+// on the depth-label and landmark layers. All other positron-schema helpers
+// (setPaint / hideLayer / setLayerZoomRange) were removed when we dropped the
+// OpenFreeMap inheritance — the base style is now declared in offlineStyle.ts.
 
 function setLayout(map: MapLibreMap, layerId: string, property: string, value: unknown): void {
   if (!map.getLayer(layerId)) return;
@@ -679,16 +615,7 @@ function setLayout(map: MapLibreMap, layerId: string, property: string, value: u
       value,
     );
   } catch {
-    // ignore — positron schema can shift, best-effort tinting
-  }
-}
-
-function setLayerZoomRange(map: MapLibreMap, layerId: string, minzoom: number): void {
-  if (!map.getLayer(layerId)) return;
-  try {
-    map.setLayerZoomRange(layerId, minzoom, 24);
-  } catch {
-    // ignore
+    // ignore — layer schema may shift across theme/mode transitions
   }
 }
 

@@ -18,6 +18,8 @@
     "format:check": "prettier --check ."
   },
   "dependencies": {
+    "@fontsource-variable/zalando-sans-expanded": "^5.2.2",
+    "@fontsource/roboto-mono": "^5.2.8",
     "@types/suncalc": "^1.9.2",
     "maplibre-gl": "^5.23.0",
     "pmtiles": "^4.4.1",

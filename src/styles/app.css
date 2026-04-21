@@ -65,8 +65,11 @@
   --navaid-light-glow: #ff6fd8;  /* light halo — hot magenta, chart-exclusive */
   --navaid-wreck: #7b1fa2;       /* wrecks/obstructions — deep purple */
 
-  /* Typography */
-  --font-sans: 'Zalando Sans Expanded', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  /* Typography — both fonts self-hosted via @fontsource packages so the UI
+     renders correctly without wifi. "Zalando Sans Expanded Variable" comes
+     from @fontsource-variable; the fallback name "Zalando Sans Expanded"
+     covers legacy setups or a future non-variable swap. */
+  --font-sans: 'Zalando Sans Expanded Variable', 'Zalando Sans Expanded', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
   --font-mono: 'Roboto Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
 
   font-family: var(--font-sans);
@@ -2792,4 +2795,34 @@ body,
   font-size: 13px;
   color: var(--text-on-card-dim);
   line-height: 1.35;
+}
+
+/* Plain-language zoom-level badge on the ScaleBar — chart plotters use
+   "approach / harbor / close-up" conventions rather than numeric zoom,
+   and operators think in those bands when deciding what details they
+   expect to see (e.g. spot depths turn on at "approach"). */
+.map-scalebar__zoom {
+  font-family: var(--font-sans);
+  font-weight: 700;
+  font-size: 9px;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: var(--text-dim);
+  padding: 1px 6px;
+  border: 1px solid var(--border-on-navy);
+  background: rgba(20, 32, 56, 0.5);
+  white-space: nowrap;
+}
+
+/* Sounding panel — breakdown line under the "X ft here right now" title.
+   Shows the charted low-tide depth + tide offset so the operator can
+   still cross-reference a paper chart if needed. Muted mono for secondary
+   context. */
+.navaid-detail__breakdown {
+  font-family: var(--font-mono);
+  font-weight: 400;
+  font-size: 12px;
+  color: var(--text-on-card-dim);
+  margin: 2px 0 0;
+  font-variant-numeric: tabular-nums;
 }
