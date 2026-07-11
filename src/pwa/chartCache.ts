@@ -99,7 +99,9 @@ export async function downloadCharts(onProgress: (p: DownloadProgress) => void):
       // Quota exceeded (not enough free space) or write failure — drop the
       // partial entry so a retry starts clean for this file.
       await cache.delete(url);
-      throw new Error(`${f}: ${e instanceof Error ? `${e.name} — ${e.message}` : String(e)}`);
+      throw new Error(`${f}: ${e instanceof Error ? `${e.name} — ${e.message}` : String(e)}`, {
+        cause: e,
+      });
     }
   }
   onProgress({ fraction: 1, receivedBytes: received });
