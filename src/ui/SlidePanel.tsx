@@ -70,10 +70,15 @@ export function SlidePanel({ open, onClose, labelledBy, returnFocusTo, children 
     [onClose],
   );
 
-  // Swipe-down to close. Pointer events handled on the panel itself; the
-  // overlay handles tap-outside separately.
+  // Swipe-down to close — armed ONLY from the grab-handle zone at the top
+  // of the panel. Arming from anywhere meant every scroll of a long form
+  // (Settings on a phone) dismissed the panel mid-read. The overlay handles
+  // tap-outside separately; Escape and the buttons remain as alternatives.
+  const GRAB_ZONE_PX = 48;
   const onPointerDown = (e: PointerEvent<HTMLDivElement>) => {
     if (e.pointerType !== 'touch' && e.pointerType !== 'pen') return;
+    const rect = panelRef.current?.getBoundingClientRect();
+    if (!rect || e.clientY - rect.top > GRAB_ZONE_PX) return;
     dragStateRef.current = { startY: e.clientY, startTime: performance.now() };
     (e.target as HTMLElement).setPointerCapture(e.pointerId);
   };
@@ -116,6 +121,8 @@ export function SlidePanel({ open, onClose, labelledBy, returnFocusTo, children 
         onPointerUp={onPointerUp}
         onPointerCancel={onPointerUp}
       >
+        {/* Visible grab handle — the only zone that arms swipe-to-close. */}
+        <div className="slide-panel__handle" aria-hidden="true" />
         {/* Sentinels: focusable elements must not be aria-hidden (axe
             aria-hidden-focus) — marked with a data attribute instead so the
             wrap helpers can skip them. They redirect focus immediately, so

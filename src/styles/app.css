@@ -3265,3 +3265,13 @@ body,
 .compass-pill {
   bottom: calc(120px + env(safe-area-inset-bottom, 0px));
 }
+
+/* Grab handle at the top of slide panels — the only swipe-to-close zone
+   (scrolling a long form must never dismiss the panel). Hard rectangle
+   per the design system. */
+.slide-panel__handle {
+  width: 48px;
+  height: 5px;
+  margin: 2px auto 10px;
+  background: var(--border-on-card);
+}
