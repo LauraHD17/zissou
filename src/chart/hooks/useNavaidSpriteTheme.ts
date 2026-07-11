@@ -25,8 +25,9 @@ interface SpriteJson {
 }
 
 const SPRITE_BASE: Record<Theme, string> = {
-  day: '/sprites/navaid',
-  night: '/sprites/navaid-night',
+  // BASE_URL-prefixed: the phone build is served from a subpath (/zissou/).
+  day: `${import.meta.env.BASE_URL}sprites/navaid`,
+  night: `${import.meta.env.BASE_URL}sprites/navaid-night`,
 };
 
 export function useNavaidSpriteTheme(mapRef: RefObject<maplibregl.Map | null>): void {

@@ -28,9 +28,10 @@ contains no secrets; the security audit verified this):
 
 1. Repo: https://github.com/LauraHD17/zissou (already wired as `origin`).
 2. In the repo: **Settings → Pages → Source: "GitHub Actions"**.
-3. Upload the chart files **once** as release assets (they're too big for
-   Pages itself; releases allow 2 GB/file and support the byte-range reads
-   the chart engine uses):
+3. Upload the chart files **once** as release assets (git blocks files over
+   100 MB, so the release is used as storage; the deploy workflow copies the
+   files into the published site because browsers cannot fetch release
+   assets directly — that host sends no CORS headers):
 
    ```bash
    gh release create charts-v1 \

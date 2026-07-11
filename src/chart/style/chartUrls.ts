@@ -1,12 +1,15 @@
 // Single source of truth for where the PMTiles chart files live.
 //
-// Default: same-origin /charts/ (dev server + the Pi, where the files sit on
-// disk). Phone/PWA builds override VITE_CHARTS_BASE with an absolute URL —
-// static hosts like GitHub Pages cap file sizes well below a 290 MB chart,
-// so the files are published as GitHub Release assets (2 GB/file, CORS and
-// Range requests supported) and cached on-device by the service worker.
+// Default: same-origin under the app's base path — `/charts/` in dev and on
+// the Pi, `/zissou/charts/` on GitHub Pages (the deploy workflow copies the
+// files out of the charts-v1 release into the site, because browsers cannot
+// fetch release assets directly: release-assets.githubusercontent.com sends
+// no CORS headers). VITE_CHARTS_BASE remains as an escape hatch for hosting
+// the charts elsewhere; any such host MUST send CORS headers and support
+// Range requests.
 
-const RAW_BASE = (import.meta.env.VITE_CHARTS_BASE as string | undefined) ?? '/charts';
+const RAW_BASE =
+  (import.meta.env.VITE_CHARTS_BASE as string | undefined) ?? `${import.meta.env.BASE_URL}charts`;
 export const CHARTS_BASE = RAW_BASE.replace(/\/$/, '');
 
 export const CHART_FILES = ['maine-base.pmtiles', 'maine.pmtiles'] as const;

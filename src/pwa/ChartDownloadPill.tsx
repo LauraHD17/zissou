@@ -1,16 +1,17 @@
 // One-time "save charts for offline" step for the phone/PWA build.
 //
-// Shows only when the chart files live on a REMOTE origin (the phone build,
-// where they come from GitHub Release assets) and aren't fully cached yet.
-// The Pi serves charts from local disk, so this never appears there.
+// Shows only in geo mode (the phone build) when the charts aren't fully
+// cached yet. Charts are served same-origin by GitHub Pages — release
+// assets can't be fetched by browsers (no CORS headers), so the deploy
+// workflow copies them into the site. On the Pi (real mode) the files sit
+// on local disk and this never appears.
 
 import { useEffect, useState } from 'react';
-import { CHARTS_BASE } from '../chart/style/chartUrls';
 import { chartsCached, chartsTotalBytes, downloadCharts } from './chartCache';
 
 type Phase = 'checking' | 'idle' | 'downloading' | 'done' | 'error' | 'hidden';
 
-const REMOTE_CHARTS = /^https?:\/\//.test(CHARTS_BASE);
+const IS_PHONE_BUILD = import.meta.env.VITE_SIGNALK_MODE === 'geo';
 
 export function ChartDownloadPill() {
   const [phase, setPhase] = useState<Phase>('checking');
@@ -18,7 +19,7 @@ export function ChartDownloadPill() {
   const [totalMb, setTotalMb] = useState<number | null>(null);
 
   useEffect(() => {
-    if (!REMOTE_CHARTS || typeof caches === 'undefined') {
+    if (!IS_PHONE_BUILD || typeof caches === 'undefined') {
       setPhase('hidden');
       return;
     }

@@ -1,6 +1,12 @@
 # Builds the PHONE variant (real GPS via browser geolocation, no mock data,
 # offline PWA) and deploys it to GitHub Pages.
 #
+# Chart files: too big for git (100 MB/file cap), so they live as release
+# assets purely as STORAGE — this workflow downloads them into the Pages
+# artifact so the app serves them SAME-ORIGIN. Browsers cannot fetch release
+# assets directly (release-assets.githubusercontent.com sends no CORS
+# headers), so do not point the app at release URLs.
+#
 # One-time repo setup (see docs/phone-test.md for the full walkthrough):
 #   1. Settings → Pages → Source: "GitHub Actions"
 #   2. Upload the chart files once as release assets:
@@ -39,14 +45,22 @@ jobs:
       - run: npm test
       - run: npm run typecheck
       - run: npm run lint
-      - name: Build (geo mode, charts from release assets)
+      - name: Build (geo mode, same-origin charts)
         run: npm run build
         env:
           VITE_SIGNALK_MODE: geo
           VITE_BASE: /${{ github.event.repository.name }}/
-          VITE_CHARTS_BASE: https://github.com/${{ github.repository }}/releases/download/charts-v1
-      # Chart files ship as release assets — never as Pages files (size caps).
-      - run: rm -rf dist/charts
+      # Replace whatever the runner has (nothing — pmtiles are gitignored)
+      # with the real chart files from the charts-v1 release, so Pages
+      # serves them same-origin at /charts/.
+      - name: Fetch chart files from the charts-v1 release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          rm -rf dist/charts
+          mkdir -p dist/charts
+          gh release download charts-v1 --pattern '*.pmtiles' --dir dist/charts
+          ls -lh dist/charts
       - uses: actions/upload-pages-artifact@v3
         with:
           path: dist

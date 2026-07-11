@@ -118,7 +118,8 @@ async function fetchBundled(): Promise<TidePayload | null> {
   const now = new Date();
   for (const year of [now.getUTCFullYear(), now.getUTCFullYear() - 1]) {
     try {
-      const r = await fetch(`/tides/${year}.json`);
+      // BASE_URL-prefixed: the phone build is served from a subpath.
+      const r = await fetch(`${import.meta.env.BASE_URL}tides/${year}.json`);
       if (r.ok) return (await r.json()) as TidePayload;
     } catch {
       // network or parse failure — try next year

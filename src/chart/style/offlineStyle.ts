@@ -30,7 +30,8 @@ const NOAA_BASE_URL = pmtilesUrl('maine-base.pmtiles');
 // by the static file server, so a URL like
 //   /fonts/Noto Sans Bold/0-255.pbf
 // resolves to a real file on disk.
-const GLYPHS_URL = '/fonts/{fontstack}/{range}.pbf';
+// BASE_URL-prefixed: the phone build is served from a subpath (/zissou/).
+const GLYPHS_URL = `${import.meta.env.BASE_URL}fonts/{fontstack}/{range}.pbf`;
 
 export function buildOfflineStyle(): StyleSpecification {
   return {

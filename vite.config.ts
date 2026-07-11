@@ -15,10 +15,9 @@ const CSP = [
   "font-src 'self'",
   "worker-src 'self' blob:", // MapLibre spawns blob: workers
   "manifest-src 'self'",
-  // ws://localhost:3000 = SignalK on the Pi; NOAA + NWS APIs; GitHub release
-  // assets host the chart files for the phone build (redirects to
-  // *.githubusercontent.com object storage).
-  "connect-src 'self' ws://localhost:3000 https://api.weather.gov https://api.tidesandcurrents.noaa.gov https://github.com https://*.githubusercontent.com",
+  // ws://localhost:3000 = SignalK on the Pi; NOAA + NWS APIs. Charts are
+  // same-origin ('self') — release assets can't be browser-fetched (no CORS).
+  "connect-src 'self' ws://localhost:3000 https://api.weather.gov https://api.tidesandcurrents.noaa.gov",
 ].join('; ');
 
 export default defineConfig({
