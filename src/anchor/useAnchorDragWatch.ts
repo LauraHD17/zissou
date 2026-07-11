@@ -5,10 +5,10 @@
 
 import { useEffect, useRef } from 'react';
 import { useSelf } from '../signalk/useSignalK';
-import { isPlausiblePosition, haversineNm } from '../utils/geometry';
+import { validPosition, haversineMeters } from '../utils/geometry';
 import { useNowMs } from '../utils/clock';
-import { metersToFeet, feetToMeters, NM_TO_METERS } from '../utils/units';
-import { raiseAlarm, clearAlarm, readActiveAlarm } from '../alarm/alarmStore';
+import { metersToFeet, feetToMeters } from '../utils/units';
+import { raiseAlarm, clearAlarmIfKind } from '../alarm/alarmStore';
 import { playAnchorAlarmTone } from '../alarm/useAlarmAudio';
 import { useAnchorWatch } from './anchorStore';
 
@@ -24,20 +24,21 @@ export function useAnchorDragWatch(): void {
     if (!anchor) {
       // Only clear our own alarm — the store is single-slot and another
       // watch (hazard proximity, MOB) may own the active alarm.
-      if (readActiveAlarm()?.kind === 'anchor-drag') clearAlarm();
+      clearAlarmIfKind('anchor-drag');
       lastChirpRef.current = 0;
       return;
     }
-    if (!self?.position || !isPlausiblePosition(self.position)) return;
+    const pos = validPosition(self);
+    if (!pos) return;
 
-    const distMeters = haversineNm(anchor.drop, self.position) * NM_TO_METERS;
+    const distMeters = haversineMeters(anchor.drop, pos);
     const distFt = metersToFeet(distMeters);
 
     if (distFt <= anchor.radiusFt) {
       // Back inside the circle — the drag episode is over. Clear our own
       // alarm so a later drift out raises a fresh, unacknowledged one
       // (raiseAlarm preserves acknowledgement within an episode).
-      if (readActiveAlarm()?.kind === 'anchor-drag') clearAlarm();
+      clearAlarmIfKind('anchor-drag');
       return;
     }
 

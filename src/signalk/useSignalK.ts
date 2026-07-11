@@ -1,6 +1,7 @@
 import { useSyncExternalStore } from 'react';
 import type { SignalKDelta, Vessel, Position } from './types';
 import { createSignalKClient } from './client';
+import { createSpeedConsistencyChecker } from './speedConsistency';
 
 const SELF_CONTEXT = 'vessels.self';
 
@@ -81,6 +82,7 @@ function ingest(delta: SignalKDelta) {
   store.set(context, next);
   if (context === SELF_CONTEXT) {
     selfSnapshot = next;
+    speedChecker.sample(now, next.position, next.sog);
     notify(selfListeners);
   } else {
     rebuildTargets();
@@ -130,6 +132,20 @@ function applyDerivedField(v: Vessel, path: string, value: unknown): void {
       break;
   }
 }
+
+// Same "surface, never guess" policy as the COG warning below: own-ship SOG
+// is cross-checked against the speed implied by the GPS track, and a sustained
+// disagreement (a source emitting knots or km/h on the m/s field) is warned
+// once. Speeds stay raw — fix the source's units in SignalK.
+const speedChecker = createSpeedConsistencyChecker(({ reportedKn, derivedKn }) => {
+  console.warn(
+    `SignalK speed-over-ground disagrees with the GPS track: the wire reports ` +
+      `~${reportedKn.toFixed(1)} kn but positions imply ~${derivedKn.toFixed(1)} kn. ` +
+      `A source is probably emitting the wrong units (spec says m/s). Speed, ETA, ` +
+      `and threat readouts are skewed until the source is fixed. Check the SignalK ` +
+      `server connection settings.`,
+  );
+});
 
 // SignalK v1 specifies radians for COG, but some plugins emit degrees. There
 // is no safe automatic conversion (0–6.28 is valid in both units), so out-of-

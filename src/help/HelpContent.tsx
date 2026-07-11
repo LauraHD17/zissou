@@ -29,7 +29,9 @@ export function HelpContent({ onBack }: { onBack: () => void }) {
         <h3 className="settings-form__section-title">Reading the chart</h3>
         <p className="help__row">
           <span className="help__swatch help__swatch--shallow" aria-hidden="true" />
-          Red lines: less than 10 ft of water. Yellow: 10–24 ft. Green: 24 ft or more.
+          Red lines: less than 6 ft of water <strong>right now</strong>. Yellow: 6–20 ft. Green:
+          20 ft or more. The colors already account for the tide, so red means shallow at this
+          moment — no mental math. Spots that dry out completely at low tide stay red all day.
         </p>
         <p className="help__row">
           The small numbers are water depth in feet at that exact spot, <strong>right now</strong> —
@@ -110,6 +112,34 @@ export function HelpContent({ onBack }: { onBack: () => void }) {
         <p className="help__row">
           Hazards are special: they show up in the AIS list when you're near one, and an alarm fires
           if you're headed at one within 200 meters.
+        </p>
+      </section>
+
+      <section className="settings-form__section">
+        <h3 className="settings-form__section-title">Tides and how deep the water really is</h3>
+        <p className="help__row">
+          Paper charts (and this app's chart) measure depth at a <strong>typical low tide</strong> —
+          the cautious baseline. The real water is usually deeper: charted depth plus however much
+          tide is in. The app does that addition for you everywhere a depth appears.
+        </p>
+        <p className="help__row">
+          Careful: a few times a month the tide drops <strong>below</strong> the charted low —
+          a "minus tide." A spot charted at 4 ft can briefly hold only 3. The app's warnings
+          account for this.
+        </p>
+        <p className="help__row">
+          Set your boat's draft (how deep it sits) in Settings. Warnings fire when the water gets
+          close to draft plus a safety cushion — so "Shallow water on route" means "your boat,
+          specifically, may not fit through there right now."
+        </p>
+        <p className="help__row">
+          While anchored with a depth entered, the app watches the falling tide and warns you
+          hours ahead if the water will get too shallow under you — with the time it happens.
+        </p>
+        <p className="help__row">
+          Tide times and heights are official NOAA predictions for the nearest station, stored on
+          the device — they work with no signal. If they're ever unavailable, depths fall back to
+          the cautious low-tide numbers, a ~ appears, and timed warnings pause rather than guess.
         </p>
       </section>
 

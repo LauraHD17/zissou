@@ -38,6 +38,12 @@ export interface Vessel {
 /** A SignalK report older than this is considered stale (no longer trustworthy). */
 export const AIS_STALE_MS = 5 * 60 * 1000;
 
+/** True when a vessel's last report is older than AIS_STALE_MS at `nowMs`.
+ *  Co-located with the threshold so the staleness rule lives in one place. */
+export function isVesselStale(vessel: Pick<Vessel, 'lastUpdated'>, nowMs: number): boolean {
+  return nowMs - vessel.lastUpdated > AIS_STALE_MS;
+}
+
 /** True when the value is a valid course-over-ground (radians, 0 ≤ cog ≤ 2π). */
 export function isValidCogRad(cog: number | null | undefined): cog is number {
   return cog != null && cog >= 0 && cog <= Math.PI * 2;

@@ -5,6 +5,7 @@
 import { isValidCogRad, isValidSogMs } from '../signalk/types';
 import type { Position, Vessel } from '../signalk/types';
 import { bearingRadians, haversineNm, isPlausiblePosition } from './geometry';
+import { degToRad, shortestAngleDelta } from './angles';
 import { NM_TO_METERS as NM_TO_M } from './units';
 
 export type ThreatBand = 'monitor' | 'caution' | 'danger';
@@ -111,16 +112,8 @@ export function isHeadingTowardHazard(self: Vessel | undefined, hazardPos: Posit
   const MIN_SOG_FOR_HEADING_MS = 0.26; // ~0.5 kn
   if (!isValidSogMs(self.sog) || self.sog < MIN_SOG_FOR_HEADING_MS) return true;
   const bearingToHazardRad = bearingRadians(self.position, hazardPos);
-  const deltaRad = Math.abs(angleDeltaRad(self.cog as number, bearingToHazardRad));
-  const sixtyDegRad = (60 * Math.PI) / 180;
-  return deltaRad <= sixtyDegRad;
-}
-
-function angleDeltaRad(a: number, b: number): number {
-  const twoPi = 2 * Math.PI;
-  let d = (((a - b) % twoPi) + twoPi) % twoPi;
-  if (d > Math.PI) d -= twoPi;
-  return d;
+  const deltaRad = Math.abs(shortestAngleDelta(self.cog as number, bearingToHazardRad));
+  return deltaRad <= degToRad(60);
 }
 
 /**

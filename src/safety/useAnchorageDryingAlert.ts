@@ -6,10 +6,10 @@
 import { useEffect } from 'react';
 import { useAnchorWatch } from '../anchor/anchorStore';
 import { useUserPrefs } from '../prefs/userPrefsStore';
-import { raiseAlarm, clearAlarm, useActiveAlarm } from '../alarm/alarmStore';
+import { raiseAlarm, clearAlarmIfKind, useActiveAlarm } from '../alarm/alarmStore';
 import { useNow } from '../utils/clock';
 import { tidesAuthoritative } from '../utils/tides';
-import { assessAnchorageDrying } from './tideAlerts';
+import { assessAnchorageDrying, TIDE_LOOKAHEAD_HOURS, TIDE_LOOKAHEAD_MS } from './tideAlerts';
 
 const TICK_MS = 5 * 60 * 1000; // 5 min — tide changes slowly
 
@@ -21,15 +21,15 @@ export function useAnchorageDryingAlert(): void {
 
   useEffect(() => {
     if (!anchor || anchor.chartedDepthFt == null || prefs.vessel.draftFt == null) {
-      if (active?.kind === 'anchorage-drying') clearAlarm();
+      clearAlarmIfKind('anchorage-drying');
       return;
     }
 
     // Project rule: bad data never drives warnings. When only the M2 stub is
     // available its numbers can be feet off in either direction — stay quiet
     // rather than alarm (or reassure) on fabricated tide heights.
-    if (!tidesAuthoritative(now, new Date(now.getTime() + 6 * 3600_000), anchor.drop)) {
-      if (active?.kind === 'anchorage-drying') clearAlarm();
+    if (!tidesAuthoritative(now, new Date(now.getTime() + TIDE_LOOKAHEAD_MS), anchor.drop)) {
+      clearAlarmIfKind('anchorage-drying');
       return;
     }
 
@@ -39,7 +39,7 @@ export function useAnchorageDryingAlert(): void {
       draftFt: prefs.vessel.draftFt,
       safetyMarginFt: prefs.safetyMarginFt,
       pos: anchor.drop,
-      hoursAhead: 6,
+      hoursAhead: TIDE_LOOKAHEAD_HOURS,
     });
 
     if (assess.minsUntilUnsafe != null && assess.imminent) {
@@ -48,8 +48,8 @@ export function useAnchorageDryingAlert(): void {
         kind: 'anchorage-drying',
         message: `Anchorage dries in ~${hrs} hr — tide will drop below your keel clearance.`,
       });
-    } else if (active?.kind === 'anchorage-drying') {
-      clearAlarm();
+    } else {
+      clearAlarmIfKind('anchorage-drying');
     }
     // Granular anchor deps: the session object is stable per drop; the fields
     // listed are the only ones the assessment reads.

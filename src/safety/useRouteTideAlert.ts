@@ -14,7 +14,14 @@ import { metersToFeet } from '../utils/units';
 import { useUserPrefs } from '../prefs/userPrefsStore';
 import { useNow } from '../utils/clock';
 import { tidesAuthoritative } from '../utils/tides';
-import { calculateSafePassageWindows, minTideFtInWindow, minsUntilTideReaches } from './tideAlerts';
+import {
+  calculateSafePassageWindows,
+  minTideFtInWindow,
+  minsUntilTideReaches,
+  requiredDepthFt,
+  TIDE_LOOKAHEAD_HOURS,
+  TIDE_LOOKAHEAD_MS,
+} from './tideAlerts';
 
 const SAMPLES_ALONG_ROUTE = 20;
 const QUERY_RADIUS_PX = 20;
@@ -127,7 +134,7 @@ export function useRouteTideAlert(mapRef: RefObject<maplibregl.Map | null>): Rou
     if (minCharted == null) return null;
     const draftFt = prefs.vessel.draftFt;
     if (draftFt == null) return null;
-    const requiredFt = draftFt + prefs.safetyMarginFt;
+    const requiredFt = requiredDepthFt(draftFt, prefs.safetyMarginFt);
 
     // Quantized position (~100 m) — plenty for tide-station selection, and it
     // keeps this memo from recomputing the 48-step window scan at 1 Hz.
@@ -138,7 +145,7 @@ export function useRouteTideAlert(mapRef: RefObject<maplibregl.Map | null>): Rou
 
     // No authoritative tide data → charted-depth-only assessment. Stub tide
     // numbers must not produce live-water figures or "safe until 4 PM" times.
-    if (!tidesAuthoritative(now, new Date(now.getTime() + 6 * 3600_000), pos)) {
+    if (!tidesAuthoritative(now, new Date(now.getTime() + TIDE_LOOKAHEAD_MS), pos)) {
       return {
         minChartedFt: minCharted,
         minEffectiveFt: minCharted,
@@ -151,12 +158,13 @@ export function useRouteTideAlert(mapRef: RefObject<maplibregl.Map | null>): Rou
       };
     }
 
-    const minTideFt = minTideFtInWindow(now, 6, pos);
+    const minTideFt = minTideFtInWindow(now, TIDE_LOOKAHEAD_HOURS, pos);
     const minEffectiveFt = minCharted + minTideFt;
 
+    // Threshold ≤ 0 is still reachable — tides drop below MLLW at spring
+    // lows, so the scan runs unconditionally (returns null when never hit).
     const tideThreshold = requiredFt - minCharted;
-    const minsUntilUnsafe =
-      tideThreshold > 0 ? minsUntilTideReaches(now, tideThreshold, 6, pos) : null;
+    const minsUntilUnsafe = minsUntilTideReaches(now, tideThreshold, TIDE_LOOKAHEAD_HOURS, pos);
 
     let severity: RouteTideAlert['severity'] = 'clear';
     if (minEffectiveFt < requiredFt && minsUntilUnsafe != null && minsUntilUnsafe <= 60) {

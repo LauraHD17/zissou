@@ -28,7 +28,18 @@ overlap into the off-season.
 node scripts/fetch-tide-predictions.mjs               # current year + next
 node scripts/fetch-tide-predictions.mjs 2027 1        # only 2027
 node scripts/fetch-tide-predictions.mjs 2027 2        # 2027 + 2028
+node scripts/fetch-tide-predictions.mjs 2026 --verify-only  # re-check committed file
 ```
+
+Every fetch is verified before the file is written (intentional redundancy):
+the app's cosine interpolation over the fetched hi/lo events is compared to
+NOAA's own continuous 6-minute series on four seasonal sample days per
+station (hi/lo-only subordinate stations get an event-integrity check
+instead). A datum, unit, or timezone mistake fails loudly — nothing is
+written and the exit code is 1. `--skip-verify` bypasses it if NOAA's
+6-minute endpoint is down. The offline twin of this check is
+`src/utils/tidesGoldenNoaa.test.ts`, which runs in CI against a committed
+golden fixture.
 
 Output: `public/tides/<startYear>.json` (~470 KB raw, ~50 KB gzipped).
 Commit the file. Rebuild and redeploy the Pi bundle.

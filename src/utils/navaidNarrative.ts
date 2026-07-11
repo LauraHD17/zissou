@@ -6,6 +6,8 @@
 // lower-secondary reading level): short sentences, concrete verbs, no
 // navigational jargon like "inbound" without a gloss.
 
+import { metersToFeet } from './units';
+
 export type NavaidKind =
   | 'boylat'
   | 'boysaw'
@@ -275,7 +277,7 @@ function shapeWord(kind: NavaidKind): string {
  * spring lows.
  */
 export function soundingNowFeet(valsouMeters: number, tideFt: number): number {
-  const ftAtLow = valsouMeters * 3.28084;
+  const ftAtLow = metersToFeet(valsouMeters);
   return Math.max(0, ftAtLow + tideFt);
 }
 

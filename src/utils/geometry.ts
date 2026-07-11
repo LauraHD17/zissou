@@ -2,6 +2,8 @@
 // radians from north clockwise.
 
 import type { Position } from '../signalk/types';
+import { degToRad, radToDeg, normalizeRad } from './angles';
+import { NM_TO_METERS } from './units';
 
 const EARTH_RADIUS_NM = 3440.065;
 const EARTH_RADIUS_M = 6_371_000;
@@ -17,25 +19,40 @@ export function isPlausiblePosition(p: Position | undefined): boolean {
   return true;
 }
 
+/**
+ * The source's position if present AND plausible, else null. Collapses the
+ * repeated `!source?.position || !isPlausiblePosition(source.position)` guard
+ * into one narrowing call: `const pos = validPosition(self); if (!pos) return;`.
+ * Works for any `{ position?: Position }` (own-ship Vessel or an AIS target).
+ */
+export function validPosition(source: { position?: Position } | undefined): Position | null {
+  const p = source?.position;
+  return p && isPlausiblePosition(p) ? p : null;
+}
+
 /** Great-circle distance in nautical miles between two positions. */
 export function haversineNm(a: Position, b: Position): number {
-  const dLat = toRad(b.latitude - a.latitude);
-  const dLon = toRad(b.longitude - a.longitude);
-  const la1 = toRad(a.latitude);
-  const la2 = toRad(b.latitude);
+  const dLat = degToRad(b.latitude - a.latitude);
+  const dLon = degToRad(b.longitude - a.longitude);
+  const la1 = degToRad(a.latitude);
+  const la2 = degToRad(b.latitude);
   const h = Math.sin(dLat / 2) ** 2 + Math.cos(la1) * Math.cos(la2) * Math.sin(dLon / 2) ** 2;
   return 2 * EARTH_RADIUS_NM * Math.asin(Math.sqrt(h));
 }
 
+/** Great-circle distance in meters between two positions. */
+export function haversineMeters(a: Position, b: Position): number {
+  return haversineNm(a, b) * NM_TO_METERS;
+}
+
 /** Bearing from `from` to `to`, in radians (0 = north, clockwise). */
 export function bearingRadians(from: Position, to: Position): number {
-  const la1 = toRad(from.latitude);
-  const la2 = toRad(to.latitude);
-  const dLon = toRad(to.longitude - from.longitude);
+  const la1 = degToRad(from.latitude);
+  const la2 = degToRad(to.latitude);
+  const dLon = degToRad(to.longitude - from.longitude);
   const y = Math.sin(dLon) * Math.cos(la2);
   const x = Math.cos(la1) * Math.sin(la2) - Math.sin(la1) * Math.cos(la2) * Math.cos(dLon);
-  const twoPi = Math.PI * 2;
-  return (Math.atan2(y, x) + twoPi) % twoPi;
+  return normalizeRad(Math.atan2(y, x));
 }
 
 /**
@@ -45,8 +62,8 @@ export function bearingRadians(from: Position, to: Position): number {
  */
 export function projectPosition(start: Position, bearingRad: number, distanceM: number): Position {
   const delta = distanceM / EARTH_RADIUS_M;
-  const phi1 = toRad(start.latitude);
-  const lambda1 = toRad(start.longitude);
+  const phi1 = degToRad(start.latitude);
+  const lambda1 = degToRad(start.longitude);
 
   const phi2 = Math.asin(
     Math.sin(phi1) * Math.cos(delta) + Math.cos(phi1) * Math.sin(delta) * Math.cos(bearingRad),
@@ -59,8 +76,8 @@ export function projectPosition(start: Position, bearingRad: number, distanceM: 
     );
 
   return {
-    latitude: (phi2 * 180) / Math.PI,
-    longitude: (((lambda2 * 180) / Math.PI + 540) % 360) - 180,
+    latitude: radToDeg(phi2),
+    longitude: ((radToDeg(lambda2) + 540) % 360) - 180,
   };
 }
 
@@ -83,7 +100,7 @@ export function samplePolyline(positions: Position[], samples: number): Position
     // degree of latitude away from the equator. Without this, E-W legs get
     // ~1.4× the sample density of N-S legs at 44°N — sparser shoal detection
     // on north-south passages.
-    const midLatRad = (((positions[i].latitude + positions[i + 1].latitude) / 2) * Math.PI) / 180;
+    const midLatRad = degToRad((positions[i].latitude + positions[i + 1].latitude) / 2);
     const dLon = (positions[i + 1].longitude - positions[i].longitude) * Math.cos(midLatRad);
     const len = Math.hypot(dLat, dLon);
     legLens.push(len);
@@ -110,8 +127,4 @@ export function samplePolyline(positions: Position[], samples: number): Position
     }
   }
   return out;
-}
-
-function toRad(d: number) {
-  return (d * Math.PI) / 180;
 }

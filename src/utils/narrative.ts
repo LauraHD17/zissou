@@ -1,4 +1,4 @@
-import { AIS_STALE_MS, isValidCogRad, isValidSogMs } from '../signalk/types';
+import { isVesselStale, isValidCogRad, isValidSogMs } from '../signalk/types';
 import type { Position, Vessel } from '../signalk/types';
 import type { SavedWaypoint } from '../types/nav';
 import { bearingRadians, haversineNm, isPlausiblePosition } from './geometry';
@@ -44,7 +44,7 @@ export function buildVesselNarrative(
   self: Vessel | undefined,
   now: number,
 ): VesselNarrative {
-  const isStale = now - vessel.lastUpdated > AIS_STALE_MS;
+  const isStale = isVesselStale(vessel, now);
   const rawFacts = buildRawFacts(vessel);
   const staleLine = isStale ? staleQualifier(now - vessel.lastUpdated) : null;
 

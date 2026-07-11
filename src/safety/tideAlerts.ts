@@ -5,6 +5,17 @@
 import { tideHeightFt } from '../utils/tides';
 import type { Position } from '../signalk/types';
 
+/** Water depth (ft) a vessel needs beneath it: draft plus the operator's
+ *  safety margin. Single source for the draft + margin rule the route and
+ *  anchorage grounding checks both apply. */
+export function requiredDepthFt(draftFt: number, safetyMarginFt: number): number {
+  return draftFt + safetyMarginFt;
+}
+
+/** Look-ahead horizon for tide drying / passage grounding checks. */
+export const TIDE_LOOKAHEAD_HOURS = 6;
+export const TIDE_LOOKAHEAD_MS = TIDE_LOOKAHEAD_HOURS * 60 * 60 * 1000;
+
 /** Minimum tide height (ft) over a future window. Samples at 10-min cadence.
  *  Used to compute the worst case for route + anchorage checks. */
 export function minTideFtInWindow(now: Date, hoursAhead: number, pos?: Position): number {
@@ -84,7 +95,7 @@ export function assessAnchorageDrying({
   draftFt,
   safetyMarginFt,
   pos,
-  hoursAhead = 6,
+  hoursAhead = TIDE_LOOKAHEAD_HOURS,
 }: {
   now: Date;
   chartedDepthFt: number;
@@ -93,14 +104,17 @@ export function assessAnchorageDrying({
   pos?: Position;
   hoursAhead?: number;
 }): AnchorageDryingAssessment {
-  const requiredFt = draftFt + safetyMarginFt;
+  const requiredFt = requiredDepthFt(draftFt, safetyMarginFt);
   // water_depth_unsafe = chartedDepth + tide < requiredFt
   //   → tide < requiredFt - chartedDepth
+  // The threshold can be ≤ 0 and still be reachable: NOAA heights are
+  // relative to MLLW and Maine spring lows go below it (−0.9 ft in the
+  // bundled data), so scan unconditionally — the scan returns null when
+  // the tide never gets that low.
   const tideThreshold = requiredFt - chartedDepthFt;
   const min = minTideFtInWindow(now, hoursAhead, pos);
   const minWaterFt = chartedDepthFt + min;
-  const minsUntilUnsafe =
-    tideThreshold > 0 ? minsUntilTideReaches(now, tideThreshold, hoursAhead, pos) : null;
+  const minsUntilUnsafe = minsUntilTideReaches(now, tideThreshold, hoursAhead, pos);
   return {
     minsUntilUnsafe,
     minWaterFt,

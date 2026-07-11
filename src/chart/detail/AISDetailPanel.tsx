@@ -7,7 +7,7 @@ import { SlidePanel } from '../../ui/SlidePanel';
 import { useSelf } from '../../signalk/useSignalK';
 import type { Vessel } from '../../signalk/types';
 import { buildVesselNarrative } from '../../utils/narrative';
-import { AIS_STALE_MS } from '../../signalk/types';
+import { isVesselStale } from '../../signalk/types';
 import { computeThreatBand } from '../../utils/threat';
 
 interface Props {
@@ -20,7 +20,7 @@ export function AISDetailPanel({ vessel, onClose }: Props) {
 
   const { narrative, isStale, band } = useMemo(() => {
     const now = Date.now();
-    const stale = now - vessel.lastUpdated > AIS_STALE_MS;
+    const stale = isVesselStale(vessel, now);
     return {
       narrative: buildVesselNarrative(vessel, self, now),
       isStale: stale,

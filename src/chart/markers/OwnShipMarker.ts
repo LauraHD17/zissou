@@ -2,7 +2,8 @@ import { useEffect, useRef } from 'react';
 import maplibregl from 'maplibre-gl';
 import type { RefObject } from 'react';
 import type { Vessel } from '../../signalk/types';
-import { isPlausiblePosition } from '../../utils/geometry';
+import { validPosition } from '../../utils/geometry';
+import { reconcileSingleMarker, useMarkerCleanup } from './markerLifecycle';
 import {
   pickOwnShipHeadingRad,
   useCompassReading,
@@ -31,26 +32,19 @@ export function useOwnShipMarker(
     const map = mapRef.current;
     if (!map) return;
 
-    if (!self?.position || !isPlausiblePosition(self.position)) {
-      markerRef.current?.remove();
-      markerRef.current = null;
-      return;
-    }
-
-    if (!markerRef.current) {
-      markerRef.current = new maplibregl.Marker({
-        element: buildOwnShipElement(),
-        anchor: 'center',
-      })
-        .setLngLat([self.position.longitude, self.position.latitude])
-        .addTo(map);
-    } else {
-      markerRef.current.setLngLat([self.position.longitude, self.position.latitude]);
-    }
+    const pos = validPosition(self);
+    const marker = reconcileSingleMarker(
+      map,
+      markerRef,
+      pos ? [pos.longitude, pos.latitude] : null,
+      buildOwnShipElement,
+      { anchor: 'center' },
+    );
+    if (!marker) return;
 
     const picked = pickOwnShipHeadingRad({
-      cogRad: self.cog,
-      sogMs: self.sog,
+      cogRad: self?.cog,
+      sogMs: self?.sog,
       compass,
       nowMs: Date.now(),
       prevSource: sourceRef.current,
@@ -68,7 +62,7 @@ export function useOwnShipMarker(
     }
     continuousDegRef.current = continuousDeg;
 
-    const triangle = markerRef.current
+    const triangle = marker
       .getElement()
       .querySelector<SVGSVGElement>('.own-ship-marker__triangle');
     if (triangle) triangle.style.transform = `rotate(${continuousDeg}deg)`;
@@ -77,13 +71,7 @@ export function useOwnShipMarker(
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [mapRef, self?.position?.latitude, self?.position?.longitude, self?.cog, self?.sog, compass]);
 
-  useEffect(
-    () => () => {
-      markerRef.current?.remove();
-      markerRef.current = null;
-    },
-    [],
-  );
+  useMarkerCleanup(markerRef);
 }
 
 function buildOwnShipElement(): HTMLDivElement {

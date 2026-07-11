@@ -6,6 +6,7 @@ import maplibregl from 'maplibre-gl';
 import type { RefObject } from 'react';
 import { buildIconElement } from '../../icons';
 import { useMOB } from '../../mob/mobStore';
+import { reconcileSingleMarker, useMarkerCleanup } from './markerLifecycle';
 
 export function useMOBMarker(mapRef: RefObject<maplibregl.Map | null>) {
   const mob = useMOB();
@@ -14,34 +15,25 @@ export function useMOBMarker(mapRef: RefObject<maplibregl.Map | null>) {
   useEffect(() => {
     const map = mapRef.current;
     if (!map) return;
-
-    if (!mob) {
-      markerRef.current?.remove();
-      markerRef.current = null;
-      return;
-    }
-
-    if (!markerRef.current) {
-      const el = document.createElement('div');
-      el.className = 'mob-marker';
-      el.appendChild(buildIconElement('mob', { size: 32 }));
-      const label = document.createElement('span');
-      label.className = 'mob-marker__label';
-      label.textContent = 'MOB';
-      el.appendChild(label);
-      markerRef.current = new maplibregl.Marker({ element: el, anchor: 'center' })
-        .setLngLat([mob.position.longitude, mob.position.latitude])
-        .addTo(map);
-    } else {
-      markerRef.current.setLngLat([mob.position.longitude, mob.position.latitude]);
-    }
+    reconcileSingleMarker(
+      map,
+      markerRef,
+      mob ? [mob.position.longitude, mob.position.latitude] : null,
+      buildMobElement,
+      { anchor: 'center' },
+    );
   }, [mapRef, mob]);
 
-  useEffect(
-    () => () => {
-      markerRef.current?.remove();
-      markerRef.current = null;
-    },
-    [],
-  );
+  useMarkerCleanup(markerRef);
+}
+
+function buildMobElement(): HTMLDivElement {
+  const el = document.createElement('div');
+  el.className = 'mob-marker';
+  el.appendChild(buildIconElement('mob', { size: 32 }));
+  const label = document.createElement('span');
+  label.className = 'mob-marker__label';
+  label.textContent = 'MOB';
+  el.appendChild(label);
+  return el;
 }

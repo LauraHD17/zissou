@@ -47,3 +47,14 @@ export function acknowledgeAlarm(): void {
 export function clearAlarm(): void {
   alarmStore.set(null);
 }
+
+/**
+ * Clear the active alarm ONLY if it's the given kind. The store is single-slot
+ * and shared across watches, so a kind-blind clearAlarm() on an inactive path
+ * would wipe another watch's alarm — that bug shipped once (see
+ * alarmInterplay.test.tsx). Every watch MUST clear via this on its inactive
+ * path rather than reading + comparing + clearing by hand.
+ */
+export function clearAlarmIfKind(kind: AlarmKind): void {
+  if (alarmStore.read()?.kind === kind) alarmStore.set(null);
+}

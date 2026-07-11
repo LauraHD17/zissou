@@ -1,12 +1,16 @@
 // SignalK stores raw spec values (m/s, radians, decimal degrees); these
 // formatters output the marine-canonical-plus-English-translation pattern.
 
+// Single source of truth for every conversion constant in the app —
+// unitsSingleSource.test.ts fails the build if these literals appear anywhere
+// else in src/. Need a conversion? Import from here, don't retype the number.
 const MS_TO_KN = 1.9438444924;
 const MS_TO_MPH = 2.2369362921;
 const NM_TO_MILES = 1.15077945;
 export const NM_TO_METERS = 1852;
+export const MILE_TO_METERS = 1609.344;
 const METERS_TO_YARDS = 1.0936133;
-const M_TO_FT = 3.28084;
+export const M_TO_FT = 3.28084;
 
 export function metersToFeet(m: number): number {
   return m * M_TO_FT;

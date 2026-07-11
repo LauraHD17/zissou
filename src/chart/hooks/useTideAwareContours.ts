@@ -12,7 +12,7 @@ import { useSelf } from '../../signalk/useSignalK';
 import { useNow } from '../../utils/clock';
 import { FALLBACK_POS } from '../../utils/geometry';
 import { tideHeightNow } from '../../utils/tides';
-import { applyTideToDepthContours } from '../style/marineStyle';
+import { applyTideToDepthContours } from '../style/depthExpressions';
 
 const TIDE_REFRESH_MS = 5 * 60 * 1000;
 

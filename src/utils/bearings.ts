@@ -1,4 +1,4 @@
-const TWO_PI = Math.PI * 2;
+import { normalizeRad, radToDeg } from './angles';
 
 export type CompassOctant = 'N' | 'NE' | 'E' | 'SE' | 'S' | 'SW' | 'W' | 'NW';
 
@@ -51,6 +51,5 @@ export function formatCompassBearing(radians: number): string {
 }
 
 function normalizeDegrees(radians: number): number {
-  const r = ((radians % TWO_PI) + TWO_PI) % TWO_PI;
-  return (r * 180) / Math.PI;
+  return radToDeg(normalizeRad(radians));
 }

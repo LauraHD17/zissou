@@ -8,6 +8,7 @@ import type { RefObject } from 'react';
 import { buildIconElement, type IconName } from '../../icons';
 import { useWaypoints } from '../../waypoints/waypointStore';
 import type { SavedWaypoint, WaypointCategory } from '../../types/nav';
+import { reconcileMarkerCollection, useMarkerCollectionCleanup } from './markerCollection';
 
 const CATEGORY_ICON: Record<WaypointCategory, IconName> = {
   mooring: 'mooringBuoy',
@@ -40,40 +41,37 @@ export function useWaypointMarkers(mapRef: RefObject<maplibregl.Map | null>, { o
   useEffect(() => {
     const map = mapRef.current;
     if (!map) return;
-
-    const seen = new Set<string>();
-    for (const wp of waypoints) {
-      seen.add(wp.id);
-      let entry = markersRef.current.get(wp.id);
-
-      if (!entry || entry.appliedCategory !== wp.category) {
-        entry?.marker.remove();
+    reconcileMarkerCollection({
+      map,
+      markers: markersRef.current,
+      items: waypoints,
+      keyOf: (wp) => wp.id,
+      lngLatOf: (wp) => [wp.lon, wp.lat],
+      // Category change swaps the glyph — rebuild the marker element.
+      shouldRecreate: (wp, entry) => entry.appliedCategory !== wp.category,
+      create: (wp) => {
         const el = buildMarkerElement(wp.category);
         const id = wp.id;
         el.addEventListener('click', (e) => {
           e.stopPropagation();
+          // Look up the CURRENT waypoint — a label/notes edit updates the entry
+          // without recreating the marker, so the closure would be stale.
           const current = markersRef.current.get(id)?.waypoint;
           if (current) onTapRef.current(current);
         });
-        const marker = new maplibregl.Marker({ element: el, anchor: 'center' })
-          .setLngLat([wp.lon, wp.lat])
-          .addTo(map);
-        entry = { marker, appliedCategory: wp.category, waypoint: wp };
-        markersRef.current.set(wp.id, entry);
-      } else {
+        return {
+          marker: new maplibregl.Marker({ element: el, anchor: 'center' }),
+          appliedCategory: wp.category,
+          waypoint: wp,
+        };
+      },
+      update: (wp, entry) => {
         entry.waypoint = wp;
-        entry.marker.setLngLat([wp.lon, wp.lat]);
-      }
-      entry.marker
-        .getElement()
-        .setAttribute('aria-label', `${wp.label || 'Waypoint'} — ${wp.category}`);
-    }
-    for (const [id, entry] of markersRef.current) {
-      if (!seen.has(id)) {
-        entry.marker.remove();
-        markersRef.current.delete(id);
-      }
-    }
+        entry.marker
+          .getElement()
+          .setAttribute('aria-label', `${wp.label || 'Waypoint'} — ${wp.category}`);
+      },
+    });
   }, [mapRef, waypoints]);
 
   // Fade markers below the visibility zoom threshold.
@@ -94,14 +92,7 @@ export function useWaypointMarkers(mapRef: RefObject<maplibregl.Map | null>, { o
     };
   }, [mapRef, waypoints]);
 
-  // Cleanup on unmount.
-  useEffect(() => {
-    const markers = markersRef.current;
-    return () => {
-      markers.forEach((e) => e.marker.remove());
-      markers.clear();
-    };
-  }, []);
+  useMarkerCollectionCleanup(markersRef);
 }
 
 // A real <button> (not a click-only div): keyboard focusable, exposed to

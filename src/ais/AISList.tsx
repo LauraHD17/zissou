@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react';
-import { AIS_STALE_MS } from '../signalk/types';
+import { isVesselStale } from '../signalk/types';
 import type { Vessel } from '../signalk/types';
 import { Icon } from '../icons';
 import { useAISTargets, useSelf } from '../signalk/useSignalK';
@@ -59,7 +59,7 @@ export function AISList({ compact = false }: { compact?: boolean } = {}) {
 
   const vesselRows = useMemo<VesselRow[]>(() => {
     return baseVesselRows.map(({ vessel, distanceNm, hasValidPosition }): VesselRow => {
-      const isStale = now - vessel.lastUpdated > AIS_STALE_MS;
+      const isStale = isVesselStale(vessel, now);
       return {
         kind: 'vessel',
         vessel,

@@ -2,10 +2,12 @@ import { useEffect, useState } from 'react';
 import type { RefObject } from 'react';
 import type maplibregl from 'maplibre-gl';
 
+import { MILE_TO_METERS, NM_TO_METERS } from '../../utils/units';
+
 const NICE_NM = [0.05, 0.1, 0.2, 0.5, 1, 2, 5, 10, 20, 50, 100];
 const TARGET_PX = 130;
-const M_PER_NM = 1852;
-const M_PER_MILE = 1609.344;
+const M_PER_NM = NM_TO_METERS;
+const M_PER_MILE = MILE_TO_METERS;
 
 interface Scale {
   widthPx: number;

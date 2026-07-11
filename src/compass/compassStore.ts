@@ -13,6 +13,7 @@
 
 import { defineStore, defineMemoryStore } from '../storage/localStore';
 import { isValidCogRad, isValidSogMs } from '../signalk/types';
+import { degToRad, wrapDeg } from '../utils/angles';
 
 export interface CompassReading {
   /** TRUE heading, radians 0..2π. */
@@ -70,8 +71,8 @@ function onOrientation(e: DeviceOrientationEvent): void {
   if (now - lastStored < 150) return; // sensor fires ~60 Hz; 6-7 Hz is plenty
   lastStored = now;
 
-  const trueDeg = (((magneticDeg - DECLINATION_WEST_DEG) % 360) + 360) % 360;
-  reading.set({ headingRad: (trueDeg * Math.PI) / 180, atMs: now });
+  const trueDeg = wrapDeg(magneticDeg - DECLINATION_WEST_DEG);
+  reading.set({ headingRad: degToRad(trueDeg), atMs: now });
 }
 
 function startListening(): void {

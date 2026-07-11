@@ -16,7 +16,7 @@ import { SlidePanel } from '../ui/SlidePanel';
 import { activateMOB, clearMOB, useMOB } from '../mob/mobStore';
 import { clearRoute, readRoute, replaceRouteWithSingle } from '../waypoints/routeStore';
 import { playMobConfirmTone, playMobActivePulse } from '../alarm/useAlarmAudio';
-import { clearAlarm, raiseAlarm, readActiveAlarm } from '../alarm/alarmStore';
+import { clearAlarmIfKind, raiseAlarm } from '../alarm/alarmStore';
 import type { ViewMode } from './StatusBar';
 
 interface Props {
@@ -95,7 +95,7 @@ export function MOBButton({ onViewChange }: Props) {
     clearMOB();
     // Clear only our own alarm kind — single-slot store shared with the
     // anchor/hazard/drying watches.
-    if (readActiveAlarm()?.kind === 'mob') clearAlarm();
+    clearAlarmIfKind('mob');
     // Clear the route only if it was still the MOB route — operator may have
     // set a new destination mid-emergency and we don't want to stomp it.
     const r = readRoute();

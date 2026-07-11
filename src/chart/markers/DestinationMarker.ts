@@ -18,6 +18,7 @@ import type { RefObject } from 'react';
 import { buildIconElement } from '../../icons';
 import { useActiveRoute } from '../../waypoints/routeStore';
 import type { RouteWaypoint } from '../../types/nav';
+import { reconcileSingleMarker, useMarkerCleanup } from './markerLifecycle';
 
 interface Options {
   /** Tap-to-remove handler. Receives the destination waypoint; caller decides
@@ -42,35 +43,36 @@ export function useDestinationMarker(
   useEffect(() => {
     const map = mapRef.current;
     if (!map) return;
-
-    // Always clear the old marker first, whether we're removing or moving.
-    markerRef.current?.remove();
-    markerRef.current = null;
-
-    if (lat == null || lon == null || !dest) return;
-
-    const el = document.createElement('div');
-    el.className = `destination-marker destination-marker--${source}`;
-    el.style.cursor = 'pointer';
-    el.appendChild(buildIconElement('pin', { size: 32 }));
-    // Tap opens the route-waypoint action sheet, which offers "Remove this
-    // pin." Mirrors the via-pin interaction so there's one mental model:
-    // tap any route pin to remove it. Stop propagation so the tap doesn't
-    // also register as a drop-pin commit when build mode is armed.
-    el.addEventListener('click', (e) => {
-      e.stopPropagation();
-      onTapRef.current?.(dest);
-    });
-    markerRef.current = new maplibregl.Marker({ element: el, anchor: 'bottom' })
-      .setLngLat([lon, lat])
-      .addTo(map);
+    // recreate: true tears down + rebuilds on every change — see the header
+    // note about stuck pins during rapid route-build taps.
+    reconcileSingleMarker(
+      map,
+      markerRef,
+      lat != null && lon != null && dest ? [lon, lat] : null,
+      () => buildDestinationElement(source, dest!, onTapRef.current),
+      { anchor: 'bottom', recreate: true },
+    );
   }, [mapRef, lat, lon, source, dest]);
 
-  useEffect(
-    () => () => {
-      markerRef.current?.remove();
-      markerRef.current = null;
-    },
-    [],
-  );
+  useMarkerCleanup(markerRef);
+}
+
+function buildDestinationElement(
+  source: string,
+  dest: RouteWaypoint,
+  onTap: ((waypoint: RouteWaypoint) => void) | undefined,
+): HTMLDivElement {
+  const el = document.createElement('div');
+  el.className = `destination-marker destination-marker--${source}`;
+  el.style.cursor = 'pointer';
+  el.appendChild(buildIconElement('pin', { size: 32 }));
+  // Tap opens the route-waypoint action sheet, which offers "Remove this
+  // pin." Mirrors the via-pin interaction so there's one mental model:
+  // tap any route pin to remove it. Stop propagation so the tap doesn't
+  // also register as a drop-pin commit when build mode is armed.
+  el.addEventListener('click', (e) => {
+    e.stopPropagation();
+    onTap?.(dest);
+  });
+  return el;
 }

@@ -10,6 +10,7 @@
 
 import { useSelf } from '../../signalk/useSignalK';
 import { useNow } from '../../utils/clock';
+import { metersToFeet } from '../../utils/units';
 import { FALLBACK_POS } from '../../utils/geometry';
 import { tideHeightNow } from '../../utils/tides';
 import { SlidePanel } from '../../ui/SlidePanel';
@@ -105,7 +106,7 @@ function useSoundingParts(feature: NavaidFeature): SoundingParts | null {
   const reading = tideHeightNow(now, pos);
   const tideFt = reading.isEstimate ? 0 : reading.heightFt;
   const nowFt = Math.round(soundingNowFeet(meters, tideFt));
-  const lowFt = Math.round(meters * 3.28084);
+  const lowFt = Math.round(metersToFeet(meters));
   const tideLabel = tideFt >= 0 ? `+${tideFt.toFixed(1)}` : tideFt.toFixed(1);
   return {
     nowFt,

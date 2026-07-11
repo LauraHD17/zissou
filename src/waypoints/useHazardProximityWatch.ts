@@ -7,12 +7,11 @@
 // fatigue. The banner's red border flash is enough signal at the helm.
 
 import { useEffect } from 'react';
-import { clearAlarm, raiseAlarm, readActiveAlarm } from '../alarm/alarmStore';
+import { clearAlarmIfKind, raiseAlarm } from '../alarm/alarmStore';
 import { useSelf } from '../signalk/useSignalK';
 import { useNowMs } from '../utils/clock';
-import { haversineNm, isPlausiblePosition } from '../utils/geometry';
+import { haversineMeters, validPosition } from '../utils/geometry';
 import { HAZARD_ALARM_METERS, isHeadingTowardHazard } from '../utils/threat';
-import { NM_TO_METERS as NM_TO_M } from '../utils/units';
 import { useWaypoints } from './waypointStore';
 
 export function useHazardProximityWatch(): void {
@@ -22,10 +21,10 @@ export function useHazardProximityWatch(): void {
 
   useEffect(() => {
     const hazards = waypoints.filter((w) => w.category === 'hazard');
-    const alarm = readActiveAlarm();
+    const pos = validPosition(self);
 
-    if (hazards.length === 0 || !self?.position || !isPlausiblePosition(self.position)) {
-      if (alarm?.kind === 'hazard-proximity') clearAlarm();
+    if (hazards.length === 0 || !pos) {
+      clearAlarmIfKind('hazard-proximity');
       return;
     }
 
@@ -33,7 +32,7 @@ export function useHazardProximityWatch(): void {
     let worst: { label: string; distM: number } | null = null;
     for (const h of hazards) {
       const hazPos = { latitude: h.lat, longitude: h.lon };
-      const distM = haversineNm(self.position, hazPos) * NM_TO_M;
+      const distM = haversineMeters(pos, hazPos);
       if (distM >= HAZARD_ALARM_METERS) continue;
       if (!isHeadingTowardHazard(self, hazPos)) continue;
       if (!worst || distM < worst.distM) {
@@ -46,8 +45,8 @@ export function useHazardProximityWatch(): void {
         kind: 'hazard-proximity',
         message: `Hazard ahead — ${worst.label} ${Math.round(worst.distM)} m`,
       });
-    } else if (alarm?.kind === 'hazard-proximity') {
-      clearAlarm();
+    } else {
+      clearAlarmIfKind('hazard-proximity');
     }
     // Granular deps: `self` is copy-on-write per delta (fresh reference on
     // every update, even when nothing we read changed) — depend on the

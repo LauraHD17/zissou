@@ -11,6 +11,11 @@ import type { RefObject } from 'react';
 import maplibregl from 'maplibre-gl';
 import type { RouteWaypoint } from '../../types/nav';
 import { useActiveRoute } from '../../waypoints/routeStore';
+import {
+  reconcileMarkerCollection,
+  useMarkerCollectionCleanup,
+  type MarkerCollectionEntry,
+} from './markerCollection';
 
 interface Options {
   onTap: (waypoint: RouteWaypoint) => void;
@@ -21,7 +26,7 @@ export function useRouteViaMarkers(
   { onTap }: Options,
 ): void {
   const route = useActiveRoute();
-  const markersRef = useRef<Map<string, maplibregl.Marker>>(new Map());
+  const markersRef = useRef<Map<string, MarkerCollectionEntry>>(new Map());
   const onTapRef = useRef(onTap);
   onTapRef.current = onTap;
 
@@ -34,11 +39,13 @@ export function useRouteViaMarkers(
     const vias: RouteWaypoint[] =
       route && route.waypoints.length > 1 ? route.waypoints.slice(0, -1) : [];
 
-    const seen = new Set<string>();
-    for (const wp of vias) {
-      seen.add(wp.id);
-      let marker = markersRef.current.get(wp.id);
-      if (!marker) {
+    reconcileMarkerCollection({
+      map,
+      markers: markersRef.current,
+      items: vias,
+      keyOf: (wp) => wp.id,
+      lngLatOf: (wp) => [wp.position.longitude, wp.position.latitude],
+      create: (wp) => {
         const el = document.createElement('button');
         el.type = 'button';
         el.className = 'route-via-marker';
@@ -47,31 +54,13 @@ export function useRouteViaMarkers(
           e.stopPropagation();
           onTapRef.current(wp);
         });
-        marker = new maplibregl.Marker({ element: el, anchor: 'center' })
-          .setLngLat([wp.position.longitude, wp.position.latitude])
-          .addTo(map);
-        markersRef.current.set(wp.id, marker);
-      } else {
-        marker.setLngLat([wp.position.longitude, wp.position.latitude]);
-      }
-    }
-    for (const [id, marker] of markersRef.current) {
-      if (!seen.has(id)) {
-        marker.remove();
-        markersRef.current.delete(id);
-      }
-    }
+        return { marker: new maplibregl.Marker({ element: el, anchor: 'center' }) };
+      },
+    });
     // Granular deps: the body only reads route.waypoints, and routeStore is
     // copy-on-write — the array identity changes on any route edit.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [mapRef, route?.waypoints]);
 
-  // Cleanup on unmount.
-  useEffect(() => {
-    const markers = markersRef.current;
-    return () => {
-      markers.forEach((m) => m.remove());
-      markers.clear();
-    };
-  }, []);
+  useMarkerCollectionCleanup(markersRef);
 }

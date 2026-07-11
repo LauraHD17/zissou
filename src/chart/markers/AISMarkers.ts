@@ -1,15 +1,20 @@
 import { useEffect, useRef } from 'react';
 import maplibregl from 'maplibre-gl';
 import type { RefObject } from 'react';
-import { AIS_STALE_MS, isValidCogRad } from '../../signalk/types';
-import type { Vessel } from '../../signalk/types';
-import { isPlausiblePosition } from '../../utils/geometry';
+import { isVesselStale, isValidCogRad } from '../../signalk/types';
+import type { Position, Vessel } from '../../signalk/types';
+import { validPosition } from '../../utils/geometry';
+import { radToDeg } from '../../utils/angles';
 import { computeThreatBand, type ThreatBand } from '../../utils/threat';
+import {
+  reconcileMarkerCollection,
+  useMarkerCollectionCleanup,
+  type MarkerCollectionEntry,
+} from './markerCollection';
 
 const SVG_NS = 'http://www.w3.org/2000/svg';
 
-interface MarkerEntry {
-  marker: maplibregl.Marker;
+interface MarkerEntry extends MarkerCollectionEntry {
   hasHeading: boolean; // chevron (true) vs circle (false)
   // Latest vessel snapshot — vessels are copy-on-write, so the click handler
   // must read the current object here, not close over a stale one.
@@ -18,6 +23,16 @@ interface MarkerEntry {
   appliedBand: ThreatBand | null;
   appliedStale: boolean | null;
   appliedCogDeg: number | null;
+}
+
+// A target with its per-tick derived display state computed once.
+interface PreparedTarget {
+  vessel: Vessel;
+  pos: Position;
+  isStale: boolean;
+  band: ThreatBand;
+  cogDeg: number | null;
+  hasHeading: boolean;
 }
 
 interface Options {
@@ -39,24 +54,33 @@ export function useAISMarkers(
     if (!map) return;
 
     const now = Date.now();
-    const seen = new Set<string>();
+    const prepared: PreparedTarget[] = [];
+    for (const vessel of targets) {
+      const pos = validPosition(vessel);
+      if (!pos) continue; // implausible/missing position → no marker
+      const isStale = isVesselStale(vessel, now);
+      const cogDeg = isValidCogRad(vessel.cog) ? radToDeg(vessel.cog) : null;
+      prepared.push({
+        vessel,
+        pos,
+        isStale,
+        band: computeThreatBand(vessel, self, isStale),
+        cogDeg,
+        hasHeading: cogDeg != null,
+      });
+    }
 
-    for (const v of targets) {
-      if (!v.position || !isPlausiblePosition(v.position)) continue;
-      seen.add(v.context);
-
-      const isStale = now - v.lastUpdated > AIS_STALE_MS;
-      const band = computeThreatBand(v, self, isStale);
-      const cogDeg = isValidCogRad(v.cog) ? (v.cog * 180) / Math.PI : null;
-      const hasHeading = cogDeg != null;
-
-      let entry = markersRef.current.get(v.context);
-
-      // Create or recreate (when the inner shape changes between chevron/circle).
-      if (!entry || entry.hasHeading !== hasHeading) {
-        entry?.marker.remove();
-        const el = buildMarkerElement(hasHeading);
-        const context = v.context;
+    reconcileMarkerCollection({
+      map,
+      markers: markersRef.current,
+      items: prepared,
+      keyOf: (p) => p.vessel.context,
+      lngLatOf: (p) => [p.pos.longitude, p.pos.latitude],
+      // Shape flips between chevron (has heading) and circle — rebuild the el.
+      shouldRecreate: (p, entry) => entry.hasHeading !== p.hasHeading,
+      create: (p) => {
+        const el = buildMarkerElement(p.hasHeading);
+        const context = p.vessel.context;
         el.addEventListener('click', (e) => {
           e.stopPropagation();
           // Look up the CURRENT vessel — the closure would otherwise hand the
@@ -66,64 +90,46 @@ export function useAISMarkers(
         });
         // Pointer cursor so it reads as tappable.
         el.style.cursor = 'pointer';
-        const marker = new maplibregl.Marker({ element: el, anchor: 'center' })
-          .setLngLat([v.position.longitude, v.position.latitude])
-          .addTo(map);
-        entry = {
-          marker,
-          hasHeading,
-          vessel: v,
+        return {
+          marker: new maplibregl.Marker({ element: el, anchor: 'center' }),
+          hasHeading: p.hasHeading,
+          vessel: p.vessel,
           appliedBand: null,
           appliedStale: null,
           appliedCogDeg: null,
         };
-        markersRef.current.set(v.context, entry);
-      } else {
-        entry.vessel = v;
-        entry.marker.setLngLat([v.position.longitude, v.position.latitude]);
-      }
+      },
+      update: (p, entry) => {
+        entry.vessel = p.vessel;
 
-      // Skip className write if band/stale unchanged — DOM writes cause layout
-      // thrash on busy harbors with many vessels updating each tick.
-      if (entry.appliedBand !== band || entry.appliedStale !== isStale) {
-        const el = entry.marker.getElement();
-        el.className = [
-          'ais-target-marker',
-          `ais-target-marker--${band}`,
-          isStale && 'ais-target-marker--stale',
-        ]
-          .filter(Boolean)
-          .join(' ');
-        entry.appliedBand = band;
-        entry.appliedStale = isStale;
-      }
+        // Skip className write if band/stale unchanged — DOM writes cause layout
+        // thrash on busy harbors with many vessels updating each tick.
+        if (entry.appliedBand !== p.band || entry.appliedStale !== p.isStale) {
+          entry.marker.getElement().className = [
+            'ais-target-marker',
+            `ais-target-marker--${p.band}`,
+            p.isStale && 'ais-target-marker--stale',
+          ]
+            .filter(Boolean)
+            .join(' ');
+          entry.appliedBand = p.band;
+          entry.appliedStale = p.isStale;
+        }
 
-      if (cogDeg != null && entry.appliedCogDeg !== cogDeg) {
-        const svg = entry.marker.getElement().querySelector<SVGSVGElement>('svg');
-        if (svg) svg.style.transform = `rotate(${cogDeg}deg)`;
-        entry.appliedCogDeg = cogDeg;
-      }
+        if (p.cogDeg != null && entry.appliedCogDeg !== p.cogDeg) {
+          const svg = entry.marker.getElement().querySelector<SVGSVGElement>('svg');
+          if (svg) svg.style.transform = `rotate(${p.cogDeg}deg)`;
+          entry.appliedCogDeg = p.cogDeg;
+        }
 
-      entry.marker
-        .getElement()
-        .setAttribute('aria-label', `${v.name || 'Unknown vessel'} — ${band}`);
-    }
-
-    for (const [context, entry] of markersRef.current) {
-      if (!seen.has(context)) {
-        entry.marker.remove();
-        markersRef.current.delete(context);
-      }
-    }
+        entry.marker
+          .getElement()
+          .setAttribute('aria-label', `${p.vessel.name || 'Unknown vessel'} — ${p.band}`);
+      },
+    });
   }, [mapRef, targets, self]);
 
-  useEffect(() => {
-    const markers = markersRef.current;
-    return () => {
-      markers.forEach((entry) => entry.marker.remove());
-      markers.clear();
-    };
-  }, []);
+  useMarkerCollectionCleanup(markersRef);
 }
 
 // A real <button> (not a click-only div): keyboard focusable, exposed to

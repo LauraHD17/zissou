@@ -7,36 +7,31 @@
 import { useEffect } from 'react';
 import type { RefObject } from 'react';
 import type maplibregl from 'maplibre-gl';
-import type { Map as MapLibreMap, GeoJSONSource } from 'maplibre-gl';
+import type { Map as MapLibreMap } from 'maplibre-gl';
 import { useSelf } from '../../signalk/useSignalK';
-import { cssVar } from '../style/marineStyle';
+import { marineToken } from '../style/styleTokens';
 import { isPlausiblePosition } from '../../utils/geometry';
 import { useActiveRoute } from '../../waypoints/routeStore';
 import type { Position } from '../../signalk/types';
 import type { RouteWaypoint } from '../../types/nav';
+import { ensureGeoJsonLayers, subscribeGeoJsonSource } from './useGeoJsonLayer';
 
 const SOURCE_ID = 'goto-route';
 const LAYER_ID = 'goto-route-line';
 
 export function ensureGoToRouteLayer(map: MapLibreMap): void {
-  if (!map.getSource(SOURCE_ID)) {
-    map.addSource(SOURCE_ID, {
-      type: 'geojson',
-      data: { type: 'FeatureCollection', features: [] },
-    });
-  }
-  if (!map.getLayer(LAYER_ID)) {
-    map.addLayer({
+  ensureGeoJsonLayers(map, SOURCE_ID, [
+    {
       id: LAYER_ID,
       type: 'line',
       source: SOURCE_ID,
       paint: {
-        'line-color': cssVar('--alert-amber', '#E8B84D'),
+        'line-color': marineToken.alertAmber(),
         'line-width': 2,
         'line-dasharray': [2, 1],
       },
-    });
-  }
+    },
+  ]);
 }
 
 export function useGoToRoute(mapRef: RefObject<maplibregl.Map | null>) {
@@ -46,18 +41,9 @@ export function useGoToRoute(mapRef: RefObject<maplibregl.Map | null>) {
   useEffect(() => {
     const map = mapRef.current;
     if (!map) return;
-
-    const update = () => {
-      const source = map.getSource(SOURCE_ID) as GeoJSONSource | undefined;
-      if (!source) return;
-      source.setData(buildFeature(self?.position, route?.waypoints ?? []));
-    };
-
-    update();
-    map.on('style.load', update);
-    return () => {
-      map.off('style.load', update);
-    };
+    return subscribeGeoJsonSource(map, SOURCE_ID, () =>
+      buildFeature(self?.position, route?.waypoints ?? []),
+    );
     // Granular deps: self is copy-on-write per delta; buildFeature only reads
     // position lat/lon (route.waypoints is listed directly).
     // eslint-disable-next-line react-hooks/exhaustive-deps
