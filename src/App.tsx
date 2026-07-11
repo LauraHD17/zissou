@@ -9,6 +9,7 @@ import { AppServices } from './AppServices';
 import { AlarmBanner } from './ui/AlarmBanner';
 import { ErrorBoundary } from './ui/ErrorBoundary';
 import { ChartDownloadPill } from './pwa/ChartDownloadPill';
+import { CompassEnablePill } from './compass/CompassEnablePill';
 import './styles/app.css';
 import './theme/night.css';
 
@@ -24,6 +25,7 @@ export function App() {
       <AppServices />
       <AlarmBanner />
       <ChartDownloadPill />
+      <CompassEnablePill />
       <StatusBar activeView={view} onViewChange={setView} />
       <main className={`app__main app__main--${view}`}>
         <div className="ais-column">

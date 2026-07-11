@@ -3260,3 +3260,8 @@ body,
     top: auto;
   }
 }
+
+/* Compass pill stacks above the chart-download pill when both are showing. */
+.compass-pill {
+  bottom: calc(120px + env(safe-area-inset-bottom, 0px));
+}

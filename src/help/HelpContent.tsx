@@ -18,6 +18,11 @@ export function HelpContent({ onBack }: { onBack: () => void }) {
           The orange triangle is you. It points the way you're moving, the line ahead shows where
           you'll be soon, and the glowing ring pulses so you can find yourself at a glance.
         </p>
+        <p className="help__row">
+          With the compass enabled (one-time "Enable compass" tap), the triangle also follows which
+          way the phone points while you're stopped or drifting — underway, GPS course takes over
+          because it's truer on a moving boat.
+        </p>
       </section>
 
       <section className="settings-form__section">

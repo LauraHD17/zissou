@@ -1,9 +1,9 @@
 import { useEffect, useRef } from 'react';
 import maplibregl from 'maplibre-gl';
 import type { RefObject } from 'react';
-import { isValidCogRad } from '../../signalk/types';
 import type { Vessel } from '../../signalk/types';
 import { isPlausiblePosition } from '../../utils/geometry';
+import { pickOwnShipHeadingRad, useCompassReading } from '../../compass/compassStore';
 
 const SVG_NS = 'http://www.w3.org/2000/svg';
 
@@ -12,6 +12,9 @@ export function useOwnShipMarker(
   self: Vessel | undefined,
 ) {
   const markerRef = useRef<maplibregl.Marker | null>(null);
+  // Compass (phone build): swings the triangle instantly at rest, where GPS
+  // course is noise. Underway, COG wins — see pickOwnShipHeadingRad.
+  const compass = useCompassReading();
 
   useEffect(() => {
     const map = mapRef.current;
@@ -34,15 +37,21 @@ export function useOwnShipMarker(
       markerRef.current.setLngLat([self.position.longitude, self.position.latitude]);
     }
 
-    const headingDeg = isValidCogRad(self.cog) ? (self.cog * 180) / Math.PI : 0;
+    const headingRad = pickOwnShipHeadingRad({
+      cogRad: self.cog,
+      sogMs: self.sog,
+      compass,
+      nowMs: Date.now(),
+    });
+    const headingDeg = headingRad != null ? (headingRad * 180) / Math.PI : 0;
     const triangle = markerRef.current
       .getElement()
       .querySelector<SVGSVGElement>('.own-ship-marker__triangle');
     if (triangle) triangle.style.transform = `rotate(${headingDeg}deg)`;
-    // Granular deps: self is copy-on-write per delta; we only read position
-    // lat/lon and cog.
+    // Granular deps: self is copy-on-write per delta; we read position
+    // lat/lon, cog, sog, plus the throttled compass reading.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [mapRef, self?.position?.latitude, self?.position?.longitude, self?.cog]);
+  }, [mapRef, self?.position?.latitude, self?.position?.longitude, self?.cog, self?.sog, compass]);
 
   useEffect(
     () => () => {
