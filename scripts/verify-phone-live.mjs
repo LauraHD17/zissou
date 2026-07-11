@@ -108,6 +108,16 @@ if (!verify.results.every((r) => r.equal)) {
   process.exit(1);
 }
 
+// Become service-worker-controlled first: the very first page load of a
+// fresh profile isn't SW-controlled until a subsequent navigation, so an
+// immediate offline reload would fail at the network layer — a test-
+// sequencing artifact, not an app behavior (real sessions are minutes
+// long). One online reload, wait for the SW, then cut the network.
+await page.reload({ waitUntil: 'load' });
+await page.waitForFunction(() => navigator.serviceWorker?.controller != null, null, {
+  timeout: 30_000,
+});
+
 // Offline reload — the boat-day scenario.
 await context.setOffline(true);
 await page.reload({ waitUntil: 'load' });

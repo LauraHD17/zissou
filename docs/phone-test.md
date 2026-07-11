@@ -89,6 +89,11 @@ inside the installed app, and only ever use the icon from then on.
 
 ## Dev notes
 
+- **Full live verification**: `node scripts/verify-phone-live.mjs` drives the
+  deployed site end-to-end — chart download, byte-for-byte integrity against
+  the server, and an offline reload — in a real disk-backed browser profile.
+  Run it after every chart rebuild or deploy change before trusting the phone.
+
 - Phone build = `VITE_SIGNALK_MODE=geo` + `VITE_CHARTS_BASE=<release URL>`
   (see `.github/workflows/deploy-phone.yml`). `geo` feeds
   `navigator.geolocation.watchPosition` into the standard SignalK delta
