@@ -21,6 +21,9 @@ const VISIBLE_FROM_ZOOM = 11;
 interface MarkerEntry {
   marker: maplibregl.Marker;
   appliedCategory: WaypointCategory;
+  // Latest waypoint — the click handler reads it here so a label/notes edit
+  // (which doesn't recreate the marker) still opens fresh data.
+  waypoint: SavedWaypoint;
 }
 
 interface Options {
@@ -46,18 +49,24 @@ export function useWaypointMarkers(mapRef: RefObject<maplibregl.Map | null>, { o
       if (!entry || entry.appliedCategory !== wp.category) {
         entry?.marker.remove();
         const el = buildMarkerElement(wp.category);
+        const id = wp.id;
         el.addEventListener('click', (e) => {
           e.stopPropagation();
-          onTapRef.current(wp);
+          const current = markersRef.current.get(id)?.waypoint;
+          if (current) onTapRef.current(current);
         });
         const marker = new maplibregl.Marker({ element: el, anchor: 'center' })
           .setLngLat([wp.lon, wp.lat])
           .addTo(map);
-        entry = { marker, appliedCategory: wp.category };
+        entry = { marker, appliedCategory: wp.category, waypoint: wp };
         markersRef.current.set(wp.id, entry);
       } else {
+        entry.waypoint = wp;
         entry.marker.setLngLat([wp.lon, wp.lat]);
       }
+      entry.marker
+        .getElement()
+        .setAttribute('aria-label', `${wp.label || 'Waypoint'} — ${wp.category}`);
     }
     for (const [id, entry] of markersRef.current) {
       if (!seen.has(id)) {
@@ -95,8 +104,11 @@ export function useWaypointMarkers(mapRef: RefObject<maplibregl.Map | null>, { o
   }, []);
 }
 
-function buildMarkerElement(category: WaypointCategory): HTMLDivElement {
-  const root = document.createElement('div');
+// A real <button> (not a click-only div): keyboard focusable, exposed to
+// assistive tech, and CSS gives it the AAA 44×44 hit area around the glyph.
+function buildMarkerElement(category: WaypointCategory): HTMLButtonElement {
+  const root = document.createElement('button');
+  root.type = 'button';
   root.className = `waypoint-marker waypoint-marker--${category}`;
   root.appendChild(buildIconElement(CATEGORY_ICON[category], { size: 24 }));
   return root;

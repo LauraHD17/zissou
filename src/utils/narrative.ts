@@ -71,8 +71,13 @@ export function buildVesselNarrative(
   if (selfPos) {
     const dist = haversineNm(selfPos, vessel.position);
     const absBearing = bearingRadians(selfPos, vessel.position);
-    const direction = isValidCogRad(self?.cog)
-      ? formatRelativeBearing(absBearing - self.cog)
+    // "Off your starboard bow" only means something when we're actually
+    // making way — at anchor/drifting, GPS COG is noise, so fall back to
+    // compass bearings rather than point the bow at a random heading.
+    const ownCogUsable =
+      isValidCogRad(self?.cog) && isValidSogMs(self?.sog) && msToKnots(self.sog) >= 0.5;
+    const direction = ownCogUsable
+      ? formatRelativeBearing(absBearing - (self.cog as number))
       : formatAbsoluteBearing(absBearing);
     location = capitalize(`${formatDistance(dist)} ${direction}`);
   } else {

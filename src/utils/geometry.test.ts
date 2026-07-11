@@ -122,16 +122,31 @@ describe('samplePolyline', () => {
     expect(out[out.length - 1]).toEqual(B);
   });
 
-  it('distributes samples across a multi-leg polyline by length', () => {
-    // A→B and B→C are both 0.1° — equal legs.
-    const out = samplePolyline([A, B, C], 10);
+  it('distributes samples across a multi-leg polyline by TRUE length (cos-lat corrected)', () => {
+    // A→B is 0.1° of latitude (due north). D is chosen so B→D (due east) has
+    // the same TRUE length: 0.1° / cos(44.1°) of longitude. The old fixture
+    // used degree-equal legs, which silently pinned the pre-fix behavior
+    // where E-W legs were overweighted ~1.4× at this latitude.
+    const D = {
+      latitude: 44.1,
+      longitude: -68.0 - 0.1 / Math.cos((44.1 * Math.PI) / 180),
+    };
+    const out = samplePolyline([A, B, D], 10);
     expect(out.length).toBe(11);
     expect(out[0]).toEqual(A);
-    expect(out[out.length - 1]).toEqual(C);
-    // The midpoint of the polyline by arc length falls right at B.
+    expect(out[out.length - 1]).toEqual(D);
+    // The midpoint of the polyline by true arc length falls right at B.
     const mid = out[5];
     expect(mid.latitude).toBeCloseTo(B.latitude, 5);
     expect(mid.longitude).toBeCloseTo(B.longitude, 5);
+  });
+
+  it('does not overweight east-west legs (regression: degree-space sampling)', () => {
+    // Degree-equal legs: the E-W leg is only ~72% as long as the N-S leg at
+    // 44°N, so strictly more than half the samples must land on A→B.
+    const out = samplePolyline([A, B, C], 10);
+    const onNorthLeg = out.filter((p) => Math.abs(p.longitude - A.longitude) < 1e-9).length;
+    expect(onNorthLeg).toBeGreaterThan(out.length / 2);
   });
 
   it('handles degenerate (total-length-zero) polylines without NaN', () => {

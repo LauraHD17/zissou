@@ -77,6 +77,9 @@ export function useSafeReturn(): SafeReturnState {
       detectedKn,
       effectiveKn,
     };
+    // Granular deps: self is copy-on-write per delta and we only read
+    // position lat/lon; homeMooring is covered by its lat/lon primitives.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [
     now,
     self?.position?.latitude,

@@ -61,6 +61,9 @@ export function useRouteViaMarkers(
         markersRef.current.delete(id);
       }
     }
+    // Granular deps: the body only reads route.waypoints, and routeStore is
+    // copy-on-write — the array identity changes on any route edit.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [mapRef, route?.waypoints]);
 
   // Cleanup on unmount.

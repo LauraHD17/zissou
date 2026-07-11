@@ -46,6 +46,8 @@ export function useApplyTheme() {
       '--night-brightness',
       String(prefs.brightnessPct / 100),
     );
+    // Granular deps: self is copy-on-write per delta; we only read position lat/lon.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [prefs.mode, prefs.brightnessPct, now, self?.position?.latitude, self?.position?.longitude]);
 }
 

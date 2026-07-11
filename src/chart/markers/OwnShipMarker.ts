@@ -39,6 +39,9 @@ export function useOwnShipMarker(
       .getElement()
       .querySelector<SVGSVGElement>('.own-ship-marker__triangle');
     if (triangle) triangle.style.transform = `rotate(${headingDeg}deg)`;
+    // Granular deps: self is copy-on-write per delta; we only read position
+    // lat/lon and cog.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [mapRef, self?.position?.latitude, self?.position?.longitude, self?.cog]);
 
   useEffect(

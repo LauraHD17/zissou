@@ -116,11 +116,15 @@ export function SlidePanel({ open, onClose, labelledBy, returnFocusTo, children 
         onPointerUp={onPointerUp}
         onPointerCancel={onPointerUp}
       >
-        {/* Sentinel: shift-tab from here wraps to the end of the panel. */}
-        <div tabIndex={0} onFocus={() => focusLastIn(panelRef.current)} aria-hidden="true" />
+        {/* Sentinels: focusable elements must not be aria-hidden (axe
+            aria-hidden-focus) — marked with a data attribute instead so the
+            wrap helpers can skip them. They redirect focus immediately, so
+            they're never announced. */}
+        {/* Shift-tab from here wraps to the end of the panel. */}
+        <div tabIndex={0} data-focus-sentinel onFocus={() => focusLastIn(panelRef.current)} />
         {children}
-        {/* Sentinel: tab from here wraps to the start. */}
-        <div tabIndex={0} onFocus={() => focusFirstIn(panelRef.current)} aria-hidden="true" />
+        {/* Tab from here wraps to the start. */}
+        <div tabIndex={0} data-focus-sentinel onFocus={() => focusFirstIn(panelRef.current)} />
       </aside>
     </div>
   );
@@ -133,13 +137,13 @@ function focusFirstIn(container: HTMLElement | null) {
   if (!container) return;
   const items = container.querySelectorAll<HTMLElement>(FOCUSABLE_SELECTOR);
   // Skip the sentinel divs themselves (first + last).
-  const real = Array.from(items).filter((el) => !el.hasAttribute('aria-hidden'));
+  const real = Array.from(items).filter((el) => !el.hasAttribute('data-focus-sentinel'));
   real[0]?.focus();
 }
 
 function focusLastIn(container: HTMLElement | null) {
   if (!container) return;
   const items = container.querySelectorAll<HTMLElement>(FOCUSABLE_SELECTOR);
-  const real = Array.from(items).filter((el) => !el.hasAttribute('aria-hidden'));
+  const real = Array.from(items).filter((el) => !el.hasAttribute('data-focus-sentinel'));
   real[real.length - 1]?.focus();
 }

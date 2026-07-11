@@ -11,6 +11,9 @@ const SVG_NS = 'http://www.w3.org/2000/svg';
 interface MarkerEntry {
   marker: maplibregl.Marker;
   hasHeading: boolean; // chevron (true) vs circle (false)
+  // Latest vessel snapshot — vessels are copy-on-write, so the click handler
+  // must read the current object here, not close over a stale one.
+  vessel: Vessel;
   // Last DOM-applied values — skip writes when nothing changed.
   appliedBand: ThreatBand | null;
   appliedStale: boolean | null;
@@ -53,9 +56,13 @@ export function useAISMarkers(
       if (!entry || entry.hasHeading !== hasHeading) {
         entry?.marker.remove();
         const el = buildMarkerElement(hasHeading);
+        const context = v.context;
         el.addEventListener('click', (e) => {
           e.stopPropagation();
-          onTapRef.current?.(v);
+          // Look up the CURRENT vessel — the closure would otherwise hand the
+          // detail panel a snapshot frozen at marker-creation time.
+          const current = markersRef.current.get(context)?.vessel;
+          if (current) onTapRef.current?.(current);
         });
         // Pointer cursor so it reads as tappable.
         el.style.cursor = 'pointer';
@@ -65,12 +72,14 @@ export function useAISMarkers(
         entry = {
           marker,
           hasHeading,
+          vessel: v,
           appliedBand: null,
           appliedStale: null,
           appliedCogDeg: null,
         };
         markersRef.current.set(v.context, entry);
       } else {
+        entry.vessel = v;
         entry.marker.setLngLat([v.position.longitude, v.position.latitude]);
       }
 
@@ -94,6 +103,10 @@ export function useAISMarkers(
         if (svg) svg.style.transform = `rotate(${cogDeg}deg)`;
         entry.appliedCogDeg = cogDeg;
       }
+
+      entry.marker
+        .getElement()
+        .setAttribute('aria-label', `${v.name || 'Unknown vessel'} — ${band}`);
     }
 
     for (const [context, entry] of markersRef.current) {
@@ -113,8 +126,11 @@ export function useAISMarkers(
   }, []);
 }
 
-function buildMarkerElement(hasHeading: boolean): HTMLDivElement {
-  const root = document.createElement('div');
+// A real <button> (not a click-only div): keyboard focusable, exposed to
+// assistive tech, and CSS gives it the AAA 44×44 hit area around the glyph.
+function buildMarkerElement(hasHeading: boolean): HTMLButtonElement {
+  const root = document.createElement('button');
+  root.type = 'button';
 
   const svg = document.createElementNS(SVG_NS, 'svg');
   svg.setAttribute('viewBox', '0 0 16 16');

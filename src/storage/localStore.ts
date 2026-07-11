@@ -57,9 +57,57 @@ export function defineMemoryStore<T>(initial: T): Store<T> {
   };
 }
 
-export function defineStore<T>(localStorageKey: string, version: number, initial: T): Store<T> {
-  let current = load<T>(localStorageKey, version, initial);
+export interface StoreOptions<T> {
+  /**
+   * Debounce localStorage writes by this many ms. The in-memory value is
+   * always current; only the persistence write is deferred. Pending writes
+   * flush when the page hides. For high-frequency stores (breadcrumbs at
+   * cruising speed) where a full-blob write per set would jank the Pi and
+   * wear the SD card.
+   */
+  persistDebounceMs?: number;
+  /**
+   * Validate/repair a loaded value. localStorage contents are untrusted —
+   * corruption or hand-editing that keeps the right version number would
+   * otherwise flow a malformed shape into render code and crash the app.
+   * Return a clean value, or null to reset to `initial`.
+   */
+  sanitize?: (value: unknown) => T | null;
+}
+
+// Stores with debounced persistence flush together when the page hides so a
+// kiosk power-off or tab switch doesn't lose the pending write.
+const pendingFlushes = new Set<() => void>();
+let hideListenerInstalled = false;
+
+function installHideFlush() {
+  if (hideListenerInstalled || typeof document === 'undefined') return;
+  hideListenerInstalled = true;
+  const flushAll = () => pendingFlushes.forEach((f) => f());
+  window.addEventListener('pagehide', flushAll);
+  document.addEventListener('visibilitychange', () => {
+    if (document.visibilityState === 'hidden') flushAll();
+  });
+}
+
+export function defineStore<T>(
+  localStorageKey: string,
+  version: number,
+  initial: T,
+  options: StoreOptions<T> = {},
+): Store<T> {
+  let current = load<T>(localStorageKey, version, initial, options.sanitize);
   const listeners = new Set<() => void>();
+  let flushTimer: ReturnType<typeof setTimeout> | null = null;
+
+  const flush = () => {
+    if (flushTimer != null) {
+      clearTimeout(flushTimer);
+      flushTimer = null;
+    }
+    pendingFlushes.delete(flush);
+    persist(localStorageKey, version, current);
+  };
 
   const subscribe = (l: () => void) => {
     listeners.add(l);
@@ -70,7 +118,16 @@ export function defineStore<T>(localStorageKey: string, version: number, initial
   const set = (next: T) => {
     if (Object.is(next, current)) return;
     current = next;
-    persist(localStorageKey, version, next);
+    const debounceMs = options.persistDebounceMs;
+    if (debounceMs && debounceMs > 0) {
+      if (flushTimer == null) {
+        flushTimer = setTimeout(flush, debounceMs);
+        pendingFlushes.add(flush);
+        installHideFlush();
+      }
+    } else {
+      persist(localStorageKey, version, next);
+    }
     listeners.forEach((l) => l());
   };
 
@@ -82,13 +139,19 @@ export function defineStore<T>(localStorageKey: string, version: number, initial
   };
 }
 
-function load<T>(key: string, version: number, initial: T): T {
+function load<T>(
+  key: string,
+  version: number,
+  initial: T,
+  sanitize?: (value: unknown) => T | null,
+): T {
   if (typeof localStorage === 'undefined') return initial; // SSR / test env
   try {
     const raw = localStorage.getItem(key);
     if (!raw) return initial;
     const env = JSON.parse(raw) as Envelope<T>;
     if (env.version !== version) return initial; // schema drift → reset
+    if (sanitize) return sanitize(env.value) ?? initial;
     return env.value;
   } catch {
     return initial;

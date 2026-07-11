@@ -17,8 +17,11 @@
      WCAG AAA 7:1 contrast against #0d0000 (audit caught the original at 5.4:1) */
   --text-primary: #e89a89;
   --text-on-card: #e89a89;
-  --text-dim: rgba(232, 154, 137, 0.78);
-  --text-on-card-dim: rgba(232, 154, 137, 0.82);
+  /* Dim alphas raised (0.78→0.88, 0.82→0.95): the old values measured
+     5.84:1 / 5.69:1 against the night surfaces — under the AAA 7:1 bar
+     this file claims. New values: 7.30:1 / 7.24:1. */
+  --text-dim: rgba(232, 154, 137, 0.88);
+  --text-on-card-dim: rgba(232, 154, 137, 0.95);
   --border-on-navy: rgba(232, 154, 137, 0.16);
   --border-on-card: rgba(232, 154, 137, 0.2);
 
@@ -36,6 +39,10 @@
 
   /* Focus ring stays warm */
   --focus-ring: #ffbb44;
+
+  /* Own-ship pulse shifts to the red spectrum — the day yellow-green would
+     leak a bright short-wavelength flash through the night filter. */
+  --ownship-pulse: rgba(255, 170, 68, 0.5);
 
   /* Nav-aid palette — warm-red-spectrum to preserve dark adaptation.
      Paired with a warm-palette sprite sheet (public/sprites/navaid-night.*)

@@ -14,6 +14,10 @@ const REFETCH_ON_MOVE_NM = 5; // only re-hit API after the boat moves ≥ 5 nm
 export function useWeatherAutoFetch(): void {
   const self = useSelf();
   const inFlightRef = useRef(false);
+  // Coarse (~11 km) position grid — the effect below re-arms only when the
+  // boat crosses a 0.1° cell.
+  const coarseLat = Math.round((self?.position?.latitude ?? 0) * 10) / 10;
+  const coarseLon = Math.round((self?.position?.longitude ?? 0) * 10) / 10;
 
   useEffect(() => {
     if (!self?.position || !isPlausiblePosition(self.position)) return;
@@ -49,9 +53,8 @@ export function useWeatherAutoFetch(): void {
     void maybeFetch();
     return () => window.clearInterval(interval);
     // Re-arm only on coarse (~11 km) position change — crossing a 0.01° grid
-    // constantly at anchor shouldn't reset the 1-hr refresh timer.
-  }, [
-    Math.round((self?.position?.latitude ?? 0) * 10) / 10,
-    Math.round((self?.position?.longitude ?? 0) * 10) / 10,
-  ]);
+    // constantly at anchor shouldn't reset the 1-hr refresh timer. The body's
+    // precise self.position is deliberately captured only per re-arm.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [coarseLat, coarseLon]);
 }

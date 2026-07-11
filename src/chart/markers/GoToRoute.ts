@@ -9,6 +9,7 @@ import type { RefObject } from 'react';
 import type maplibregl from 'maplibre-gl';
 import type { Map as MapLibreMap, GeoJSONSource } from 'maplibre-gl';
 import { useSelf } from '../../signalk/useSignalK';
+import { cssVar } from '../style/marineStyle';
 import { isPlausiblePosition } from '../../utils/geometry';
 import { useActiveRoute } from '../../waypoints/routeStore';
 import type { Position } from '../../signalk/types';
@@ -29,7 +30,7 @@ export function ensureGoToRouteLayer(map: MapLibreMap): void {
       id: LAYER_ID,
       type: 'line',
       source: SOURCE_ID,
-      paint: { 'line-color': '#E8B84D', 'line-width': 2, 'line-dasharray': [2, 1] },
+      paint: { 'line-color': cssVar('--alert-amber', '#E8B84D'), 'line-width': 2, 'line-dasharray': [2, 1] },
     });
   }
 }
@@ -53,6 +54,9 @@ export function useGoToRoute(mapRef: RefObject<maplibregl.Map | null>) {
     return () => {
       map.off('style.load', update);
     };
+    // Granular deps: self is copy-on-write per delta; buildFeature only reads
+    // position lat/lon (route.waypoints is listed directly).
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [
     mapRef,
     self?.position?.latitude,

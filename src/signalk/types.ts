@@ -30,8 +30,6 @@ export interface Vessel {
   position?: Position;
   sog?: number;
   cog?: number;
-  heading?: number;
-  shipType?: string | number;
   navState?: string;
   lastUpdated: number;
   paths: Record<string, unknown>;

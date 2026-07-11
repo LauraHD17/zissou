@@ -8,6 +8,7 @@
 // When a route is cleared or replaced, the previous destination (last
 // waypoint) flows into recentsStore — same behavior as the old store.
 
+import { newId } from '../utils/id';
 import type { Position } from '../signalk/types';
 import { defineMemoryStore } from '../storage/localStore';
 import type { ActiveRoute, RouteSource, RouteWaypoint } from '../types/nav';
@@ -35,7 +36,7 @@ interface AppendInput {
 export function appendWaypoint(input: AppendInput): void {
   const now = Date.now();
   const wp: RouteWaypoint = {
-    id: newId(),
+    id: newId('wp'),
     position: input.position,
     label: input.label,
     savedId: input.savedId,
@@ -62,7 +63,7 @@ export function replaceRouteWithSingle(input: AppendInput): void {
   const prev = store.read();
   if (prev) pushLastToRecents(prev);
   const wp: RouteWaypoint = {
-    id: newId(),
+    id: newId('wp'),
     position: input.position,
     label: input.label,
     savedId: input.savedId,
@@ -108,7 +109,4 @@ function pushLastToRecents(route: ActiveRoute): void {
   pushRecent({ position: last.position, label: last.label, setAt: last.setAt });
 }
 
-function newId(): string {
-  if (typeof crypto !== 'undefined' && 'randomUUID' in crypto) return crypto.randomUUID();
-  return `wp-${Date.now()}-${Math.floor(Math.random() * 1e6)}`;
-}
+

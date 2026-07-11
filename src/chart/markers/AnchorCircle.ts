@@ -8,6 +8,7 @@ import type { Map as MapLibreMap, GeoJSONSource } from 'maplibre-gl';
 import { projectPosition } from '../../utils/geometry';
 import { feetToMeters } from '../../utils/units';
 import { useAnchorWatch } from '../../anchor/anchorStore';
+import { cssVar } from '../style/marineStyle';
 
 const SOURCE_ID = 'anchor-circle';
 const FILL_LAYER = 'anchor-circle-fill';
@@ -29,7 +30,7 @@ export function ensureAnchorCircleLayers(map: MapLibreMap): void {
       source: SOURCE_ID,
       filter: ['==', '$type', 'Polygon'],
       paint: {
-        'fill-color': ['coalesce', ['get', 'fillColor'], '#E8B84D'],
+        'fill-color': ['coalesce', ['get', 'fillColor'], cssVar('--alert-amber', '#E8B84D')],
         'fill-opacity': 0.1,
       },
     });
@@ -41,7 +42,7 @@ export function ensureAnchorCircleLayers(map: MapLibreMap): void {
       source: SOURCE_ID,
       filter: ['==', '$type', 'Polygon'],
       paint: {
-        'line-color': ['coalesce', ['get', 'strokeColor'], '#E8B84D'],
+        'line-color': ['coalesce', ['get', 'strokeColor'], cssVar('--alert-amber', '#E8B84D')],
         'line-width': 2,
       },
     });
@@ -54,8 +55,8 @@ export function ensureAnchorCircleLayers(map: MapLibreMap): void {
       filter: ['==', '$type', 'Point'],
       paint: {
         'circle-radius': 5,
-        'circle-color': ['coalesce', ['get', 'color'], '#E8B84D'],
-        'circle-stroke-color': '#142038',
+        'circle-color': ['coalesce', ['get', 'color'], cssVar('--alert-amber', '#E8B84D')],
+        'circle-stroke-color': cssVar('--bg-navy', '#142038'),
         'circle-stroke-width': 1.5,
       },
     });
@@ -90,7 +91,7 @@ function buildFeature(anchor: AW): GeoJSON.FeatureCollection {
 
   const radiusM = feetToMeters(anchor.radiusFt);
   const dragging = !anchor.alarmAcknowledged; // reuse acknowledged as a coarse "still concerning" flag
-  const color = dragging ? '#A02418' : '#E8B84D';
+  const color = dragging ? cssVar('--alert-red', '#8B1E12') : cssVar('--alert-amber', '#E8B84D');
 
   const ring: [number, number][] = [];
   for (let i = 0; i < SEGMENTS; i++) {

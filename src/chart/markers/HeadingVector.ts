@@ -5,6 +5,7 @@ import type { Map as MapLibreMap, GeoJSONSource } from 'maplibre-gl';
 import { isValidCogRad, isValidSogMs } from '../../signalk/types';
 import type { Vessel } from '../../signalk/types';
 import { isPlausiblePosition, projectPosition } from '../../utils/geometry';
+import { cssVar } from '../style/marineStyle';
 
 const SOURCE_ID = 'heading-vector';
 const LAYER_ID = 'heading-vector-line';
@@ -22,7 +23,7 @@ export function ensureHeadingVectorLayer(map: MapLibreMap): void {
       id: LAYER_ID,
       type: 'line',
       source: SOURCE_ID,
-      paint: { 'line-color': '#CCFF00', 'line-width': 2 },
+      paint: { 'line-color': cssVar('--ownship-accent', '#CCFF00'), 'line-width': 2 },
     });
   }
 }
@@ -51,6 +52,9 @@ export function useHeadingVector(
     return () => {
       map.off('style.load', update);
     };
+    // Granular deps: self is copy-on-write per delta; buildFeature only reads
+    // position lat/lon, cog, and sog — all listed.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [mapRef, self?.position?.latitude, self?.position?.longitude, self?.cog, self?.sog]);
 }
 

@@ -8,7 +8,7 @@ import { useSelf } from '../signalk/useSignalK';
 import { isPlausiblePosition, haversineNm } from '../utils/geometry';
 import { useNowMs } from '../utils/clock';
 import { metersToFeet, feetToMeters, NM_TO_METERS } from '../utils/units';
-import { raiseAlarm, clearAlarm } from '../alarm/alarmStore';
+import { raiseAlarm, clearAlarm, readActiveAlarm } from '../alarm/alarmStore';
 import { playAnchorAlarmTone } from '../alarm/useAlarmAudio';
 import { useAnchorWatch } from './anchorStore';
 
@@ -22,7 +22,9 @@ export function useAnchorDragWatch(): void {
 
   useEffect(() => {
     if (!anchor) {
-      clearAlarm();
+      // Only clear our own alarm — the store is single-slot and another
+      // watch (hazard proximity, MOB) may own the active alarm.
+      if (readActiveAlarm()?.kind === 'anchor-drag') clearAlarm();
       lastChirpRef.current = 0;
       return;
     }
@@ -32,8 +34,10 @@ export function useAnchorDragWatch(): void {
     const distFt = metersToFeet(distMeters);
 
     if (distFt <= anchor.radiusFt) {
-      // Inside circle — no alarm. Don't clear if already acknowledged:
-      // operator may have ack'd, walked back inside, then drifted out again.
+      // Back inside the circle — the drag episode is over. Clear our own
+      // alarm so a later drift out raises a fresh, unacknowledged one
+      // (raiseAlarm preserves acknowledgement within an episode).
+      if (readActiveAlarm()?.kind === 'anchor-drag') clearAlarm();
       return;
     }
 
@@ -46,5 +50,8 @@ export function useAnchorDragWatch(): void {
       playAnchorAlarmTone();
       lastChirpRef.current = now;
     }
+    // Granular deps: self is copy-on-write per delta; the body only reads
+    // position lat/lon (anchor and the 1 Hz tick are listed directly).
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [anchor, self?.position?.latitude, self?.position?.longitude, now]);
 }

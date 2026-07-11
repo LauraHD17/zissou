@@ -45,6 +45,12 @@ export async function fetchHourlyForecast(
   const pointsJson = (await pointsRes.json()) as PointsResponse;
   const hourlyUrl = pointsJson.properties.forecastHourly;
   if (!hourlyUrl) throw new Error('no forecastHourly URL');
+  // Second hop follows a URL from the response body — pin it to the NWS
+  // host over HTTPS so a tampered payload can't send the kiosk elsewhere.
+  const parsed = new URL(hourlyUrl);
+  if (parsed.protocol !== 'https:' || parsed.hostname !== 'api.weather.gov') {
+    throw new Error('unexpected forecastHourly host');
+  }
 
   const hourlyRes = await fetch(hourlyUrl, {
     headers: { 'User-Agent': USER_AGENT, Accept: 'application/geo+json' },

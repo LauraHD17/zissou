@@ -9,7 +9,7 @@ import type { SignalKDelta } from './types';
 //   speedOverGround: m/s
 //   courseOverGroundTrue / headingTrue: radians
 //   position: decimal degrees
-// All conversion to display units happens in src/utils/formatters.ts.
+// All conversion to display units happens in src/utils/units.ts at render time.
 
 type Emit = (delta: SignalKDelta) => void;
 

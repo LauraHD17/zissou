@@ -32,11 +32,12 @@ export default tseslint.config(
       'react-hooks/refs': 'off',
       'react-hooks/immutability': 'off',
       'react-hooks/set-state-in-effect': 'off',
-      // Off: we intentionally track granular position fields (lat/lng) rather
-      // than the whole `self` object to avoid re-running hooks on every
-      // SignalK tick (which produces a new object identity each time). The
-      // rule can't tell the difference from a genuine missing dep.
-      'react-hooks/exhaustive-deps': 'off',
+      // Warn (with --max-warnings=0 this is enforced). Where we intentionally
+      // track granular position fields (lat/lng) instead of the whole `self`
+      // object, annotate the site with eslint-disable-next-line + a reason.
+      // This rule being off repo-wide is how the hazard-watch stale-deps bug
+      // shipped (2026-07 audit).
+      'react-hooks/exhaustive-deps': 'warn',
       'react-refresh/only-export-components': ['warn', { allowConstantExport: true }],
       '@typescript-eslint/no-unused-vars': [
         'error',

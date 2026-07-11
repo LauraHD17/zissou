@@ -12,14 +12,13 @@ import { useSelf } from '../signalk/useSignalK';
 import { useNowMs } from '../utils/clock';
 import { haversineNm, isPlausiblePosition } from '../utils/geometry';
 import { HAZARD_ALARM_METERS, isHeadingTowardHazard } from '../utils/threat';
+import { NM_TO_METERS as NM_TO_M } from '../utils/units';
 import { useWaypoints } from './waypointStore';
-
-const NM_TO_M = 1852;
 
 export function useHazardProximityWatch(): void {
   const waypoints = useWaypoints();
   const self = useSelf();
-  useNowMs(1000); // re-evaluate every second while position is static
+  const now = useNowMs(1000); // re-evaluate every second while position is static
 
   useEffect(() => {
     const hazards = waypoints.filter((w) => w.category === 'hazard');
@@ -50,5 +49,9 @@ export function useHazardProximityWatch(): void {
     } else if (alarm?.kind === 'hazard-proximity') {
       clearAlarm();
     }
-  }, [waypoints, self]);
+    // Granular deps: `self` is copy-on-write per delta (fresh reference on
+    // every update, even when nothing we read changed) — depend on the
+    // primitives the body reads (position lat/lon + cog) + the 1 Hz tick.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [waypoints, self?.position?.latitude, self?.position?.longitude, self?.cog, now]);
 }

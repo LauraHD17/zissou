@@ -1,6 +1,8 @@
 // Continuously records own-ship positions into the breadcrumb store.
-// Downsampled: append only when either THROTTLE_MS elapsed OR the boat
-// has moved MIN_MOVE_M since the last breadcrumb — whichever fires first.
+// Downsampled: append only when THROTTLE_MS elapsed AND the boat has moved
+// MIN_MOVE_M since the last breadcrumb — a steady 30 s cadence while underway,
+// nothing while moored. (An OR here made the distance gate fire every ~4 s at
+// cruising speed, rewriting the whole store to localStorage each time.)
 // Plausibility checks prevent noise points from bad fixes.
 
 import { useEffect, useRef } from 'react';
@@ -31,7 +33,7 @@ export function useBreadcrumbRecorder(): void {
           { latitude: self.position.latitude, longitude: self.position.longitude },
         ) >= MIN_MOVE_NM;
 
-    if (!timeOk && !distOk) return;
+    if (!timeOk || !distOk) return;
 
     appendBreadcrumb({
       lat: self.position.latitude,
@@ -40,5 +42,7 @@ export function useBreadcrumbRecorder(): void {
       sogMs: self.sog,
     });
     lastAppendAtRef.current = now;
+    // Granular deps: self is copy-on-write per delta; we only react to fix changes.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [self?.position?.latitude, self?.position?.longitude, self?.lastUpdated]);
 }

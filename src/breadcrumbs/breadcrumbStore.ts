@@ -23,8 +23,37 @@ interface Snapshot {
 }
 
 const MAX_POINTS = 5000; // ~42 hours at 30s sample cadence
+const PERSIST_DEBOUNCE_MS = 5 * 60_000; // batch SD-card writes; flush on page hide
 
-const store = defineStore<Snapshot>('nav.breadcrumbs.v1', 1, { items: [] });
+function isFiniteNum(v: unknown): v is number {
+  return typeof v === 'number' && Number.isFinite(v);
+}
+
+const store = defineStore<Snapshot>(
+  'nav.breadcrumbs.v1',
+  1,
+  { items: [] },
+  {
+    persistDebounceMs: PERSIST_DEBOUNCE_MS,
+    // Drop corrupted points instead of crashing the track renderer.
+    sanitize: (value) => {
+      const items = (value as Snapshot | undefined)?.items;
+      if (!Array.isArray(items)) return null;
+      return {
+        items: items.filter(
+          (p): p is Breadcrumb =>
+            typeof p === 'object' &&
+            p !== null &&
+            isFiniteNum(p.lat) &&
+            Math.abs(p.lat) <= 90 &&
+            isFiniteNum(p.lon) &&
+            Math.abs(p.lon) <= 180 &&
+            isFiniteNum(p.t),
+        ),
+      };
+    },
+  },
+);
 
 export function useBreadcrumbs(): Breadcrumb[] {
   return store.use().items;

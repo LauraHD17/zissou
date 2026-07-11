@@ -144,7 +144,9 @@ export function ChartCanvas() {
       mapRef.current = null;
       styleLoadedRef.current = false;
     };
-    // Init runs once; auto-recenter handles position updates.
+    // Init runs once; auto-recenter handles position updates. modeRef is a
+    // stable ref from useChartMode.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useOwnShipMarker(mapRef, self);
@@ -188,6 +190,8 @@ export function ChartCanvas() {
     if (!map || !following) return;
     if (!self?.position || !isPlausiblePosition(self.position)) return;
     map.setCenter([self.position.longitude, self.position.latitude]);
+    // Granular deps: self is copy-on-write per delta; we only read position lat/lon.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [self?.position?.latitude, self?.position?.longitude, following]);
 
   const handleRecenter = () => {

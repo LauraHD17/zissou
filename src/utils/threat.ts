@@ -5,10 +5,9 @@
 import { isValidCogRad, isValidSogMs } from '../signalk/types';
 import type { Position, Vessel } from '../signalk/types';
 import { bearingRadians, haversineNm, isPlausiblePosition } from './geometry';
+import { NM_TO_METERS as NM_TO_M } from './units';
 
 export type ThreatBand = 'monitor' | 'caution' | 'danger';
-
-const NM_TO_M = 1852;
 
 /** Hazards beyond this range drop off the AIS list to keep the panel focused
  *  on immediate concerns. Own-ship is rarely a collision risk for a ledge
@@ -107,6 +106,10 @@ export function computeHazardThreatBand(
 export function isHeadingTowardHazard(self: Vessel | undefined, hazardPos: Position): boolean {
   if (!self?.position) return false;
   if (!isValidCogRad(self.cog)) return true; // unknown COG → conservative
+  // Below steerage way GPS COG is noise, not heading — a boat drifting at
+  // anchor must not have its hazard alarm suppressed by a random COG.
+  const MIN_SOG_FOR_HEADING_MS = 0.26; // ~0.5 kn
+  if (!isValidSogMs(self.sog) || self.sog < MIN_SOG_FOR_HEADING_MS) return true;
   const bearingToHazardRad = bearingRadians(self.position, hazardPos);
   const deltaRad = Math.abs(angleDeltaRad(self.cog as number, bearingToHazardRad));
   const sixtyDegRad = (60 * Math.PI) / 180;

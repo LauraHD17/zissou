@@ -28,8 +28,12 @@ export function readActiveAlarm(): ActiveAlarm | null {
 export function raiseAlarm(input: { kind: AlarmKind; message: string }): void {
   const { kind, message } = input;
   const current = alarmStore.read();
-  if (current && current.kind === kind && !current.acknowledged) {
-    // Already raised; just refresh the message in case the distance changed.
+  if (current && current.kind === kind) {
+    // Same episode — refresh the message (distance may have changed) but
+    // preserve acknowledged/raisedAt, otherwise watches that re-raise every
+    // tick would resurrect an acknowledged alarm one second after the
+    // operator dismissed it. A new episode starts only after the owning
+    // watch clears the alarm (condition went false).
     alarmStore.set({ ...current, message });
     return;
   }
