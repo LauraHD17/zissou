@@ -1,3 +1,4 @@
+import { useRef, useState } from 'react';
 import { isValidCogRad, isValidSogMs } from '../signalk/types';
 import { useSelf } from '../signalk/useSignalK';
 import { resolveBoatName, useUserPrefs } from '../prefs/userPrefsStore';
@@ -28,6 +29,25 @@ export function StatusBar({ activeView, onViewChange }: Props) {
   const now = useNowMs(1000);
   const hasFix = self?.position != null;
   const isStale = self ? now - self.lastUpdated > FIX_STALE_MS : true;
+  // Collapsed = controls (tabs, buttons, MOB, nameplate) hidden; the clock/
+  // tide and position/speed/heading lines always stay. Toggled by the
+  // chevron or by swiping up/down on the bar — chart space is precious on a
+  // phone, especially landscape. MOB stays reachable via expand or M-O-B.
+  const [collapsed, setCollapsed] = useState(false);
+  const touchStartY = useRef<number | null>(null);
+
+  const onTouchStart = (e: React.TouchEvent) => {
+    touchStartY.current = e.touches[0]?.clientY ?? null;
+  };
+  const onTouchEnd = (e: React.TouchEvent) => {
+    const start = touchStartY.current;
+    touchStartY.current = null;
+    const end = e.changedTouches[0]?.clientY;
+    if (start == null || end == null) return;
+    const delta = end - start;
+    if (delta < -30) setCollapsed(true);
+    if (delta > 30) setCollapsed(false);
+  };
 
   const speed = isValidSogMs(self?.sog) ? formatSpeedKnMph(self.sog) : '—';
   const cogShown = !isStale && hasFix && isValidCogRad(self?.cog) ? self.cog : null;
@@ -35,31 +55,35 @@ export function StatusBar({ activeView, onViewChange }: Props) {
   const boatName = resolveBoatName(prefs.boatName, self?.name);
 
   return (
-    <header className="statusbar">
+    <header className="statusbar" onTouchStart={onTouchStart} onTouchEnd={onTouchEnd}>
       <div className="statusbar__row statusbar__row--chrome">
         <div className="statusbar__left">
           <FixIndicator hasFix={hasFix} isStale={isStale} />
           <ClockSunTide pos={self?.position ?? FALLBACK_POS} />
         </div>
 
-        <h1 className="statusbar__nameplate">{boatName}</h1>
+        <h1 className={`statusbar__nameplate${collapsed ? ' sr-only' : ''}`}>{boatName}</h1>
 
         <div className="statusbar__right">
-          <nav className="statusbar__tabs" aria-label="View">
-            <TabButton active={activeView === 'split'} onClick={() => onViewChange('split')}>
-              Split
-            </TabButton>
-            <TabButton active={activeView === 'ais'} onClick={() => onViewChange('ais')}>
-              AIS
-            </TabButton>
-            <TabButton active={activeView === 'chart'} onClick={() => onViewChange('chart')}>
-              Chart
-            </TabButton>
-          </nav>
-          <WaypointsButton />
-          <SettingsButton />
-          <ThemeToggle />
-          <MOBButton onViewChange={onViewChange} />
+          {!collapsed && (
+            <>
+              <nav className="statusbar__tabs" aria-label="View">
+                <TabButton active={activeView === 'split'} onClick={() => onViewChange('split')}>
+                  Split
+                </TabButton>
+                <TabButton active={activeView === 'ais'} onClick={() => onViewChange('ais')}>
+                  AIS
+                </TabButton>
+                <TabButton active={activeView === 'chart'} onClick={() => onViewChange('chart')}>
+                  Chart
+                </TabButton>
+              </nav>
+              <WaypointsButton />
+              <SettingsButton />
+              <ThemeToggle />
+              <MOBButton onViewChange={onViewChange} />
+            </>
+          )}
         </div>
       </div>
 
@@ -87,6 +111,15 @@ export function StatusBar({ activeView, onViewChange }: Props) {
             </>
           }
         />
+        <button
+          type="button"
+          className="statusbar__collapse"
+          aria-expanded={!collapsed}
+          aria-label={collapsed ? 'Show controls' : 'Hide controls'}
+          onClick={() => setCollapsed((c) => !c)}
+        >
+          {collapsed ? '▾' : '▴'}
+        </button>
       </div>
     </header>
   );

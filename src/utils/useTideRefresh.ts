@@ -25,6 +25,7 @@ const FALLBACK_STATIONS: StationDef[] = [
   { id: '8413320', name: 'Bar Harbor', lat: 44.3922, lon: -68.2043 },
   { id: '8414672', name: 'Castine', lat: 44.3867, lon: -68.7967 },
   { id: '8415490', name: 'Rockland', lat: 44.105, lon: -69.1017 },
+  { id: '8414856', name: 'North Haven', lat: 44.1267, lon: -68.8733 },
 ];
 
 const NOAA = 'https://api.tidesandcurrents.noaa.gov/api/prod/datagetter';
