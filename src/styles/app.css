@@ -3273,5 +3273,7 @@ body,
   width: 48px;
   height: 5px;
   margin: 2px auto 10px;
-  background: var(--border-on-card);
+  /* Full-strength panel ink (navy on sand by day, warm red at night) — the
+     design speaks in solid ink and hard rectangles, not washed-out grays. */
+  background: var(--text-on-card);
 }
