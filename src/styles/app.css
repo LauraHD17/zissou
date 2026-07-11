@@ -96,6 +96,9 @@ body,
   height: 100%;
   background: var(--bg-navy);
   color: var(--text-primary);
+  /* No sideways panning, ever — any accidental overflow wraps or clips
+     instead of shoving controls off-screen on touch devices. */
+  overflow-x: hidden;
 }
 
 :focus-visible {
@@ -358,7 +361,12 @@ body,
   display: flex;
   align-items: center;
   gap: 12px;
-  flex-shrink: 0;
+  /* Shrinkable + wrappable at ANY viewport: a fixed-width group overflows
+     the bar on narrow screens, and on iOS that doesn't clip — it lets the
+     whole page pan sideways, pushing the MOB button off-view. */
+  flex-shrink: 1;
+  min-width: 0;
+  max-width: 100%;
   flex-wrap: wrap;
   row-gap: 6px;
 }
@@ -3022,13 +3030,18 @@ body,
   /* The right control group must WRAP inside the bar, never clip the MOB
      button off-screen (it clipped at 414px before these rules). */
   .statusbar__right {
-    flex-shrink: 1;
-    min-width: 0;
-    max-width: 100%;
     gap: 6px;
   }
   .tab {
     padding: 10px 10px;
+  }
+  /* The clock/sun/tide cluster is longer than a phone is wide — let it
+     wrap mid-cluster instead of pushing the row past the screen edge. */
+  .statusbar__almanac {
+    flex-wrap: wrap;
+    flex-shrink: 1;
+    min-width: 0;
+    row-gap: 2px;
   }
 
   /* Legends move to the bottom-left (above the scale bar) so the top-right
