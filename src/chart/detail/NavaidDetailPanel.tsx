@@ -53,7 +53,7 @@ export function NavaidDetailPanel({ feature, onClose }: Props) {
           <p className="navaid-detail__kind">
             {sounding.isEstimate
               ? 'Charted minimum depth — live tide is not available.'
-              : 'Depth under your keel at this spot.'}
+              : 'Water depth at this charted spot — where you tapped, not where your boat is.'}
           </p>
           <p className="navaid-detail__breakdown">
             {sounding.isEstimate

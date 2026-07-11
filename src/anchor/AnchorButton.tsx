@@ -8,6 +8,7 @@ import { useState } from 'react';
 import { Icon } from '../icons';
 import { SlidePanel } from '../ui/SlidePanel';
 import { acknowledgeAnchorAlarm, clearAnchor, dropAnchor, useAnchorWatch } from './anchorStore';
+import { playAnchorAlarmTone } from '../alarm/useAlarmAudio';
 import { useSelf } from '../signalk/useSignalK';
 import { isPlausiblePosition } from '../utils/geometry';
 import type { AnchorRadiusFt } from '../types/nav';
@@ -91,6 +92,13 @@ function ConfigPanel({ onClose }: { onClose: () => void }) {
         />
         <span>Play audio alarm if dragging</span>
       </label>
+      <button
+        type="button"
+        className="settings-form__secondary"
+        onClick={() => playAnchorAlarmTone()}
+      >
+        Test alarm sound
+      </button>
 
       <label className="anchor-panel__depth">
         <span>

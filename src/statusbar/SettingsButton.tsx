@@ -13,9 +13,18 @@ import {
 import { useSelf } from '../signalk/useSignalK';
 import { isPlausiblePosition } from '../utils/geometry';
 import { computeDetectedCruisingKn, useCruisingSpeedSamples } from '../prefs/cruisingSpeedStore';
+import { HelpContent } from '../help/HelpContent';
 
 export function SettingsButton() {
   const [open, setOpen] = useState(false);
+  // Settings and Help share the panel — no extra StatusBar button (space is
+  // precious on the phone) and no nested dialogs.
+  const [view, setView] = useState<'form' | 'help'>('form');
+
+  const close = () => {
+    setOpen(false);
+    setView('form');
+  };
 
   return (
     <>
@@ -23,21 +32,25 @@ export function SettingsButton() {
         type="button"
         className="statusbar__settings-toggle"
         onClick={() => setOpen(true)}
-        aria-label="Open settings"
+        aria-label="Open settings and help"
       >
         <Icon name="gear" size={20} />
       </button>
 
       {open && (
-        <SlidePanel open onClose={() => setOpen(false)} labelledBy="settings-title">
-          <SettingsForm onDone={() => setOpen(false)} />
+        <SlidePanel open onClose={close} labelledBy="settings-title">
+          {view === 'help' ? (
+            <HelpContent onBack={() => setView('form')} />
+          ) : (
+            <SettingsForm onDone={close} onHelp={() => setView('help')} />
+          )}
         </SlidePanel>
       )}
     </>
   );
 }
 
-function SettingsForm({ onDone }: { onDone: () => void }) {
+function SettingsForm({ onDone, onHelp }: { onDone: () => void; onHelp: () => void }) {
   const prefs = useUserPrefs();
   const self = useSelf();
   const samples = useCruisingSpeedSamples();
@@ -108,6 +121,10 @@ function SettingsForm({ onDone }: { onDone: () => void }) {
       <h2 id="settings-title" className="settings-form__title">
         Settings
       </h2>
+
+      <button type="button" className="settings-form__secondary" onClick={onHelp}>
+        Help — what the icons mean & how to use the app
+      </button>
 
       <section className="settings-form__section">
         <h3 className="settings-form__section-title">Identity</h3>
@@ -274,9 +291,18 @@ function SettingsForm({ onDone }: { onDone: () => void }) {
           Save
         </button>
       </div>
+
+      <p className="settings-form__hint settings-form__hint--muted">
+        App version: {BUILD_ID ? `build ${BUILD_ID.slice(0, 7)}` : 'development'}. Updates install
+        automatically when the app is opened with internet — close and reopen to apply.
+      </p>
     </form>
   );
 }
+
+// Deploy SHA baked in by the workflow — lets anyone confirm which version an
+// installed copy is running (iOS holds onto old PWA code between launches).
+const BUILD_ID = (import.meta.env.VITE_BUILD_ID as string | undefined) ?? '';
 
 function DimField({
   label,

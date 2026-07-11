@@ -5,6 +5,9 @@
 // assets can't be fetched by browsers (no CORS headers), so the deploy
 // workflow copies them into the site. On the Pi (real mode) the files sit
 // on local disk and this never appears.
+//
+// Dismissible: × hides it for this session (it returns next launch until
+// the charts are saved); the "Charts saved" confirmation auto-hides.
 
 import { useEffect, useState } from 'react';
 import { chartsCached, chartsTotalBytes, downloadCharts } from './chartCache';
@@ -12,16 +15,14 @@ import { chartsCached, chartsTotalBytes, downloadCharts } from './chartCache';
 type Phase = 'checking' | 'idle' | 'downloading' | 'done' | 'error' | 'hidden';
 
 const IS_PHONE_BUILD = import.meta.env.VITE_SIGNALK_MODE === 'geo';
-// Short commit SHA baked in by the deploy workflow — lets a user read off
-// which version their installed copy is actually running (iOS holds onto
-// old PWA code aggressively, which makes "did the update land?" guesswork).
-const BUILD_ID = (import.meta.env.VITE_BUILD_ID as string | undefined) ?? '';
+const DONE_AUTOHIDE_MS = 6_000;
 
 export function ChartDownloadPill() {
   const [phase, setPhase] = useState<Phase>('checking');
   const [fraction, setFraction] = useState<number | null>(null);
   const [totalMb, setTotalMb] = useState<number | null>(null);
   const [errorDetail, setErrorDetail] = useState<string | null>(null);
+  const [dismissed, setDismissed] = useState(false);
 
   useEffect(() => {
     if (!IS_PHONE_BUILD || typeof caches === 'undefined') {
@@ -45,7 +46,14 @@ export function ChartDownloadPill() {
     };
   }, []);
 
-  if (phase === 'hidden' || phase === 'checking') return null;
+  // The success confirmation doesn't need to hog chart space forever.
+  useEffect(() => {
+    if (phase !== 'done') return;
+    const id = setTimeout(() => setPhase('hidden'), DONE_AUTOHIDE_MS);
+    return () => clearTimeout(id);
+  }, [phase]);
+
+  if (dismissed || phase === 'hidden' || phase === 'checking') return null;
 
   const start = async () => {
     setPhase('downloading');
@@ -60,6 +68,14 @@ export function ChartDownloadPill() {
 
   return (
     <div className="chart-download" role="status">
+      <button
+        type="button"
+        className="pill-dismiss"
+        aria-label="Hide chart download message"
+        onClick={() => setDismissed(true)}
+      >
+        ×
+      </button>
       {phase === 'idle' && (
         <>
           <span className="chart-download__text">
@@ -92,7 +108,6 @@ export function ChartDownloadPill() {
           </button>
         </>
       )}
-      {BUILD_ID && <span className="chart-download__detail">build {BUILD_ID.slice(0, 7)}</span>}
     </div>
   );
 }

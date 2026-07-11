@@ -327,7 +327,9 @@ body,
   display: flex;
   flex-direction: column;
   gap: 6px;
-  padding: 8px 14px;
+  /* Safe-area insets are 0 everywhere except notched phones. */
+  padding: calc(8px + env(safe-area-inset-top, 0px)) calc(14px + env(safe-area-inset-right, 0px))
+    8px calc(14px + env(safe-area-inset-left, 0px));
   background: var(--bg-navy);
   border-bottom: 1px solid var(--border-on-navy);
 }
@@ -2956,14 +2958,14 @@ body,
    Bottom-left so it never covers the StatusBar or the chart controls. */
 .chart-download {
   position: fixed;
-  bottom: 16px;
-  left: 16px;
+  bottom: calc(16px + env(safe-area-inset-bottom, 0px));
+  left: calc(16px + env(safe-area-inset-left, 0px));
   z-index: 40;
   display: flex;
   flex-direction: column;
   gap: 8px;
   max-width: 320px;
-  padding: 12px 14px;
+  padding: 12px 44px 12px 14px; /* right pad reserves room for the 44×44 × */
   background: rgba(20, 32, 56, 0.95);
   color: var(--text-primary);
   border: 1px solid var(--alert-amber);
@@ -2992,4 +2994,162 @@ body,
   font-size: 12px;
   color: var(--text-dim);
   word-break: break-word;
+}
+
+/* ── Phone layout — portrait handhelds (iPhone in the cockpit) ──────────
+   The base layout targets a 1024×600 landscape kiosk screen. Under 700px
+   the split view stacks vertically (AIS list above, chart below), the
+   StatusBar tightens, and edge-anchored overlays respect the notch/home
+   indicator via safe-area insets. */
+@media (max-width: 700px) {
+  .statusbar {
+    padding: calc(6px + env(safe-area-inset-top, 0px)) calc(10px + env(safe-area-inset-right, 0px))
+      6px calc(10px + env(safe-area-inset-left, 0px));
+    gap: 4px;
+  }
+
+  .statusbar__row,
+  .statusbar__left,
+  .statusbar__right {
+    gap: 8px;
+    row-gap: 6px;
+  }
+
+  .statusbar__row--metrics {
+    gap: 8px 18px;
+  }
+
+  /* The right control group must WRAP inside the bar, never clip the MOB
+     button off-screen (it clipped at 414px before these rules). */
+  .statusbar__right {
+    flex-shrink: 1;
+    min-width: 0;
+    max-width: 100%;
+    gap: 6px;
+  }
+  .tab {
+    padding: 10px 10px;
+  }
+
+  /* Legends move to the bottom-left (above the scale bar) so the top-right
+     pills have the top of the chart to themselves; in the cramped stacked
+     split view, only the safety-critical DEPTH key stays. */
+  .chart-legend-stack {
+    top: auto;
+    bottom: calc(52px + env(safe-area-inset-bottom, 0px));
+  }
+  .app__main--split .sounding-legend,
+  .app__main--split .navaid-legend {
+    display: none;
+  }
+
+  /* Stacked split: AIS panel on top, chart fills the rest. */
+  .app__main--split {
+    flex-direction: column;
+  }
+  .app__main--split .ais-column {
+    width: 100%;
+    min-width: 0;
+    max-width: none;
+    flex: 0 0 38%;
+    border-right: none;
+    border-bottom: 1px solid var(--border-on-navy);
+  }
+
+  .app__main--ais .ais-column {
+    max-width: none;
+  }
+
+  /* Edge-anchored chart overlays: hug the narrower viewport and stay clear
+     of the home indicator. */
+  .chart-overlay-stack {
+    right: 68px;
+    max-width: calc(100vw - 92px);
+  }
+  .destination-widget {
+    right: 68px;
+    max-width: calc(100vw - 92px);
+    white-space: normal;
+  }
+  .map-scalebar {
+    bottom: calc(12px + env(safe-area-inset-bottom, 0px));
+  }
+  .chart-download {
+    left: calc(12px + env(safe-area-inset-left, 0px));
+    right: calc(12px + env(safe-area-inset-right, 0px));
+    bottom: calc(12px + env(safe-area-inset-bottom, 0px));
+    max-width: none;
+  }
+}
+
+/* ── Phone landscape — wide but SHORT (e.g. iPhone on its side, ~414px
+   tall). Side-by-side split stays (it's the kiosk layout); the chrome
+   slims down so the chart keeps most of the height. */
+@media (max-height: 500px) {
+  .statusbar {
+    gap: 2px;
+    padding-top: calc(4px + env(safe-area-inset-top, 0px));
+    padding-bottom: 4px;
+  }
+  .statusbar__row--metrics {
+    padding-top: 3px;
+    gap: 4px 20px;
+  }
+  .statusbar__metric-value {
+    font-size: 16px;
+  }
+  .tab {
+    padding: 8px 12px;
+  }
+  /* Short viewport: reference legends yield to the chart. */
+  .sounding-legend,
+  .navaid-legend {
+    display: none;
+  }
+}
+
+/* ── Help view (inside the Settings panel) ── */
+.help__row {
+  display: block;
+  font-family: var(--font-sans);
+  font-size: 14px;
+  line-height: 1.45;
+  color: var(--text-on-card);
+  margin: 0 0 10px;
+}
+
+.help__icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  vertical-align: -4px;
+  width: 24px;
+  height: 24px;
+  color: var(--text-on-card);
+}
+
+.help__icon--hazard {
+  color: var(--alert-red);
+}
+
+.help__swatch {
+  display: inline-block;
+  width: 14px;
+  height: 14px;
+  margin-right: 6px;
+  vertical-align: -2px;
+  border: 1px solid var(--bg-navy);
+}
+
+.help__swatch--ownship {
+  background: var(--boat-icon);
+}
+
+.help__swatch--shallow {
+  background: linear-gradient(
+    to right,
+    var(--depth-shallow) 33%,
+    var(--depth-mid) 33% 66%,
+    var(--depth-deep) 66%
+  );
 }

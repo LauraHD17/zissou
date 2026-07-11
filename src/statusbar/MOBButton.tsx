@@ -16,6 +16,7 @@ import { SlidePanel } from '../ui/SlidePanel';
 import { activateMOB, clearMOB, useMOB } from '../mob/mobStore';
 import { clearRoute, readRoute, replaceRouteWithSingle } from '../waypoints/routeStore';
 import { playMobConfirmTone, playMobActivePulse } from '../alarm/useAlarmAudio';
+import { clearAlarm, raiseAlarm, readActiveAlarm } from '../alarm/alarmStore';
 import type { ViewMode } from './StatusBar';
 
 interface Props {
@@ -79,6 +80,12 @@ export function MOBButton({ onViewChange }: Props) {
       position: pos,
       label: 'MOB',
     });
+    // Raise the banner alarm too — marker + tones alone are missable; the
+    // flashing banner follows the standard episode/acknowledge semantics.
+    raiseAlarm({
+      kind: 'mob',
+      message: 'MAN OVERBOARD — position marked. Steer to the MOB pin on the chart.',
+    });
     playMobConfirmTone();
     onViewChange('chart');
     setConfirmOpen(false);
@@ -86,6 +93,9 @@ export function MOBButton({ onViewChange }: Props) {
 
   const onClear = () => {
     clearMOB();
+    // Clear only our own alarm kind — single-slot store shared with the
+    // anchor/hazard/drying watches.
+    if (readActiveAlarm()?.kind === 'mob') clearAlarm();
     // Clear the route only if it was still the MOB route — operator may have
     // set a new destination mid-emergency and we don't want to stomp it.
     const r = readRoute();
