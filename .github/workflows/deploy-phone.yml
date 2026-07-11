@@ -1,0 +1,58 @@
+# Builds the PHONE variant (real GPS via browser geolocation, no mock data,
+# offline PWA) and deploys it to GitHub Pages.
+#
+# One-time repo setup (see docs/phone-test.md for the full walkthrough):
+#   1. Settings → Pages → Source: "GitHub Actions"
+#   2. Upload the chart files once as release assets:
+#        gh release create charts-v1 public/charts/maine.pmtiles \
+#          public/charts/maine-base.pmtiles -t "Chart files (NOAA-derived)"
+name: Deploy phone build
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npm test
+      - run: npm run typecheck
+      - run: npm run lint
+      - name: Build (geo mode, charts from release assets)
+        run: npm run build
+        env:
+          VITE_SIGNALK_MODE: geo
+          VITE_BASE: /${{ github.event.repository.name }}/
+          VITE_CHARTS_BASE: https://github.com/${{ github.repository }}/releases/download/charts-v1
+      # Chart files ship as release assets — never as Pages files (size caps).
+      - run: rm -rf dist/charts
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: dist
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4

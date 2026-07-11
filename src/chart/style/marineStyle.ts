@@ -16,16 +16,21 @@ import type {
   LayerSpecification,
   Map as MapLibreMap,
 } from 'maplibre-gl';
+import { pmtilesUrl } from './chartUrls';
 
 // NOAA chart data served as a single PMTiles file from our public/ dir.
 // Built by scripts/build-charts.sh. If missing, the NOAA source fails
 // silently and only the offline base tiles render.
 // To switch regions, regenerate with the desired bundle and update this URL.
-const NOAA_PMTILES_URL = 'pmtiles:///charts/maine.pmtiles';
+const NOAA_PMTILES_URL = pmtilesUrl('maine.pmtiles');
 
 // Read a CSS custom property off :root (falls back to the provided default if
 // the var is unset or we're running in a non-DOM environment like SSR/tests).
-function cssVar(name: string, fallback: string): string {
+// Exported for marker modules (heading vector, go-to route, anchor circle)
+// so MapLibre paint — which can't read CSS vars natively — stays on tokens.
+// NOTE: values are read at layer-ADD time; a theme flip doesn't repaint
+// already-added layers (night mode's <main> brightness filter dims them).
+export function cssVar(name: string, fallback: string): string {
   if (typeof document === 'undefined') return fallback;
   const value = getComputedStyle(document.documentElement).getPropertyValue(name).trim();
   return value || fallback;
@@ -45,10 +50,10 @@ const COLORS = {
   depthShallow: cssVar('--depth-shallow', '#FF3B1A'), // < 1.83m (6ft)
   depthModerate: cssVar('--depth-mid', '#FFD700'), // 1.83 – 6.10m (6–20ft)
   depthDeep: cssVar('--depth-deep', '#6FECB0'), // > 6.10m (20ft+)
-  // Marine features
-  buoy: '#E8B84D',
-  buoyOutline: '#142038',
-  wreck: '#A02418',
+  // Marine features — sourced from tokens like the depth colors above.
+  buoy: cssVar('--alert-amber', '#E8B84D'),
+  buoyOutline: cssVar('--bg-navy', '#142038'),
+  wreck: cssVar('--alert-red', '#8B1E12'),
 };
 
 export const DEPTH_BREAK_SHALLOW_M = 1.83; // meters (6 ft) — VALDCO breakpoint

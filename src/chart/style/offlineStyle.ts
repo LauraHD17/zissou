@@ -20,9 +20,10 @@
 // throws silently — the map still renders with whatever IS available.
 
 import type { StyleSpecification } from 'maplibre-gl';
+import { pmtilesUrl } from './chartUrls';
 
-const NOAA_OVERLAY_URL = 'pmtiles:///charts/maine.pmtiles';
-const NOAA_BASE_URL = 'pmtiles:///charts/maine-base.pmtiles';
+const NOAA_OVERLAY_URL = pmtilesUrl('maine.pmtiles');
+const NOAA_BASE_URL = pmtilesUrl('maine-base.pmtiles');
 
 // Glyph URL template — {fontstack} is the font family name, {range} is the
 // 256-char unicode block (e.g. "0-255", "256-511"). Served from public/fonts
