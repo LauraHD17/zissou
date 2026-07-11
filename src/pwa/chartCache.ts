@@ -155,6 +155,18 @@ export async function downloadCharts(onProgress: (p: DownloadProgress) => void):
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       if (!res.body) throw new Error('empty response body');
 
+      // Size verification is only meaningful when the transfer is NOT
+      // compressed: with content-encoding (GitHub Pages gzips these), the
+      // declared length counts compressed bytes while we receive
+      // decompressed ones. Compressed transfers are self-verifying — a
+      // truncated gzip stream fails in the browser's decoder.
+      const encoding = (res.headers.get('content-encoding') ?? '').toLowerCase();
+      const declared = Number(res.headers.get('content-length'));
+      const expectedBytes =
+        (!encoding || encoding === 'identity') && Number.isFinite(declared) && declared > 0
+          ? declared
+          : undefined;
+
       const reader = res.body.getReader();
       let pending: Uint8Array[] = [];
       let pendingBytes = 0;
@@ -206,7 +218,7 @@ export async function downloadCharts(onProgress: (p: DownloadProgress) => void):
       // Redundancy: verify size + PMTiles magic BEFORE writing the meta
       // record — meta's presence is the "download is complete and valid"
       // marker, so bad data can never look finished.
-      await verifyChart(cache, url, fileBytes, sizes?.get(f));
+      await verifyChart(cache, url, fileBytes, expectedBytes);
 
       const meta: ChartMeta = { size: fileBytes, chunkBytes: CHUNK_BYTES, chunks: chunkIndex };
       await cache.put(

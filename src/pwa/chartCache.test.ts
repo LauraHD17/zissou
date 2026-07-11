@@ -94,6 +94,15 @@ describe('downloadCharts', () => {
   });
 
   it('rejects a truncated download (stream ended early without error)', async () => {
+    // Response-like object so the declared content-length can disagree with
+    // the delivered body (real Response recomputes it for byte bodies).
+    const shortBody = (data: Uint8Array) =>
+      new ReadableStream<Uint8Array>({
+        start(controller) {
+          controller.enqueue(data.slice(0, data.byteLength - 100));
+          controller.close();
+        },
+      });
     (fetch as ReturnType<typeof vi.fn>).mockImplementation(
       async (input: RequestInfo | URL, init?: RequestInit) => {
         const url = String(input);
@@ -104,12 +113,50 @@ describe('downloadCharts', () => {
             headers: { 'content-length': String(data.byteLength) },
           });
         }
-        // Body delivers 100 bytes fewer than the declared length.
-        return new Response(data.slice(0, data.byteLength - 100), { status: 200 });
+        return {
+          ok: true,
+          status: 200,
+          headers: new Headers({ 'content-length': String(data.byteLength) }),
+          body: shortBody(data),
+        } as unknown as Response;
       },
     );
     await expect(downloadCharts(() => {})).rejects.toThrow(/truncated download/);
     expect(await chartsCached()).toBe(false);
+  });
+
+  it('accepts a compressed transfer whose declared length is the COMPRESSED size', async () => {
+    // Regression: GitHub Pages gzips chart transfers, so content-length
+    // (compressed) is smaller than the decompressed byte count — that must
+    // not be reported as truncation. The gzip decoder guards integrity.
+    (fetch as ReturnType<typeof vi.fn>).mockImplementation(
+      async (input: RequestInfo | URL, init?: RequestInit) => {
+        const url = String(input);
+        const data = url.includes('maine-base') ? smallData : bigData;
+        if (init?.method === 'HEAD') {
+          return new Response(null, {
+            status: 200,
+            headers: { 'content-length': String(Math.floor(data.byteLength * 0.8)) },
+          });
+        }
+        return {
+          ok: true,
+          status: 200,
+          headers: new Headers({
+            'content-length': String(Math.floor(data.byteLength * 0.8)),
+            'content-encoding': 'gzip',
+          }),
+          body: new ReadableStream<Uint8Array>({
+            start(controller) {
+              controller.enqueue(data.slice());
+              controller.close();
+            },
+          }),
+        } as unknown as Response;
+      },
+    );
+    await downloadCharts(() => {});
+    expect(await chartsCached()).toBe(true);
   });
 
   it('rejects a captive-portal HTML page masquerading as a chart', async () => {
