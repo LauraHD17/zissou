@@ -223,9 +223,7 @@ function distSq(a: { lat: number; lon: number }, b: { lat: number; lon: number }
 export function nearestStation(pos: Position | undefined): PreparedStation | null {
   const data = cache;
   if (!data || data.stations.length === 0) return null;
-  const target = pos
-    ? { lat: pos.latitude, lon: pos.longitude }
-    : FALLBACK_STATION;
+  const target = pos ? { lat: pos.latitude, lon: pos.longitude } : FALLBACK_STATION;
   let best = data.stations[0];
   let bestD = distSq(target, best);
   for (let i = 1; i < data.stations.length; i++) {

@@ -66,7 +66,10 @@ function ingest(delta: SignalKDelta) {
 
     for (const { path, value } of update.values) {
       if (!path || UNSAFE_PATH_KEYS.has(path)) continue;
-      if (Object.hasOwn(next.paths, path) || Object.keys(next.paths).length < MAX_PATHS_PER_VESSEL) {
+      if (
+        Object.hasOwn(next.paths, path) ||
+        Object.keys(next.paths).length < MAX_PATHS_PER_VESSEL
+      ) {
         next.paths[path] = value;
       }
       applyDerivedField(next, path, value);

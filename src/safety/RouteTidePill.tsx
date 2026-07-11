@@ -14,9 +14,8 @@ export function RouteTidePill({ mapRef }: Props) {
   const route = useActiveRoute();
   if (!alert || alert.severity === 'clear') return null;
 
-  const destWp = route && route.waypoints.length > 0
-    ? route.waypoints[route.waypoints.length - 1]
-    : null;
+  const destWp =
+    route && route.waypoints.length > 0 ? route.waypoints[route.waypoints.length - 1] : null;
   const { minEffectiveFt, requiredFt, severity, safeUntil, nextSafeFrom } = alert;
 
   let headline: string;
@@ -34,9 +33,10 @@ export function RouteTidePill({ mapRef }: Props) {
 
   // Dismiss is per-route (scoped to the destination fingerprint + createdAt)
   // so setting a new route clears the dismissed state.
-  const dismissKey = destWp && route
-    ? `route-tide:${route.createdAt}:${destWp.position.latitude.toFixed(4)}:${destWp.position.longitude.toFixed(4)}`
-    : 'route-tide:none';
+  const dismissKey =
+    destWp && route
+      ? `route-tide:${route.createdAt}:${destWp.position.latitude.toFixed(4)}:${destWp.position.longitude.toFixed(4)}`
+      : 'route-tide:none';
 
   return (
     <OverlayPill

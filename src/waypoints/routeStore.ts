@@ -108,5 +108,3 @@ function pushLastToRecents(route: ActiveRoute): void {
   if (!last) return;
   pushRecent({ position: last.position, label: last.label, setAt: last.setAt });
 }
-
-

@@ -22,11 +22,9 @@ export const ICON_PATHS = {
   // Sun half above horizon + down arrow.
   sunset: 'M 2 18 h 20 M 7 18 a 5 5 0 0 1 10 0 M 12 3 v 5 M 9.5 5.5 L 12 8 L 14.5 5.5',
   // One three-crowned wave (left) + separate ↗ NE-diagonal arrow (right).
-  tideRising:
-    'M 2 17 q 1.67 -3 3.33 0 t 3.33 0 t 3.33 0 M 14 17 L 22 7 M 22 12 L 22 7 L 17 7',
+  tideRising: 'M 2 17 q 1.67 -3 3.33 0 t 3.33 0 t 3.33 0 M 14 17 L 22 7 M 22 12 L 22 7 L 17 7',
   // One three-crowned wave (left) + separate ↘ SE-diagonal arrow (right).
-  tideFalling:
-    'M 2 17 q 1.67 -3 3.33 0 t 3.33 0 t 3.33 0 M 14 7 L 22 17 M 22 12 L 22 17 L 17 17',
+  tideFalling: 'M 2 17 q 1.67 -3 3.33 0 t 3.33 0 t 3.33 0 M 14 7 L 22 17 M 22 12 L 22 17 L 17 17',
 
   // ── Theme toggle (day / night) ─────────────────────────────────────
   // Sun: filled-look circle with 8 short rays (rendered as stroke).
@@ -77,8 +75,7 @@ export const ICON_PATHS = {
   // chevrons beneath. Reads as "stack of sheets" / map layers. Distinct
   // from the wave icon (wavy horizontals) and marina glyphs. Used to
   // open the chart-layers panel.
-  layers:
-    'M 12 3 L 21 9 L 12 15 L 3 9 Z M 3 13 L 12 19 L 21 13 M 3 17 L 12 21 L 21 17',
+  layers: 'M 12 3 L 21 9 L 12 15 L 3 9 Z M 3 13 L 12 19 L 21 13 M 3 17 L 12 21 L 21 17',
 
   // ── Hazard waypoint ────────────────────────────────────────────────
   // Bold standalone "!" — tapered bar over a disc. Designed as a closed
@@ -86,8 +83,7 @@ export const ICON_PATHS = {
   // per the waypoint-marker style override. No surrounding triangle —
   // the color combo does the "watch out" signaling without geometry
   // that could be confused with the own-ship triangle.
-  hazard:
-    'M 9.5 3 L 14.5 3 L 13 15 L 11 15 Z M 12 19 m -2 0 a 2 2 0 1 0 4 0 a 2 2 0 1 0 -4 0',
+  hazard: 'M 9.5 3 L 14.5 3 L 13 15 L 11 15 Z M 12 19 m -2 0 a 2 2 0 1 0 4 0 a 2 2 0 1 0 -4 0',
 } as const;
 
 export type IconName = keyof typeof ICON_PATHS;

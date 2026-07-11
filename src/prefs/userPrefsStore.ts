@@ -94,10 +94,7 @@ export function setWeatherLimits(patch: Partial<WeatherLimits>) {
   store.update((p) => ({ ...p, weatherLimits: { ...p.weatherLimits, ...patch } }));
 }
 
-export function setChartLayerVisible(
-  layer: keyof ChartLayerPrefs,
-  visible: boolean,
-) {
+export function setChartLayerVisible(layer: keyof ChartLayerPrefs, visible: boolean) {
   store.update((p) => ({
     ...p,
     chartLayers: { ...p.chartLayers, [layer]: visible },

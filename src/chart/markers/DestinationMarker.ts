@@ -31,9 +31,7 @@ export function useDestinationMarker(
 ) {
   const route = useActiveRoute();
   const dest =
-    route && route.waypoints.length > 0
-      ? route.waypoints[route.waypoints.length - 1]
-      : null;
+    route && route.waypoints.length > 0 ? route.waypoints[route.waypoints.length - 1] : null;
   const lat = dest?.position.latitude ?? null;
   const lon = dest?.position.longitude ?? null;
   const source = route?.source ?? 'drop-pin';

@@ -118,7 +118,7 @@ const GLYPHS = {
     <path d="M15 5 L5 15" stroke="${p.special}" stroke-width="3" stroke-linecap="round"/>
     <circle cx="10" cy="10" r="2" fill="${p.special}" stroke="${p.navy}" stroke-width="0.8"/>
   `,
-  'light': (p) => `
+  light: (p) => `
     <g stroke="${p.lightGlow}" stroke-width="1.5" stroke-linecap="round">
       <path d="M10 2 L10 18"/>
       <path d="M2 10 L18 10"/>
@@ -127,14 +127,14 @@ const GLYPHS = {
     </g>
     <circle cx="10" cy="10" r="2" fill="${p.lightGlow}" stroke="${p.navy}" stroke-width="0.6"/>
   `,
-  'wreck': (p) => `
+  wreck: (p) => `
     <path d="M4 4 L16 16" stroke="${p.wreck}" stroke-width="2.2" stroke-linecap="round"/>
     <path d="M16 4 L4 16" stroke="${p.wreck}" stroke-width="2.2" stroke-linecap="round"/>
     <circle cx="6" cy="6" r="1.1" fill="${p.wreck}"/>
     <circle cx="14" cy="6" r="1.1" fill="${p.wreck}"/>
     <path d="M3 16 Q6 17 9 16 T15 16" stroke="${p.wreck}" stroke-width="0.8" fill="none" opacity="0.7"/>
   `,
-  'obstruction': (p) => `
+  obstruction: (p) => `
     <circle cx="10" cy="10" r="6" fill="none" stroke="${p.wreck}" stroke-width="1.5"/>
     <path d="M5.5 5.5 L14.5 14.5" stroke="${p.wreck}" stroke-width="1"/>
     <path d="M14.5 5.5 L5.5 14.5" stroke="${p.wreck}" stroke-width="1"/>

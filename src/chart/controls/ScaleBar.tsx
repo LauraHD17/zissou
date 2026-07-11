@@ -17,10 +17,7 @@ export function ScaleBar({ mapRef }: { mapRef: RefObject<maplibregl.Map | null> 
   const scale = useScale(mapRef);
   if (!scale) return null;
   return (
-    <div
-      className="map-scalebar"
-      aria-label={`Map scale ${scale.label}, ${scale.zoomLabel} view`}
-    >
+    <div className="map-scalebar" aria-label={`Map scale ${scale.label}, ${scale.zoomLabel} view`}>
       <span className="map-scalebar__zoom">{scale.zoomLabel}</span>
       <div className="map-scalebar__line" style={{ width: `${scale.widthPx}px` }}>
         <span className="map-scalebar__tick map-scalebar__tick--left" aria-hidden="true" />

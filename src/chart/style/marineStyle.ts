@@ -80,7 +80,6 @@ export function applyMarineStyle(map: MapLibreMap): void {
   // preference.
 }
 
-
 // ── NOAA ENC layers (depth contours, buoys, lights, wrecks, etc.) ─────
 
 const DEPTH_COLOR_EXPRESSION: DataDrivenPropertyValueSpecification<string> =
@@ -202,18 +201,18 @@ function addNoaaChartLayers(map: MapLibreMap): void {
   // We coalesce the attribute names so either build config works; if neither
   // is present (Z-only), no label renders — rebuild charts with the config
   // flag added in scripts/build-charts.sh.
-  const soundingDepthM = ['coalesce', ['get', 'VALSOU'], ['get', 'DEPTH']] as unknown as ExpressionSpecification;
+  const soundingDepthM = [
+    'coalesce',
+    ['get', 'VALSOU'],
+    ['get', 'DEPTH'],
+  ] as unknown as ExpressionSpecification;
   addLayerIfMissing(map, {
     id: 'noaa-soundg-label',
     type: 'symbol',
     source: 'noaa',
     'source-layer': 'soundg',
     minzoom: 12,
-    filter: [
-      'any',
-      ['has', 'VALSOU'],
-      ['has', 'DEPTH'],
-    ],
+    filter: ['any', ['has', 'VALSOU'], ['has', 'DEPTH']],
     layout: {
       // Numbers on the chart show depth RIGHT NOW (charted low-tide value
       // plus current tide height, rounded to feet). useTideAwareContours
@@ -497,4 +496,3 @@ function addLayerIfMissing(map: MapLibreMap, layer: LayerSpecification): void {
     // Source-layer missing from PMTiles (e.g. a region with no wrecks) is fine.
   }
 }
-

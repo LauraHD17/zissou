@@ -12,12 +12,7 @@
 // window, which is the only signal the operator needs.
 
 import { useEffect } from 'react';
-import {
-  loadTides,
-  readLoadedTides,
-  writeTidesToIdb,
-  type TidePayload,
-} from './tides';
+import { loadTides, readLoadedTides, writeTidesToIdb, type TidePayload } from './tides';
 
 interface StationDef {
   id: string;

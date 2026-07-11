@@ -29,9 +29,7 @@ const SPRITE_BASE: Record<Theme, string> = {
   night: '/sprites/navaid-night',
 };
 
-export function useNavaidSpriteTheme(
-  mapRef: RefObject<maplibregl.Map | null>,
-): void {
+export function useNavaidSpriteTheme(mapRef: RefObject<maplibregl.Map | null>): void {
   const theme = useResolvedTheme();
 
   useEffect(() => {
@@ -82,17 +80,7 @@ export function useNavaidSpriteTheme(
         canvas.height = meta.height;
         const ctx = canvas.getContext('2d');
         if (!ctx) continue;
-        ctx.drawImage(
-          img,
-          meta.x,
-          meta.y,
-          meta.width,
-          meta.height,
-          0,
-          0,
-          meta.width,
-          meta.height,
-        );
+        ctx.drawImage(img, meta.x, meta.y, meta.width, meta.height, 0, 0, meta.width, meta.height);
         const data = ctx.getImageData(0, 0, meta.width, meta.height);
         if (map.hasImage(name)) map.removeImage(name);
         map.addImage(

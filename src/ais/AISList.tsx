@@ -8,11 +8,7 @@ import { useWaypoints } from '../waypoints/waypointStore';
 import { useNowMs } from '../utils/clock';
 import { haversineNm, isPlausiblePosition } from '../utils/geometry';
 import { buildHazardNarrative, buildVesselNarrative } from '../utils/narrative';
-import {
-  computeHazardThreatBand,
-  computeThreatBand,
-  type ThreatBand,
-} from '../utils/threat';
+import { computeHazardThreatBand, computeThreatBand, type ThreatBand } from '../utils/threat';
 
 type FilterMode = 'all' | 'active';
 
@@ -173,12 +169,7 @@ function HazardRowView({ row }: { row: HazardRow }) {
     <li className={classes}>
       {threatBand !== 'monitor' && <ThreatPill band={threatBand} />}
       <div className="ais-row__name ais-row__name--hazard">
-        <Icon
-          name="hazard"
-          size={20}
-          className="ais-row__hazard-glyph"
-          title="Hazard waypoint"
-        />
+        <Icon name="hazard" size={20} className="ais-row__hazard-glyph" title="Hazard waypoint" />
         <span>{waypoint.label || 'Hazard'}</span>
       </div>
       <div className="ais-row__location">{narrative.location}</div>

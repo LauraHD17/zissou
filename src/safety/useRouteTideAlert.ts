@@ -205,4 +205,3 @@ function extractCoords(g: GeoJSON.Geometry | null): [number, number][] | null {
   if (g.type === 'MultiLineString') return (g.coordinates as [number, number][][]).flat();
   return null;
 }
-

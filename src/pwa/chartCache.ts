@@ -54,9 +54,7 @@ export interface DownloadProgress {
  * full success. Already-cached files are skipped, so a failed run resumes
  * at the file level on retry.
  */
-export async function downloadCharts(
-  onProgress: (p: DownloadProgress) => void,
-): Promise<boolean> {
+export async function downloadCharts(onProgress: (p: DownloadProgress) => void): Promise<boolean> {
   if (!cacheApiAvailable()) return false;
   const cache = await caches.open(CHART_CACHE_NAME);
   const total = await chartsTotalBytes();
@@ -85,7 +83,10 @@ export async function downloadCharts(
       const { done, value } = await reader.read();
       if (done) break;
       received += value.byteLength;
-      onProgress({ fraction: total ? Math.min(1, received / total) : null, receivedBytes: received });
+      onProgress({
+        fraction: total ? Math.min(1, received / total) : null,
+        receivedBytes: received,
+      });
     }
 
     try {

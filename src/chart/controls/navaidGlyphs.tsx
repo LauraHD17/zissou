@@ -43,7 +43,15 @@ function Glyph({
 // is transparent to this file.
 export const LateralPortGlyph: FC<GlyphProps> = (props) => (
   <Glyph {...props}>
-    <rect x="6" y="4" width="8" height="10" fill="var(--navaid-port)" stroke="var(--bg-navy)" strokeWidth="1" />
+    <rect
+      x="6"
+      y="4"
+      width="8"
+      height="10"
+      fill="var(--navaid-port)"
+      stroke="var(--bg-navy)"
+      strokeWidth="1"
+    />
     <path d="M4 16 L16 16" stroke="var(--bg-navy)" strokeWidth="1.5" />
   </Glyph>
 );
@@ -62,7 +70,14 @@ export const LateralStarboardGlyph: FC<GlyphProps> = (props) => (
 
 export const SafeWaterGlyph: FC<GlyphProps> = (props) => (
   <Glyph {...props}>
-    <circle cx="10" cy="10" r="6" fill="var(--surface-sand)" stroke="var(--bg-navy)" strokeWidth="1" />
+    <circle
+      cx="10"
+      cy="10"
+      r="6"
+      fill="var(--surface-sand)"
+      stroke="var(--bg-navy)"
+      strokeWidth="1"
+    />
     <rect x="9" y="4" width="2" height="12" fill="var(--navaid-safe-water)" />
   </Glyph>
 );

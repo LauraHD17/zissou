@@ -92,8 +92,7 @@ export function MarineKeypad({
   }, [open]);
 
   const atWordStart = value.length === 0 || value.endsWith(' ');
-  const uppercase =
-    mode === 'alpha' && (shift === 'on' || (shift === 'auto' && atWordStart));
+  const uppercase = mode === 'alpha' && (shift === 'on' || (shift === 'auto' && atWordStart));
 
   const insert = useCallback(
     (ch: string) => {
@@ -197,9 +196,7 @@ export function MarineKeypad({
           shift={shift}
           onInsert={insert}
           onBackspace={backspace}
-          onShift={() =>
-            setShift((s) => (s === 'auto' ? 'on' : s === 'on' ? 'off' : 'auto'))
-          }
+          onShift={() => setShift((s) => (s === 'auto' ? 'on' : s === 'on' ? 'off' : 'auto'))}
           onPointerDown={keyDown}
         />
       ) : (
@@ -271,9 +268,11 @@ function AlphaGrid({
   onPointerDown,
 }: AlphaGridProps) {
   const shiftLabel =
-    shift === 'on' ? 'Shift on, next letter uppercase' :
-    shift === 'off' ? 'Shift off, letters lowercase' :
-    'Shift automatic';
+    shift === 'on'
+      ? 'Shift on, next letter uppercase'
+      : shift === 'off'
+        ? 'Shift off, letters lowercase'
+        : 'Shift automatic';
 
   return (
     <div className="marine-keypad__grid">

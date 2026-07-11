@@ -118,7 +118,7 @@ export function isHeadingTowardHazard(self: Vessel | undefined, hazardPos: Posit
 
 function angleDeltaRad(a: number, b: number): number {
   const twoPi = 2 * Math.PI;
-  let d = ((a - b) % twoPi + twoPi) % twoPi;
+  let d = (((a - b) % twoPi) + twoPi) % twoPi;
   if (d > Math.PI) d -= twoPi;
   return d;
 }

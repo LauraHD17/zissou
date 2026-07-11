@@ -70,10 +70,7 @@ async function buildTheme(themeName, outName) {
     mkdirSync(outDir, { recursive: true });
     const suffix = pixelRatio === 2 ? '@2x' : '';
     writeFileSync(join(outDir, `${outName}${suffix}.png`), atlas);
-    writeFileSync(
-      join(outDir, `${outName}${suffix}.json`),
-      JSON.stringify(manifest, null, 2),
-    );
+    writeFileSync(join(outDir, `${outName}${suffix}.json`), JSON.stringify(manifest, null, 2));
     console.log(
       `[navaid-sprites] ${outName}${suffix}: ${files.length} icons @ ${size}px → ${size}×${atlasHeight}`,
     );

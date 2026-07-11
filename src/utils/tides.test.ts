@@ -108,9 +108,9 @@ describe('with NOAA fixture loaded', () => {
     });
 
     it('rises just after a low', () => {
-      expect(
-        tideTrend(new Date(t0 + 6 * 60 * 60 * 1000 + 30 * 60 * 1000), pos).direction,
-      ).toBe('rising');
+      expect(tideTrend(new Date(t0 + 6 * 60 * 60 * 1000 + 30 * 60 * 1000), pos).direction).toBe(
+        'rising',
+      );
     });
   });
 

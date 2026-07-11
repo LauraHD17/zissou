@@ -66,7 +66,12 @@ afterEach(() => {
 
 describe('hazard-proximity alarm while underway (no anchor watch set)', () => {
   it('raises when within alarm range of a hazard and SURVIVES the 1 Hz ticks', () => {
-    addWaypoint({ lat: north(100).latitude, lon: BASE.longitude, label: 'Ledge', category: 'hazard' });
+    addWaypoint({
+      lat: north(100).latitude,
+      lon: BASE.longitude,
+      label: 'Ledge',
+      category: 'hazard',
+    });
     render(<Harness />);
 
     expect(readActiveAlarm()?.kind).toBe('hazard-proximity');
@@ -77,7 +82,12 @@ describe('hazard-proximity alarm while underway (no anchor watch set)', () => {
   });
 
   it('acknowledge sticks while the condition persists', () => {
-    addWaypoint({ lat: north(100).latitude, lon: BASE.longitude, label: 'Ledge', category: 'hazard' });
+    addWaypoint({
+      lat: north(100).latitude,
+      lon: BASE.longitude,
+      label: 'Ledge',
+      category: 'hazard',
+    });
     render(<Harness />);
 
     const raisedAt = readActiveAlarm()?.raisedAt;
@@ -91,7 +101,12 @@ describe('hazard-proximity alarm while underway (no anchor watch set)', () => {
   });
 
   it('re-evaluates as the boat moves: no alarm far away, alarm on approach, clear on retreat', () => {
-    addWaypoint({ lat: north(100).latitude, lon: BASE.longitude, label: 'Ledge', category: 'hazard' });
+    addWaypoint({
+      lat: north(100).latitude,
+      lon: BASE.longitude,
+      label: 'Ledge',
+      category: 'hazard',
+    });
     gps.self = ownShip(north(5000)); // ~2.6 nm away
     render(<Harness />);
     expect(readActiveAlarm()).toBeNull();
@@ -135,7 +150,12 @@ describe('anchor-drag alarm episodes', () => {
   });
 
   it('does not clear a hazard alarm it does not own', () => {
-    addWaypoint({ lat: north(100).latitude, lon: BASE.longitude, label: 'Ledge', category: 'hazard' });
+    addWaypoint({
+      lat: north(100).latitude,
+      lon: BASE.longitude,
+      label: 'Ledge',
+      category: 'hazard',
+    });
     render(<Harness />);
     expect(readActiveAlarm()?.kind).toBe('hazard-proximity');
 

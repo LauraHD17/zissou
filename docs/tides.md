@@ -8,11 +8,11 @@ network — but that's a bonus, not a requirement.
 
 Stations:
 
-| ID | Name | Coverage |
-| --- | --- | --- |
-| 8413320 | Bar Harbor | East side, MDI / outer bay |
-| 8414672 | Castine | Bagaduce, upper bay |
-| 8415490 | Rockland | West side / Camden / Vinalhaven |
+| ID      | Name       | Coverage                        |
+| ------- | ---------- | ------------------------------- |
+| 8413320 | Bar Harbor | East side, MDI / outer bay      |
+| 8414672 | Castine    | Bagaduce, upper bay             |
+| 8415490 | Rockland   | West side / Camden / Vinalhaven |
 
 The app picks the station nearest to your current GPS fix automatically,
 and shows the station name in the status-bar tide pill so you know which

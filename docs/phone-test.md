@@ -71,13 +71,13 @@ assets: `gh release upload charts-v1 public/charts/*.pmtiles --clobber`.
 
 ## What works on the phone vs the Pi
 
-| Feature | Phone (geo mode) | Pi (real mode) |
-| --- | --- | --- |
-| Position / SOG / COG | phone GPS | u-blox USB GPS |
-| Chart + depth contours + tide-aware soundings | ✅ | ✅ |
-| Tides / sun / night theme / waypoints / routes / anchor watch / MOB | ✅ | ✅ |
-| AIS traffic | — (no receiver; panel stays honestly empty) | dAISy HAT |
-| Weather | only with internet | only with internet |
+| Feature                                                             | Phone (geo mode)                            | Pi (real mode)     |
+| ------------------------------------------------------------------- | ------------------------------------------- | ------------------ |
+| Position / SOG / COG                                                | phone GPS                                   | u-blox USB GPS     |
+| Chart + depth contours + tide-aware soundings                       | ✅                                          | ✅                 |
+| Tides / sun / night theme / waypoints / routes / anchor watch / MOB | ✅                                          | ✅                 |
+| AIS traffic                                                         | — (no receiver; panel stays honestly empty) | dAISy HAT          |
+| Weather                                                             | only with internet                          | only with internet |
 
 ## Dev notes
 

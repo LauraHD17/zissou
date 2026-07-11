@@ -8,11 +8,7 @@
 
 export function SoundingLegend() {
   return (
-    <div
-      className="chart-legend sounding-legend"
-      role="group"
-      aria-label="Spot depth key"
-    >
+    <div className="chart-legend sounding-legend" role="group" aria-label="Spot depth key">
       <span className="chart-legend__title">SPOT DEPTHS</span>
       <div className="sounding-legend__body">
         <span className="sounding-legend__sample" aria-hidden="true">

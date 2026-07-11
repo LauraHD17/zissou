@@ -62,8 +62,7 @@ for (const r of externalRequests) console.log(`  - ${r}`);
 console.log(`[offline-verify] console errors: ${consoleErrors.length}`);
 for (const e of consoleErrors.slice(0, 10)) console.log(`  - ${e}`);
 
-const hardFail =
-  !mapState.ok || externalRequests.some((r) => !r.includes('api.weather.gov'));
+const hardFail = !mapState.ok || externalRequests.some((r) => !r.includes('api.weather.gov'));
 if (hardFail) {
   console.error('[offline-verify] FAIL — chart did not render or unexpected external request');
   process.exit(1);

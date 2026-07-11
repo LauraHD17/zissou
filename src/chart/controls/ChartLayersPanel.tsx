@@ -62,8 +62,8 @@ export function ChartLayersPanel({ onClose }: Props) {
           Chart layers
         </h2>
         <p className="chart-layers__intro">
-          Hide anything you don't want on screen right now. Your boat, AIS
-          traffic, and saved spots always stay visible.
+          Hide anything you don't want on screen right now. Your boat, AIS traffic, and saved spots
+          always stay visible.
         </p>
 
         <ul className="chart-layers__rows">
@@ -84,7 +84,6 @@ export function ChartLayersPanel({ onClose }: Props) {
             </li>
           ))}
         </ul>
-
       </article>
     </SlidePanel>
   );

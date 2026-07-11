@@ -83,8 +83,7 @@ export function samplePolyline(positions: Position[], samples: number): Position
     // degree of latitude away from the equator. Without this, E-W legs get
     // ~1.4× the sample density of N-S legs at 44°N — sparser shoal detection
     // on north-south passages.
-    const midLatRad =
-      (((positions[i].latitude + positions[i + 1].latitude) / 2) * Math.PI) / 180;
+    const midLatRad = (((positions[i].latitude + positions[i + 1].latitude) / 2) * Math.PI) / 180;
     const dLon = (positions[i + 1].longitude - positions[i].longitude) * Math.cos(midLatRad);
     const len = Math.hypot(dLat, dLon);
     legLens.push(len);

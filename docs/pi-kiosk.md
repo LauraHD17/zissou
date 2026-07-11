@@ -75,6 +75,7 @@ Edit `~/.config/lxsession/LXDE-pi/autostart` (create if missing):
 ```
 
 What each line does:
+
 - `xset s off` / `-dpms` / `s noblank` — keep the screen on forever (no
   blanking, no DPMS power save). Marine kiosk standard.
 - `unclutter -idle 0` — hides the mouse cursor immediately. Install once

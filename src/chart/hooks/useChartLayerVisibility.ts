@@ -21,10 +21,9 @@ export function useChartLayerVisibility(mapRef: RefObject<maplibregl.Map | null>
     if (!map) return;
 
     const apply = () => {
-      for (const [group, ids] of Object.entries(NOAA_LAYER_GROUPS) as Array<[
-        keyof ChartLayerPrefs,
-        readonly string[],
-      ]>) {
+      for (const [group, ids] of Object.entries(NOAA_LAYER_GROUPS) as Array<
+        [keyof ChartLayerPrefs, readonly string[]]
+      >) {
         const visibility = layers[group] ? 'visible' : 'none';
         for (const id of ids) {
           if (!map.getLayer(id)) continue;

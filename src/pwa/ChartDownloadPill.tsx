@@ -65,8 +65,8 @@ export function ChartDownloadPill() {
       )}
       {phase === 'downloading' && (
         <span className="chart-download__text" aria-live="polite">
-          Downloading charts…{fraction != null ? ` ${Math.round(fraction * 100)}%` : ''} — keep
-          this screen open
+          Downloading charts…{fraction != null ? ` ${Math.round(fraction * 100)}%` : ''} — keep this
+          screen open
         </span>
       )}
       {phase === 'done' && (

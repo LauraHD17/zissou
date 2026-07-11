@@ -61,20 +61,22 @@
      Notably: --navaid-port is magenta-biased (NOT --alert-red, which stays
      reserved for MOB / hazard-waypoint / alarm banners) so a port-hand can
      and an emergency-red pin can never be visually confused. */
-  --navaid-port: #c2185b;        /* lateral port-hand (red can) */
-  --navaid-starboard: #0e8c43;   /* lateral starboard-hand (green nun) */
-  --navaid-safe-water: #d62e38;  /* safe-water red/white stripes */
-  --navaid-cardinal: #f5b800;    /* cardinal yellow */
-  --navaid-isolated: #1a1a1a;    /* isolated-danger body (near-black) */
-  --navaid-special: #f5b800;     /* special buoy (IALA yellow; disambiguated by X glyph) */
-  --navaid-light-glow: #ff6fd8;  /* light halo — hot magenta, chart-exclusive */
-  --navaid-wreck: #7b1fa2;       /* wrecks/obstructions — deep purple */
+  --navaid-port: #c2185b; /* lateral port-hand (red can) */
+  --navaid-starboard: #0e8c43; /* lateral starboard-hand (green nun) */
+  --navaid-safe-water: #d62e38; /* safe-water red/white stripes */
+  --navaid-cardinal: #f5b800; /* cardinal yellow */
+  --navaid-isolated: #1a1a1a; /* isolated-danger body (near-black) */
+  --navaid-special: #f5b800; /* special buoy (IALA yellow; disambiguated by X glyph) */
+  --navaid-light-glow: #ff6fd8; /* light halo — hot magenta, chart-exclusive */
+  --navaid-wreck: #7b1fa2; /* wrecks/obstructions — deep purple */
 
   /* Typography — both fonts self-hosted via @fontsource packages so the UI
      renders correctly without wifi. "Zalando Sans Expanded Variable" comes
      from @fontsource-variable; the fallback name "Zalando Sans Expanded"
      covers legacy setups or a future non-variable swap. */
-  --font-sans: 'Zalando Sans Expanded Variable', 'Zalando Sans Expanded', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  --font-sans:
+    'Zalando Sans Expanded Variable', 'Zalando Sans Expanded', -apple-system, BlinkMacSystemFont,
+    'Segoe UI', sans-serif;
   --font-mono: 'Roboto Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
 
   font-family: var(--font-sans);
@@ -2750,7 +2752,7 @@ body,
   color: var(--alert-amber);
 }
 
-:root[data-theme="night"] .marine-keypad {
+:root[data-theme='night'] .marine-keypad {
   border-top-color: var(--text-on-card);
 }
 
