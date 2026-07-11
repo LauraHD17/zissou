@@ -26,7 +26,7 @@ The app is static files; it needs an HTTPS host so iOS allows GPS access and
 offline installation. GitHub Pages is free (repo must be public — the repo
 contains no secrets; the security audit verified this):
 
-1. Create a GitHub repo and push this project to `main`.
+1. Repo: https://github.com/LauraHD17/zissou (already wired as `origin`).
 2. In the repo: **Settings → Pages → Source: "GitHub Actions"**.
 3. Upload the chart files **once** as release assets (they're too big for
    Pages itself; releases allow 2 GB/file and support the byte-range reads
@@ -40,14 +40,14 @@ contains no secrets; the security audit verified this):
    ```
 
 4. Push (or run the "Deploy phone build" action manually). When it finishes,
-   the app is live at `https://<your-username>.github.io/<repo>/`.
+   the app is live at **https://laurahd17.github.io/zissou/**.
 
 Rebuilding charts later? Re-run `scripts/build-charts.sh`, then update the
 assets: `gh release upload charts-v1 public/charts/*.pmtiles --clobber`.
 
 ## One-time phone setup (at home, on wifi)
 
-1. Open `https://<your-username>.github.io/<repo>/` in **Safari**.
+1. Open **https://laurahd17.github.io/zissou/** in **Safari**.
 2. Allow location access when asked ("While Using the App").
 3. Tap **Download charts (~300 MB)** in the bottom-left pill and leave the
    screen open until it says "Charts saved". This is the offline copy.
