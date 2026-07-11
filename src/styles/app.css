@@ -2985,3 +2985,11 @@ body,
   border-radius: 0;
   cursor: pointer;
 }
+
+/* Error detail + build id — diagnostic mono line inside the pill. */
+.chart-download__detail {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: var(--text-dim);
+  word-break: break-word;
+}
