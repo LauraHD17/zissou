@@ -3,7 +3,11 @@ import maplibregl from 'maplibre-gl';
 import type { RefObject } from 'react';
 import type { Vessel } from '../../signalk/types';
 import { isPlausiblePosition } from '../../utils/geometry';
-import { pickOwnShipHeadingRad, useCompassReading } from '../../compass/compassStore';
+import {
+  pickOwnShipHeadingRad,
+  useCompassReading,
+  type HeadingSource,
+} from '../../compass/compassStore';
 
 const SVG_NS = 'http://www.w3.org/2000/svg';
 
@@ -15,6 +19,11 @@ export function useOwnShipMarker(
   // Compass (phone build): swings the triangle instantly at rest, where GPS
   // course is noise. Underway, COG wins — see pickOwnShipHeadingRad.
   const compass = useCompassReading();
+  // Hysteresis memory (which source steered last) + continuous unwrapped
+  // angle so the CSS rotation transition always takes the short way around
+  // (359°→1° must glide 2°, not spin 358° backwards).
+  const sourceRef = useRef<HeadingSource | undefined>(undefined);
+  const continuousDegRef = useRef<number | null>(null);
 
   useEffect(() => {
     const map = mapRef.current;
@@ -37,17 +46,29 @@ export function useOwnShipMarker(
       markerRef.current.setLngLat([self.position.longitude, self.position.latitude]);
     }
 
-    const headingRad = pickOwnShipHeadingRad({
+    const picked = pickOwnShipHeadingRad({
       cogRad: self.cog,
       sogMs: self.sog,
       compass,
       nowMs: Date.now(),
+      prevSource: sourceRef.current,
     });
-    const headingDeg = headingRad != null ? (headingRad * 180) / Math.PI : 0;
+    sourceRef.current = picked?.source ?? sourceRef.current;
+
+    const targetDeg = picked != null ? (picked.headingRad * 180) / Math.PI : 0;
+    const prev = continuousDegRef.current;
+    let continuousDeg = targetDeg;
+    if (prev != null) {
+      // Wrap the delta to [-180, 180] and accumulate — shortest-path spin.
+      const delta = ((targetDeg - (((prev % 360) + 360) % 360) + 540) % 360) - 180;
+      continuousDeg = prev + delta;
+    }
+    continuousDegRef.current = continuousDeg;
+
     const triangle = markerRef.current
       .getElement()
       .querySelector<SVGSVGElement>('.own-ship-marker__triangle');
-    if (triangle) triangle.style.transform = `rotate(${headingDeg}deg)`;
+    if (triangle) triangle.style.transform = `rotate(${continuousDeg}deg)`;
     // Granular deps: self is copy-on-write per delta; we read position
     // lat/lon, cog, sog, plus the throttled compass reading.
     // eslint-disable-next-line react-hooks/exhaustive-deps

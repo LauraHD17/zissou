@@ -109,24 +109,51 @@ export async function resumeCompassIfGranted(): Promise<void> {
 }
 
 const COMPASS_FRESH_MS = 3_000;
-/** Below ~1.5 kn GPS course is noise; the compass is the better pointer. */
-const MIN_SOG_FOR_COG_MS = 0.77;
+// Hysteresis band instead of a hard cliff: compass owns the arrow below
+// 1.0 kn, COG owns it above 2.0 kn, and BETWEEN the two the previous
+// source keeps steering — a slow boat loitering around the threshold must
+// not flap between "where the phone points" and "where we're tracking".
+const COMPASS_BELOW_MS = 0.51; // 1.0 kn
+const COG_ABOVE_MS = 1.03; // 2.0 kn
+
+export type HeadingSource = 'cog' | 'compass';
+
+export interface OwnShipHeading {
+  headingRad: number;
+  source: HeadingSource;
+}
 
 /**
- * Pure arbitration for the own-ship triangle: COG when making way, fresh
- * compass otherwise, COG again as last resort, null when neither exists.
+ * Pure arbitration for the own-ship triangle. `prevSource` feeds the
+ * hysteresis: inside the 1–2 kn band, whichever source was already
+ * steering keeps steering. Fresh-compass and valid-COG requirements always
+ * apply; every failure path falls back to the other source, then to null.
  */
 export function pickOwnShipHeadingRad(args: {
   cogRad: number | undefined;
   sogMs: number | undefined;
   compass: CompassReading | null;
   nowMs: number;
-}): number | null {
-  const { cogRad, sogMs, compass, nowMs } = args;
+  prevSource?: HeadingSource;
+}): OwnShipHeading | null {
+  const { cogRad, sogMs, compass, nowMs, prevSource } = args;
   const cogValid = isValidCogRad(cogRad);
-  const makingWay = cogValid && isValidSogMs(sogMs) && (sogMs as number) >= MIN_SOG_FOR_COG_MS;
-  if (makingWay) return cogRad as number;
-  if (compass && nowMs - compass.atMs <= COMPASS_FRESH_MS) return compass.headingRad;
-  if (cogValid) return cogRad as number;
+  const sogValid = isValidSogMs(sogMs);
+  const compassFresh = compass != null && nowMs - compass.atMs <= COMPASS_FRESH_MS;
+
+  let wantCog: boolean;
+  if (!sogValid) {
+    wantCog = false; // no speed info — trust the phone in your hand
+  } else if ((sogMs as number) >= COG_ABOVE_MS) {
+    wantCog = true;
+  } else if ((sogMs as number) <= COMPASS_BELOW_MS) {
+    wantCog = false;
+  } else {
+    wantCog = prevSource ? prevSource === 'cog' : false; // in-band: no flapping
+  }
+
+  if (wantCog && cogValid) return { headingRad: cogRad as number, source: 'cog' };
+  if (compassFresh) return { headingRad: compass.headingRad, source: 'compass' };
+  if (cogValid) return { headingRad: cogRad as number, source: 'cog' };
   return null;
 }
