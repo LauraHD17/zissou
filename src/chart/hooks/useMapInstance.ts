@@ -88,6 +88,12 @@ export function useMapInstance({ containerRef, mapRef, styleLoadedRef, modeRef, 
 
     mapRef.current = map;
 
+    // Dev-only handle so visual verification harnesses (screenshot scripts)
+    // can fly the map to specific coordinates. Never present in production.
+    if (import.meta.env.DEV) {
+      (window as unknown as Record<string, unknown>).__devMap = map;
+    }
+
     // View-mode toggle uses display:none, which window.resize doesn't see.
     // Watch the container so tiles reflow correctly on mode switches.
     const ro = new ResizeObserver(() => map.resize());

@@ -62,10 +62,14 @@ for (const line of lines.slice(1)) {
   const lon = Number(parts[iLon]);
   const name = (parts[iName] ?? '').trim();
   if (!name || !Number.isFinite(lat) || !Number.isFinite(lon) || lat === 0) continue;
+  // Minor-feature demotion: named rocks, ledges, nubs, and bars label only
+  // at close zoom — they crowd out proper island names in dense
+  // archipelagos and cause label churn while panning.
+  const minor = cls.c === 'island' && /\b(ledges?|rocks?|nubs?|bar|shoals?)$/i.test(name);
   features.push({
     type: 'Feature',
     geometry: { type: 'Point', coordinates: [Number(lon.toFixed(5)), Number(lat.toFixed(5))] },
-    properties: { n: name, c: cls.c, mz: cls.mz, p: cls.p },
+    properties: { n: name, c: cls.c, mz: minor ? 13 : cls.mz, p: minor ? 4 : cls.p },
   });
 }
 

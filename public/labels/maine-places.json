@@ -544,7 +544,7 @@
     {
       "type": "Feature",
       "geometry": { "type": "Point", "coordinates": [-68.94421, 45.6031] },
-      "properties": { "n": "Balancing Rock", "c": "island", "mz": 10, "p": 1 }
+      "properties": { "n": "Balancing Rock", "c": "island", "mz": 13, "p": 4 }
     },
     {
       "type": "Feature",
@@ -599,12 +599,12 @@
     {
       "type": "Feature",
       "geometry": { "type": "Point", "coordinates": [-67.94445, 44.40258] },
-      "properties": { "n": "Bald Rock", "c": "island", "mz": 10, "p": 1 }
+      "properties": { "n": "Bald Rock", "c": "island", "mz": 13, "p": 4 }
     },
     {
       "type": "Feature",
       "geometry": { "type": "Point", "coordinates": [-68.21057, 44.42119] },
-      "properties": { "n": "Bald Rock", "c": "island", "mz": 10, "p": 1 }
+      "properties": { "n": "Bald Rock", "c": "island", "mz": 13, "p": 4 }
     },
     {
       "type": "Feature",
@@ -969,7 +969,7 @@
     {
       "type": "Feature",
       "geometry": { "type": "Point", "coordinates": [-67.66388, 44.47202] },
-      "properties": { "n": "Batson Ledges", "c": "island", "mz": 10, "p": 1 }
+      "properties": { "n": "Batson Ledges", "c": "island", "mz": 13, "p": 4 }
     },
     {
       "type": "Feature",
@@ -1744,7 +1744,7 @@
     {
       "type": "Feature",
       "geometry": { "type": "Point", "coordinates": [-68.49252, 44.40758] },
-      "properties": { "n": "Bird Rock", "c": "island", "mz": 10, "p": 1 }
+      "properties": { "n": "Bird Rock", "c": "island", "mz": 13, "p": 4 }
     },
     {
       "type": "Feature",
@@ -1909,17 +1909,17 @@
     {
       "type": "Feature",
       "geometry": { "type": "Point", "coordinates": [-70.00616, 43.80342] },
-      "properties": { "n": "Black Rock", "c": "island", "mz": 10, "p": 1 }
+      "properties": { "n": "Black Rock", "c": "island", "mz": 13, "p": 4 }
     },
     {
       "type": "Feature",
       "geometry": { "type": "Point", "coordinates": [-69.25699, 43.89925] },
-      "properties": { "n": "Black Rock", "c": "island", "mz": 10, "p": 1 }
+      "properties": { "n": "Black Rock", "c": "island", "mz": 13, "p": 4 }
     },
     {
       "type": "Feature",
       "geometry": { "type": "Point", "coordinates": [-67.71222, 44.43786] },
-      "properties": { "n": "Black Rock", "c": "island", "mz": 10, "p": 1 }
+      "properties": { "n": "Black Rock", "c": "island", "mz": 13, "p": 4 }
     },
     {
       "type": "Feature",
@@ -2129,7 +2129,7 @@
     {
       "type": "Feature",
       "geometry": { "type": "Point", "coordinates": [-69.81421, 43.71953] },
-      "properties": { "n": "Bold Dick Rock", "c": "island", "mz": 12, "p": 3 }
+      "properties": { "n": "Bold Dick Rock", "c": "island", "mz": 13, "p": 4 }
     },
     {
       "type": "Feature",
@@ -2449,7 +2449,7 @@
     {
       "type": "Feature",
       "geometry": { "type": "Point", "coordinates": [-68.87892, 43.81786] },
-      "properties": { "n": "Brig Ledge", "c": "island", "mz": 10, "p": 1 }
+      "properties": { "n": "Brig Ledge", "c": "island", "mz": 13, "p": 4 }
     },
     {
       "type": "Feature",
@@ -2859,7 +2859,7 @@
     {
       "type": "Feature",
       "geometry": { "type": "Point", "coordinates": [-67.74778, 44.58869] },
-      "properties": { "n": "Bungy Rock", "c": "island", "mz": 10, "p": 1 }
+      "properties": { "n": "Bungy Rock", "c": "island", "mz": 13, "p": 4 }
     },
     {
       "type": "Feature",
@@ -3219,7 +3219,7 @@
     {
       "type": "Feature",
       "geometry": { "type": "Point", "coordinates": [-68.88281, 43.82842] },
-      "properties": { "n": "Camp Cove Ledge", "c": "island", "mz": 10, "p": 1 }
+      "properties": { "n": "Camp Cove Ledge", "c": "island", "mz": 13, "p": 4 }
     },
     {
       "type": "Feature",
@@ -3454,7 +3454,7 @@
     {
       "type": "Feature",
       "geometry": { "type": "Point", "coordinates": [-67.85278, 45.2259] },
-      "properties": { "n": "Caribou Rock", "c": "island", "mz": 10, "p": 1 }
+      "properties": { "n": "Caribou Rock", "c": "island", "mz": 13, "p": 4 }
     },
     {
       "type": "Feature",
@@ -3699,7 +3699,7 @@
     {
       "type": "Feature",
       "geometry": { "type": "Point", "coordinates": [-69.94949, 43.74758] },
-      "properties": { "n": "Cedar Ledges", "c": "island", "mz": 10, "p": 1 }
+      "properties": { "n": "Cedar Ledges", "c": "island", "mz": 13, "p": 4 }
     },
     {
       "type": "Feature",
@@ -3784,17 +3784,17 @@
     {
       "type": "Feature",
       "geometry": { "type": "Point", "coordinates": [-68.81364, 44.21341] },
-      "properties": { "n": "Channel Rock", "c": "island", "mz": 10, "p": 1 }
+      "properties": { "n": "Channel Rock", "c": "island", "mz": 13, "p": 4 }
     },
     {
       "type": "Feature",
       "geometry": { "type": "Point", "coordinates": [-68.4878, 44.24508] },
-      "properties": { "n": "Channel Rock", "c": "island", "mz": 10, "p": 1 }
+      "properties": { "n": "Channel Rock", "c": "island", "mz": 13, "p": 4 }
     },
     {
       "type": "Feature",
       "geometry": { "type": "Point", "coordinates": [-67.54194, 44.46619] },
-      "properties": { "n": "Channel Rock", "c": "island", "mz": 10, "p": 1 }
+      "properties": { "n": "Channel Rock", "c": "island", "mz": 13, "p": 4 }
     },
     {
       "type": "Feature",
@@ -4174,7 +4174,7 @@
     {
       "type": "Feature",
       "geometry": { "type": "Point", "coordinates": [-67.34971, 44.63147] },
-      "properties": { "n": "Colbeth Rock", "c": "island", "mz": 10, "p": 1 }
+      "properties": { "n": "Colbeth Rock", "c": "island", "mz": 13, "p": 4 }
     },
     {
       "type": "Feature",
@@ -4279,7 +4279,7 @@
     {
       "type": "Feature",
       "geometry": { "type": "Point", "coordinates": [-68.49919, 44.41008] },
-      "properties": { "n": "Conary Nub", "c": "island", "mz": 10, "p": 1 }
+      "properties": { "n": "Conary Nub", "c": "island", "mz": 13, "p": 4 }
     },
     {
       "type": "Feature",
@@ -4969,7 +4969,7 @@
     {
       "type": "Feature",
       "geometry": { "type": "Point", "coordinates": [-67.6061, 44.44091] },
-      "properties": { "n": "Curlew Rock", "c": "island", "mz": 10, "p": 1 }
+      "properties": { "n": "Curlew Rock", "c": "island", "mz": 13, "p": 4 }
     },
     {
       "type": "Feature",
@@ -5269,7 +5269,7 @@
     {
       "type": "Feature",
       "geometry": { "type": "Point", "coordinates": [-68.93032, 45.41755] },
-      "properties": { "n": "Deadman Rock", "c": "island", "mz": 10, "p": 1 }
+      "properties": { "n": "Deadman Rock", "c": "island", "mz": 13, "p": 4 }
     },
     {
       "type": "Feature",
@@ -5729,7 +5729,7 @@
     {
       "type": "Feature",
       "geometry": { "type": "Point", "coordinates": [-67.30221, 44.62786] },
-      "properties": { "n": "Dogfish Rocks", "c": "island", "mz": 10, "p": 1 }
+      "properties": { "n": "Dogfish Rocks", "c": "island", "mz": 13, "p": 4 }
     },
     {
       "type": "Feature",
@@ -5914,7 +5914,7 @@
     {
       "type": "Feature",
       "geometry": { "type": "Point", "coordinates": [-69.81366, 44.03008] },
-      "properties": { "n": "Dram Rock", "c": "island", "mz": 10, "p": 1 }
+      "properties": { "n": "Dram Rock", "c": "island", "mz": 13, "p": 4 }
     },
     {
       "type": "Feature",
@@ -6044,12 +6044,12 @@
     {
       "type": "Feature",
       "geometry": { "type": "Point", "coordinates": [-69.92116, 43.76897] },
-      "properties": { "n": "Duck Rock", "c": "island", "mz": 10, "p": 1 }
+      "properties": { "n": "Duck Rock", "c": "island", "mz": 13, "p": 4 }
     },
     {
       "type": "Feature",
       "geometry": { "type": "Point", "coordinates": [-69.32449, 43.77675] },
-      "properties": { "n": "Duck Rocks", "c": "island", "mz": 10, "p": 1 }
+      "properties": { "n": "Duck Rocks", "c": "island", "mz": 13, "p": 4 }
     },
     {
       "type": "Feature",
@@ -6374,12 +6374,12 @@
     {
       "type": "Feature",
       "geometry": { "type": "Point", "coordinates": [-68.98003, 44.18341] },
-      "properties": { "n": "East Goose Rock", "c": "island", "mz": 10, "p": 1 }
+      "properties": { "n": "East Goose Rock", "c": "island", "mz": 13, "p": 4 }
     },
     {
       "type": "Feature",
       "geometry": { "type": "Point", "coordinates": [-70.41033, 43.3937] },
-      "properties": { "n": "East Goose Rocks", "c": "island", "mz": 10, "p": 1 }
+      "properties": { "n": "East Goose Rocks", "c": "island", "mz": 13, "p": 4 }
     },
     {
       "type": "Feature",
@@ -6654,12 +6654,12 @@
     {
       "type": "Feature",
       "geometry": { "type": "Point", "coordinates": [-69.30977, 43.77786] },
-      "properties": { "n": "Eastern Duck Rock", "c": "island", "mz": 10, "p": 1 }
+      "properties": { "n": "Eastern Duck Rock", "c": "island", "mz": 13, "p": 4 }
     },
     {
       "type": "Feature",
       "geometry": { "type": "Point", "coordinates": [-69.38199, 43.86064] },
-      "properties": { "n": "Eastern Egg Rock", "c": "island", "mz": 10, "p": 1 }
+      "properties": { "n": "Eastern Egg Rock", "c": "island", "mz": 13, "p": 4 }
     },
     {
       "type": "Feature",
@@ -6809,22 +6809,22 @@
     {
       "type": "Feature",
       "geometry": { "type": "Point", "coordinates": [-68.88837, 44.19036] },
-      "properties": { "n": "Egg Rock", "c": "island", "mz": 10, "p": 1 }
+      "properties": { "n": "Egg Rock", "c": "island", "mz": 13, "p": 4 }
     },
     {
       "type": "Feature",
       "geometry": { "type": "Point", "coordinates": [-68.13723, 44.35397] },
-      "properties": { "n": "Egg Rock", "c": "island", "mz": 10, "p": 1 }
+      "properties": { "n": "Egg Rock", "c": "island", "mz": 13, "p": 4 }
     },
     {
       "type": "Feature",
       "geometry": { "type": "Point", "coordinates": [-67.86861, 44.40675] },
-      "properties": { "n": "Egg Rock", "c": "island", "mz": 10, "p": 1 }
+      "properties": { "n": "Egg Rock", "c": "island", "mz": 13, "p": 4 }
     },
     {
       "type": "Feature",
       "geometry": { "type": "Point", "coordinates": [-67.63055, 44.43452] },
-      "properties": { "n": "Egg Rock", "c": "island", "mz": 10, "p": 1 }
+      "properties": { "n": "Egg Rock", "c": "island", "mz": 13, "p": 4 }
     },
     {
       "type": "Feature",
@@ -6859,7 +6859,7 @@
     {
       "type": "Feature",
       "geometry": { "type": "Point", "coordinates": [-69.76005, 43.71675] },
-      "properties": { "n": "Ellingwood Rock", "c": "island", "mz": 10, "p": 1 }
+      "properties": { "n": "Ellingwood Rock", "c": "island", "mz": 13, "p": 4 }
     },
     {
       "type": "Feature",
@@ -7169,7 +7169,7 @@
     {
       "type": "Feature",
       "geometry": { "type": "Point", "coordinates": [-70.32505, 43.54092] },
-      "properties": { "n": "Ferry Rock", "c": "island", "mz": 12, "p": 3 }
+      "properties": { "n": "Ferry Rock", "c": "island", "mz": 13, "p": 4 }
     },
     {
       "type": "Feature",
@@ -7219,7 +7219,7 @@
     {
       "type": "Feature",
       "geometry": { "type": "Point", "coordinates": [-67.50527, 44.52813] },
-      "properties": { "n": "West Black Rock", "c": "island", "mz": 10, "p": 1 }
+      "properties": { "n": "West Black Rock", "c": "island", "mz": 13, "p": 4 }
     },
     {
       "type": "Feature",
@@ -7724,7 +7724,7 @@
     {
       "type": "Feature",
       "geometry": { "type": "Point", "coordinates": [-68.88642, 44.10786] },
-      "properties": { "n": "Fox Rocks", "c": "island", "mz": 10, "p": 1 }
+      "properties": { "n": "Fox Rocks", "c": "island", "mz": 13, "p": 4 }
     },
     {
       "type": "Feature",
@@ -7889,7 +7889,7 @@
     {
       "type": "Feature",
       "geometry": { "type": "Point", "coordinates": [-69.83338, 43.69592] },
-      "properties": { "n": "Fuller Rock", "c": "island", "mz": 10, "p": 1 }
+      "properties": { "n": "Fuller Rock", "c": "island", "mz": 13, "p": 4 }
     },
     {
       "type": "Feature",
@@ -8044,7 +8044,7 @@
     {
       "type": "Feature",
       "geometry": { "type": "Point", "coordinates": [-67.54704, 44.53147] },
-      "properties": { "n": "Gilchrist Rock", "c": "island", "mz": 10, "p": 1 }
+      "properties": { "n": "Gilchrist Rock", "c": "island", "mz": 13, "p": 4 }
     },
     {
       "type": "Feature",
@@ -8174,7 +8174,7 @@
     {
       "type": "Feature",
       "geometry": { "type": "Point", "coordinates": [-68.41141, 44.25675] },
-      "properties": { "n": "Goose Cove Rock", "c": "island", "mz": 10, "p": 1 }
+      "properties": { "n": "Goose Cove Rock", "c": "island", "mz": 13, "p": 4 }
     },
     {
       "type": "Feature",
@@ -8219,22 +8219,22 @@
     {
       "type": "Feature",
       "geometry": { "type": "Point", "coordinates": [-69.84588, 43.7437] },
-      "properties": { "n": "Goose Rock", "c": "island", "mz": 10, "p": 1 }
+      "properties": { "n": "Goose Rock", "c": "island", "mz": 13, "p": 4 }
     },
     {
       "type": "Feature",
       "geometry": { "type": "Point", "coordinates": [-69.30782, 43.93175] },
-      "properties": { "n": "Goose Rock", "c": "island", "mz": 10, "p": 1 }
+      "properties": { "n": "Goose Rock", "c": "island", "mz": 13, "p": 4 }
     },
     {
       "type": "Feature",
       "geometry": { "type": "Point", "coordinates": [-69.05115, 44.1823] },
-      "properties": { "n": "Goose Rock", "c": "island", "mz": 10, "p": 1 }
+      "properties": { "n": "Goose Rock", "c": "island", "mz": 13, "p": 4 }
     },
     {
       "type": "Feature",
       "geometry": { "type": "Point", "coordinates": [-68.46252, 44.3798] },
-      "properties": { "n": "Goose Rock", "c": "island", "mz": 10, "p": 1 }
+      "properties": { "n": "Goose Rock", "c": "island", "mz": 13, "p": 4 }
     },
     {
       "type": "Feature",
@@ -8479,7 +8479,7 @@
     {
       "type": "Feature",
       "geometry": { "type": "Point", "coordinates": [-67.41971, 44.61591] },
-      "properties": { "n": "Grays Rock", "c": "island", "mz": 10, "p": 1 }
+      "properties": { "n": "Grays Rock", "c": "island", "mz": 13, "p": 4 }
     },
     {
       "type": "Feature",
@@ -8739,17 +8739,17 @@
     {
       "type": "Feature",
       "geometry": { "type": "Point", "coordinates": [-68.87698, 43.82731] },
-      "properties": { "n": "Green Ledge", "c": "island", "mz": 10, "p": 1 }
+      "properties": { "n": "Green Ledge", "c": "island", "mz": 13, "p": 4 }
     },
     {
       "type": "Feature",
       "geometry": { "type": "Point", "coordinates": [-68.56475, 44.09258] },
-      "properties": { "n": "Green Ledge", "c": "island", "mz": 10, "p": 1 }
+      "properties": { "n": "Green Ledge", "c": "island", "mz": 13, "p": 4 }
     },
     {
       "type": "Feature",
       "geometry": { "type": "Point", "coordinates": [-68.82809, 44.29036] },
-      "properties": { "n": "Green Ledge", "c": "island", "mz": 10, "p": 1 }
+      "properties": { "n": "Green Ledge", "c": "island", "mz": 13, "p": 4 }
     },
     {
       "type": "Feature",
@@ -8774,7 +8774,7 @@
     {
       "type": "Feature",
       "geometry": { "type": "Point", "coordinates": [-67.60944, 44.43925] },
-      "properties": { "n": "Green Rock", "c": "island", "mz": 10, "p": 1 }
+      "properties": { "n": "Green Rock", "c": "island", "mz": 13, "p": 4 }
     },
     {
       "type": "Feature",
@@ -8949,12 +8949,12 @@
     {
       "type": "Feature",
       "geometry": { "type": "Point", "coordinates": [-67.47527, 44.60397] },
-      "properties": { "n": "Gull Rock", "c": "island", "mz": 10, "p": 1 }
+      "properties": { "n": "Gull Rock", "c": "island", "mz": 13, "p": 4 }
     },
     {
       "type": "Feature",
       "geometry": { "type": "Point", "coordinates": [-66.99581, 44.87702] },
-      "properties": { "n": "Gull Rock", "c": "island", "mz": 10, "p": 1 }
+      "properties": { "n": "Gull Rock", "c": "island", "mz": 13, "p": 4 }
     },
     {
       "type": "Feature",
@@ -8974,7 +8974,7 @@
     {
       "type": "Feature",
       "geometry": { "type": "Point", "coordinates": [-69.24894, 43.91092] },
-      "properties": { "n": "Gunning Rocks", "c": "island", "mz": 10, "p": 1 }
+      "properties": { "n": "Gunning Rocks", "c": "island", "mz": 13, "p": 4 }
     },
     {
       "type": "Feature",
@@ -8994,7 +8994,7 @@
     {
       "type": "Feature",
       "geometry": { "type": "Point", "coordinates": [-70.04338, 43.71231] },
-      "properties": { "n": "Haddock Rock", "c": "island", "mz": 10, "p": 1 }
+      "properties": { "n": "Haddock Rock", "c": "island", "mz": 13, "p": 4 }
     },
     {
       "type": "Feature",
@@ -9054,7 +9054,7 @@
     {
       "type": "Feature",
       "geometry": { "type": "Point", "coordinates": [-70.03699, 43.65592] },
-      "properties": { "n": "Halfway Rock", "c": "island", "mz": 10, "p": 1 }
+      "properties": { "n": "Halfway Rock", "c": "island", "mz": 13, "p": 4 }
     },
     {
       "type": "Feature",
@@ -9904,7 +9904,7 @@
     {
       "type": "Feature",
       "geometry": { "type": "Point", "coordinates": [-68.88337, 43.82286] },
-      "properties": { "n": "High Ledge", "c": "island", "mz": 10, "p": 1 }
+      "properties": { "n": "High Ledge", "c": "island", "mz": 13, "p": 4 }
     },
     {
       "type": "Feature",
@@ -10609,7 +10609,7 @@
     {
       "type": "Feature",
       "geometry": { "type": "Point", "coordinates": [-68.8817, 43.86508] },
-      "properties": { "n": "Indian Ledge", "c": "island", "mz": 10, "p": 1 }
+      "properties": { "n": "Indian Ledge", "c": "island", "mz": 13, "p": 4 }
     },
     {
       "type": "Feature",
@@ -10674,7 +10674,7 @@
     {
       "type": "Feature",
       "geometry": { "type": "Point", "coordinates": [-70.78646, 44.97755] },
-      "properties": { "n": "Indian Rock", "c": "island", "mz": 10, "p": 1 }
+      "properties": { "n": "Indian Rock", "c": "island", "mz": 13, "p": 4 }
     },
     {
       "type": "Feature",
@@ -10709,7 +10709,7 @@
     {
       "type": "Feature",
       "geometry": { "type": "Point", "coordinates": [-69.31977, 43.7687] },
-      "properties": { "n": "Inner Duck Rock", "c": "island", "mz": 10, "p": 1 }
+      "properties": { "n": "Inner Duck Rock", "c": "island", "mz": 13, "p": 4 }
     },
     {
       "type": "Feature",
@@ -10814,7 +10814,7 @@
     {
       "type": "Feature",
       "geometry": { "type": "Point", "coordinates": [-70.61199, 42.98648] },
-      "properties": { "n": "Isles of Shoals", "c": "island", "mz": 10, "p": 1 }
+      "properties": { "n": "Isles of Shoals", "c": "island", "mz": 13, "p": 4 }
     },
     {
       "type": "Feature",
@@ -11039,7 +11039,7 @@
     {
       "type": "Feature",
       "geometry": { "type": "Point", "coordinates": [-68.90475, 44.27452] },
-      "properties": { "n": "Joes Rock", "c": "island", "mz": 10, "p": 1 }
+      "properties": { "n": "Joes Rock", "c": "island", "mz": 13, "p": 4 }
     },
     {
       "type": "Feature",
@@ -11784,7 +11784,7 @@
     {
       "type": "Feature",
       "geometry": { "type": "Point", "coordinates": [-67.11082, 44.8923] },
-      "properties": { "n": "Leighton Rock", "c": "island", "mz": 10, "p": 1 }
+      "properties": { "n": "Leighton Rock", "c": "island", "mz": 13, "p": 4 }
     },
     {
       "type": "Feature",
@@ -12074,7 +12074,7 @@
     {
       "type": "Feature",
       "geometry": { "type": "Point", "coordinates": [-69.92755, 43.72731] },
-      "properties": { "n": "Little Bull Ledge", "c": "island", "mz": 10, "p": 1 }
+      "properties": { "n": "Little Bull Ledge", "c": "island", "mz": 13, "p": 4 }
     },
     {
       "type": "Feature",
@@ -12179,7 +12179,7 @@
     {
       "type": "Feature",
       "geometry": { "type": "Point", "coordinates": [-69.34032, 43.85481] },
-      "properties": { "n": "Little Egg Rock", "c": "island", "mz": 10, "p": 1 }
+      "properties": { "n": "Little Egg Rock", "c": "island", "mz": 13, "p": 4 }
     },
     {
       "type": "Feature",
@@ -12744,7 +12744,7 @@
     {
       "type": "Feature",
       "geometry": { "type": "Point", "coordinates": [-69.90005, 43.75675] },
-      "properties": { "n": "Long Ledge", "c": "island", "mz": 10, "p": 1 }
+      "properties": { "n": "Long Ledge", "c": "island", "mz": 13, "p": 4 }
     },
     {
       "type": "Feature",
@@ -13009,7 +13009,7 @@
     {
       "type": "Feature",
       "geometry": { "type": "Point", "coordinates": [-69.05976, 44.16341] },
-      "properties": { "n": "Lowell Rock", "c": "island", "mz": 10, "p": 1 }
+      "properties": { "n": "Lowell Rock", "c": "island", "mz": 13, "p": 4 }
     },
     {
       "type": "Feature",
@@ -13234,7 +13234,7 @@
     {
       "type": "Feature",
       "geometry": { "type": "Point", "coordinates": [-67.80361, 44.44869] },
-      "properties": { "n": "Mackerel Rock", "c": "island", "mz": 10, "p": 1 }
+      "properties": { "n": "Mackerel Rock", "c": "island", "mz": 13, "p": 4 }
     },
     {
       "type": "Feature",
@@ -13399,7 +13399,7 @@
     {
       "type": "Feature",
       "geometry": { "type": "Point", "coordinates": [-66.98303, 44.90508] },
-      "properties": { "n": "Margie Rock", "c": "island", "mz": 10, "p": 1 }
+      "properties": { "n": "Margie Rock", "c": "island", "mz": 13, "p": 4 }
     },
     {
       "type": "Feature",
@@ -13689,7 +13689,7 @@
     {
       "type": "Feature",
       "geometry": { "type": "Point", "coordinates": [-68.85309, 43.78564] },
-      "properties": { "n": "Matinicus Rock", "c": "island", "mz": 10, "p": 1 }
+      "properties": { "n": "Matinicus Rock", "c": "island", "mz": 13, "p": 4 }
     },
     {
       "type": "Feature",
@@ -14199,7 +14199,7 @@
     {
       "type": "Feature",
       "geometry": { "type": "Point", "coordinates": [-70.60172, 43.00148] },
-      "properties": { "n": "Mingo Rock", "c": "island", "mz": 10, "p": 1 }
+      "properties": { "n": "Mingo Rock", "c": "island", "mz": 13, "p": 4 }
     },
     {
       "type": "Feature",
@@ -14514,7 +14514,7 @@
     {
       "type": "Feature",
       "geometry": { "type": "Point", "coordinates": [-67.53888, 44.52063] },
-      "properties": { "n": "Moose Rock", "c": "island", "mz": 10, "p": 1 }
+      "properties": { "n": "Moose Rock", "c": "island", "mz": 13, "p": 4 }
     },
     {
       "type": "Feature",
@@ -14959,7 +14959,7 @@
     {
       "type": "Feature",
       "geometry": { "type": "Point", "coordinates": [-67.56388, 44.52091] },
-      "properties": { "n": "Nats Rock", "c": "island", "mz": 10, "p": 1 }
+      "properties": { "n": "Nats Rock", "c": "island", "mz": 13, "p": 4 }
     },
     {
       "type": "Feature",
@@ -15764,7 +15764,7 @@
     {
       "type": "Feature",
       "geometry": { "type": "Point", "coordinates": [-69.31366, 43.75675] },
-      "properties": { "n": "Norton Ledge", "c": "island", "mz": 12, "p": 3 }
+      "properties": { "n": "Norton Ledge", "c": "island", "mz": 13, "p": 4 }
     },
     {
       "type": "Feature",
@@ -15839,7 +15839,7 @@
     {
       "type": "Feature",
       "geometry": { "type": "Point", "coordinates": [-67.56416, 44.52786] },
-      "properties": { "n": "Nova Rocks", "c": "island", "mz": 10, "p": 1 }
+      "properties": { "n": "Nova Rocks", "c": "island", "mz": 13, "p": 4 }
     },
     {
       "type": "Feature",
@@ -15989,7 +15989,7 @@
     {
       "type": "Feature",
       "geometry": { "type": "Point", "coordinates": [-70.14727, 43.68369] },
-      "properties": { "n": "Obeds Rock", "c": "island", "mz": 10, "p": 1 }
+      "properties": { "n": "Obeds Rock", "c": "island", "mz": 13, "p": 4 }
     },
     {
       "type": "Feature",
@@ -16369,7 +16369,7 @@
     {
       "type": "Feature",
       "geometry": { "type": "Point", "coordinates": [-66.98248, 44.90369] },
-      "properties": { "n": "Page Rock", "c": "island", "mz": 10, "p": 1 }
+      "properties": { "n": "Page Rock", "c": "island", "mz": 13, "p": 4 }
     },
     {
       "type": "Feature",
@@ -16794,7 +16794,7 @@
     {
       "type": "Feature",
       "geometry": { "type": "Point", "coordinates": [-69.79782, 43.8323] },
-      "properties": { "n": "Pettis Rocks", "c": "island", "mz": 10, "p": 1 }
+      "properties": { "n": "Pettis Rocks", "c": "island", "mz": 13, "p": 4 }
     },
     {
       "type": "Feature",
@@ -16879,7 +16879,7 @@
     {
       "type": "Feature",
       "geometry": { "type": "Point", "coordinates": [-67.41249, 44.59452] },
-      "properties": { "n": "Pierson Ledge", "c": "island", "mz": 10, "p": 1 }
+      "properties": { "n": "Pierson Ledge", "c": "island", "mz": 13, "p": 4 }
     },
     {
       "type": "Feature",
@@ -17429,7 +17429,7 @@
     {
       "type": "Feature",
       "geometry": { "type": "Point", "coordinates": [-67.75111, 44.4798] },
-      "properties": { "n": "Pot Rock", "c": "island", "mz": 10, "p": 1 }
+      "properties": { "n": "Pot Rock", "c": "island", "mz": 13, "p": 4 }
     },
     {
       "type": "Feature",
@@ -17679,12 +17679,12 @@
     {
       "type": "Feature",
       "geometry": { "type": "Point", "coordinates": [-68.89309, 44.15925] },
-      "properties": { "n": "Pulpit Rock", "c": "island", "mz": 10, "p": 1 }
+      "properties": { "n": "Pulpit Rock", "c": "island", "mz": 13, "p": 4 }
     },
     {
       "type": "Feature",
       "geometry": { "type": "Point", "coordinates": [-67.46693, 44.55369] },
-      "properties": { "n": "Pulpit Rock", "c": "island", "mz": 10, "p": 1 }
+      "properties": { "n": "Pulpit Rock", "c": "island", "mz": 13, "p": 4 }
     },
     {
       "type": "Feature",
@@ -18309,7 +18309,7 @@
     {
       "type": "Feature",
       "geometry": { "type": "Point", "coordinates": [-68.97865, 44.16008] },
-      "properties": { "n": "Robinson Rock", "c": "island", "mz": 10, "p": 1 }
+      "properties": { "n": "Robinson Rock", "c": "island", "mz": 13, "p": 4 }
     },
     {
       "type": "Feature",
@@ -18334,7 +18334,7 @@
     {
       "type": "Feature",
       "geometry": { "type": "Point", "coordinates": [-70.17505, 43.78841] },
-      "properties": { "n": "Rock Ledge", "c": "island", "mz": 12, "p": 3 }
+      "properties": { "n": "Rock Ledge", "c": "island", "mz": 13, "p": 4 }
     },
     {
       "type": "Feature",
@@ -18684,7 +18684,7 @@
     {
       "type": "Feature",
       "geometry": { "type": "Point", "coordinates": [-66.9472, 44.8123] },
-      "properties": { "n": "Sail Rock", "c": "island", "mz": 10, "p": 1 }
+      "properties": { "n": "Sail Rock", "c": "island", "mz": 13, "p": 4 }
     },
     {
       "type": "Feature",
@@ -19309,12 +19309,12 @@
     {
       "type": "Feature",
       "geometry": { "type": "Point", "coordinates": [-67.65249, 44.49258] },
-      "properties": { "n": "Seaduck Rock", "c": "island", "mz": 10, "p": 1 }
+      "properties": { "n": "Seaduck Rock", "c": "island", "mz": 13, "p": 4 }
     },
     {
       "type": "Feature",
       "geometry": { "type": "Point", "coordinates": [-67.63777, 44.43175] },
-      "properties": { "n": "Seahorse Rock", "c": "island", "mz": 10, "p": 1 }
+      "properties": { "n": "Seahorse Rock", "c": "island", "mz": 13, "p": 4 }
     },
     {
       "type": "Feature",
@@ -19444,12 +19444,12 @@
     {
       "type": "Feature",
       "geometry": { "type": "Point", "coordinates": [-67.6161, 44.43814] },
-      "properties": { "n": "Seal Rock", "c": "island", "mz": 10, "p": 1 }
+      "properties": { "n": "Seal Rock", "c": "island", "mz": 13, "p": 4 }
     },
     {
       "type": "Feature",
       "geometry": { "type": "Point", "coordinates": [-67.54944, 44.62008] },
-      "properties": { "n": "Seal Rock", "c": "island", "mz": 10, "p": 1 }
+      "properties": { "n": "Seal Rock", "c": "island", "mz": 13, "p": 4 }
     },
     {
       "type": "Feature",
@@ -19649,22 +19649,22 @@
     {
       "type": "Feature",
       "geometry": { "type": "Point", "coordinates": [-68.87781, 43.83953] },
-      "properties": { "n": "Shag Ledge", "c": "island", "mz": 10, "p": 1 }
+      "properties": { "n": "Shag Ledge", "c": "island", "mz": 13, "p": 4 }
     },
     {
       "type": "Feature",
       "geometry": { "type": "Point", "coordinates": [-67.41554, 44.58786] },
-      "properties": { "n": "Shag Ledge", "c": "island", "mz": 10, "p": 1 }
+      "properties": { "n": "Shag Ledge", "c": "island", "mz": 13, "p": 4 }
     },
     {
       "type": "Feature",
       "geometry": { "type": "Point", "coordinates": [-70.60422, 43.00342] },
-      "properties": { "n": "Shag Rock", "c": "island", "mz": 10, "p": 1 }
+      "properties": { "n": "Shag Rock", "c": "island", "mz": 13, "p": 4 }
     },
     {
       "type": "Feature",
       "geometry": { "type": "Point", "coordinates": [-67.47305, 44.56175] },
-      "properties": { "n": "Shag Rock", "c": "island", "mz": 10, "p": 1 }
+      "properties": { "n": "Shag Rock", "c": "island", "mz": 13, "p": 4 }
     },
     {
       "type": "Feature",
@@ -20189,7 +20189,7 @@
     {
       "type": "Feature",
       "geometry": { "type": "Point", "coordinates": [-67.11165, 44.91091] },
-      "properties": { "n": "Smith Rock", "c": "island", "mz": 10, "p": 1 }
+      "properties": { "n": "Smith Rock", "c": "island", "mz": 13, "p": 4 }
     },
     {
       "type": "Feature",
@@ -20279,7 +20279,7 @@
     {
       "type": "Feature",
       "geometry": { "type": "Point", "coordinates": [-67.57221, 44.5273] },
-      "properties": { "n": "Snows Rock", "c": "island", "mz": 10, "p": 1 }
+      "properties": { "n": "Snows Rock", "c": "island", "mz": 13, "p": 4 }
     },
     {
       "type": "Feature",
@@ -21259,7 +21259,7 @@
     {
       "type": "Feature",
       "geometry": { "type": "Point", "coordinates": [-67.66805, 44.45675] },
-      "properties": { "n": "Stanley Ledge", "c": "island", "mz": 10, "p": 1 }
+      "properties": { "n": "Stanley Ledge", "c": "island", "mz": 13, "p": 4 }
     },
     {
       "type": "Feature",
@@ -21859,7 +21859,7 @@
     {
       "type": "Feature",
       "geometry": { "type": "Point", "coordinates": [-70.492, 44.11563] },
-      "properties": { "n": "The Bar", "c": "island", "mz": 12, "p": 3 }
+      "properties": { "n": "The Bar", "c": "island", "mz": 13, "p": 4 }
     },
     {
       "type": "Feature",
@@ -21909,7 +21909,7 @@
     {
       "type": "Feature",
       "geometry": { "type": "Point", "coordinates": [-70.26338, 43.55342] },
-      "properties": { "n": "The Cod Rocks", "c": "island", "mz": 12, "p": 3 }
+      "properties": { "n": "The Cod Rocks", "c": "island", "mz": 13, "p": 4 }
     },
     {
       "type": "Feature",
@@ -22114,7 +22114,7 @@
     {
       "type": "Feature",
       "geometry": { "type": "Point", "coordinates": [-68.55919, 44.37841] },
-      "properties": { "n": "The Nub", "c": "island", "mz": 10, "p": 1 }
+      "properties": { "n": "The Nub", "c": "island", "mz": 13, "p": 4 }
     },
     {
       "type": "Feature",
@@ -22649,7 +22649,7 @@
     {
       "type": "Feature",
       "geometry": { "type": "Point", "coordinates": [-67.32323, 44.69752] },
-      "properties": { "n": "Township Rock", "c": "island", "mz": 10, "p": 1 }
+      "properties": { "n": "Township Rock", "c": "island", "mz": 13, "p": 4 }
     },
     {
       "type": "Feature",
@@ -22659,7 +22659,7 @@
     {
       "type": "Feature",
       "geometry": { "type": "Point", "coordinates": [-67.92278, 45.13646] },
-      "properties": { "n": "Trafton Rock", "c": "island", "mz": 10, "p": 1 }
+      "properties": { "n": "Trafton Rock", "c": "island", "mz": 13, "p": 4 }
     },
     {
       "type": "Feature",
@@ -22669,7 +22669,7 @@
     {
       "type": "Feature",
       "geometry": { "type": "Point", "coordinates": [-68.35724, 44.43508] },
-      "properties": { "n": "Trap Rock", "c": "island", "mz": 10, "p": 1 }
+      "properties": { "n": "Trap Rock", "c": "island", "mz": 13, "p": 4 }
     },
     {
       "type": "Feature",
@@ -22734,7 +22734,7 @@
     {
       "type": "Feature",
       "geometry": { "type": "Point", "coordinates": [-69.60339, 45.66115] },
-      "properties": { "n": "Trumbles Rock", "c": "island", "mz": 10, "p": 1 }
+      "properties": { "n": "Trumbles Rock", "c": "island", "mz": 13, "p": 4 }
     },
     {
       "type": "Feature",
@@ -22919,7 +22919,7 @@
     {
       "type": "Feature",
       "geometry": { "type": "Point", "coordinates": [-67.12971, 44.92175] },
-      "properties": { "n": "Two Hour Rock", "c": "island", "mz": 10, "p": 1 }
+      "properties": { "n": "Two Hour Rock", "c": "island", "mz": 13, "p": 4 }
     },
     {
       "type": "Feature",
@@ -23684,7 +23684,7 @@
     {
       "type": "Feature",
       "geometry": { "type": "Point", "coordinates": [-70.41616, 43.38786] },
-      "properties": { "n": "West Goose Rocks", "c": "island", "mz": 10, "p": 1 }
+      "properties": { "n": "West Goose Rocks", "c": "island", "mz": 13, "p": 4 }
     },
     {
       "type": "Feature",
@@ -23949,7 +23949,7 @@
     {
       "type": "Feature",
       "geometry": { "type": "Point", "coordinates": [-69.41644, 43.87842] },
-      "properties": { "n": "Western Egg Rock", "c": "island", "mz": 10, "p": 1 }
+      "properties": { "n": "Western Egg Rock", "c": "island", "mz": 13, "p": 4 }
     },
     {
       "type": "Feature",
@@ -24029,7 +24029,7 @@
     {
       "type": "Feature",
       "geometry": { "type": "Point", "coordinates": [-70.03894, 43.70481] },
-      "properties": { "n": "Whale Rock", "c": "island", "mz": 10, "p": 1 }
+      "properties": { "n": "Whale Rock", "c": "island", "mz": 13, "p": 4 }
     },
     {
       "type": "Feature",
@@ -24044,7 +24044,7 @@
     {
       "type": "Feature",
       "geometry": { "type": "Point", "coordinates": [-69.75727, 43.7412] },
-      "properties": { "n": "Whaleback Rock", "c": "island", "mz": 10, "p": 1 }
+      "properties": { "n": "Whaleback Rock", "c": "island", "mz": 13, "p": 4 }
     },
     {
       "type": "Feature",
@@ -24149,7 +24149,7 @@
     {
       "type": "Feature",
       "geometry": { "type": "Point", "coordinates": [-68.56141, 44.08397] },
-      "properties": { "n": "White Ledge", "c": "island", "mz": 10, "p": 1 }
+      "properties": { "n": "White Ledge", "c": "island", "mz": 13, "p": 4 }
     },
     {
       "type": "Feature",
@@ -24874,12 +24874,12 @@
     {
       "type": "Feature",
       "geometry": { "type": "Point", "coordinates": [-67.49888, 44.53313] },
-      "properties": { "n": "Middle Black Rock", "c": "island", "mz": 10, "p": 1 }
+      "properties": { "n": "Middle Black Rock", "c": "island", "mz": 13, "p": 4 }
     },
     {
       "type": "Feature",
       "geometry": { "type": "Point", "coordinates": [-67.48666, 44.53952] },
-      "properties": { "n": "East Black Rock", "c": "island", "mz": 10, "p": 1 }
+      "properties": { "n": "East Black Rock", "c": "island", "mz": 13, "p": 4 }
     },
     {
       "type": "Feature",
@@ -24974,7 +24974,7 @@
     {
       "type": "Feature",
       "geometry": { "type": "Point", "coordinates": [-68.30502, 44.27508] },
-      "properties": { "n": "Greening Ledge", "c": "island", "mz": 10, "p": 1 }
+      "properties": { "n": "Greening Ledge", "c": "island", "mz": 13, "p": 4 }
     },
     {
       "type": "Feature",
@@ -25004,12 +25004,12 @@
     {
       "type": "Feature",
       "geometry": { "type": "Point", "coordinates": [-68.6028, 44.10842] },
-      "properties": { "n": "Channel Rock", "c": "island", "mz": 10, "p": 1 }
+      "properties": { "n": "Channel Rock", "c": "island", "mz": 13, "p": 4 }
     },
     {
       "type": "Feature",
       "geometry": { "type": "Point", "coordinates": [-68.60641, 44.0973] },
-      "properties": { "n": "Burnt Ledge", "c": "island", "mz": 10, "p": 1 }
+      "properties": { "n": "Burnt Ledge", "c": "island", "mz": 13, "p": 4 }
     },
     {
       "type": "Feature",
@@ -29134,7 +29134,7 @@
     {
       "type": "Feature",
       "geometry": { "type": "Point", "coordinates": [-68.88587, 44.05036] },
-      "properties": { "n": "Lawrys Ledge", "c": "island", "mz": 10, "p": 1 }
+      "properties": { "n": "Lawrys Ledge", "c": "island", "mz": 13, "p": 4 }
     },
     {
       "type": "Feature",
@@ -29704,7 +29704,7 @@
     {
       "type": "Feature",
       "geometry": { "type": "Point", "coordinates": [-69.62921, 43.84286] },
-      "properties": { "n": "Clam Rock", "c": "island", "mz": 10, "p": 1 }
+      "properties": { "n": "Clam Rock", "c": "island", "mz": 13, "p": 4 }
     },
     {
       "type": "Feature",
@@ -30544,7 +30544,7 @@
     {
       "type": "Feature",
       "geometry": { "type": "Point", "coordinates": [-68.44419, 44.11453] },
-      "properties": { "n": "Gunning Rock", "c": "island", "mz": 10, "p": 1 }
+      "properties": { "n": "Gunning Rock", "c": "island", "mz": 13, "p": 4 }
     },
     {
       "type": "Feature",
@@ -30624,7 +30624,7 @@
     {
       "type": "Feature",
       "geometry": { "type": "Point", "coordinates": [-68.44474, 44.12175] },
-      "properties": { "n": "Black Rock", "c": "island", "mz": 10, "p": 1 }
+      "properties": { "n": "Black Rock", "c": "island", "mz": 13, "p": 4 }
     },
     {
       "type": "Feature",
@@ -30804,7 +30804,7 @@
     {
       "type": "Feature",
       "geometry": { "type": "Point", "coordinates": [-68.41474, 44.10231] },
-      "properties": { "n": "Johns Island Dry Ledge", "c": "island", "mz": 10, "p": 1 }
+      "properties": { "n": "Johns Island Dry Ledge", "c": "island", "mz": 13, "p": 4 }
     },
     {
       "type": "Feature",
@@ -30999,7 +30999,7 @@
     {
       "type": "Feature",
       "geometry": { "type": "Point", "coordinates": [-68.08834, 44.36952] },
-      "properties": { "n": "Grindstone Ledge", "c": "island", "mz": 10, "p": 1 }
+      "properties": { "n": "Grindstone Ledge", "c": "island", "mz": 13, "p": 4 }
     },
     {
       "type": "Feature",
@@ -31014,12 +31014,12 @@
     {
       "type": "Feature",
       "geometry": { "type": "Point", "coordinates": [-67.75139, 44.57758] },
-      "properties": { "n": "Channel Rock", "c": "island", "mz": 10, "p": 1 }
+      "properties": { "n": "Channel Rock", "c": "island", "mz": 13, "p": 4 }
     },
     {
       "type": "Feature",
       "geometry": { "type": "Point", "coordinates": [-67.5061, 44.52786] },
-      "properties": { "n": "Fifth Rock", "c": "island", "mz": 10, "p": 1 }
+      "properties": { "n": "Fifth Rock", "c": "island", "mz": 13, "p": 4 }
     },
     {
       "type": "Feature",
@@ -31059,7 +31059,7 @@
     {
       "type": "Feature",
       "geometry": { "type": "Point", "coordinates": [-70.48977, 43.11815] },
-      "properties": { "n": "Pollock Rock", "c": "island", "mz": 10, "p": 1 }
+      "properties": { "n": "Pollock Rock", "c": "island", "mz": 13, "p": 4 }
     },
     {
       "type": "Feature",
@@ -31394,7 +31394,7 @@
     {
       "type": "Feature",
       "geometry": { "type": "Point", "coordinates": [-67.34415, 44.65425] },
-      "properties": { "n": "Avery Rock", "c": "island", "mz": 10, "p": 1 }
+      "properties": { "n": "Avery Rock", "c": "island", "mz": 13, "p": 4 }
     },
     {
       "type": "Feature",
@@ -31534,7 +31534,7 @@
     {
       "type": "Feature",
       "geometry": { "type": "Point", "coordinates": [-67.54721, 44.46314] },
-      "properties": { "n": "Freeman Rock", "c": "island", "mz": 10, "p": 1 }
+      "properties": { "n": "Freeman Rock", "c": "island", "mz": 13, "p": 4 }
     },
     {
       "type": "Feature",
@@ -31699,7 +31699,7 @@
     {
       "type": "Feature",
       "geometry": { "type": "Point", "coordinates": [-67.76305, 44.4948] },
-      "properties": { "n": "Norton Island Ledge", "c": "island", "mz": 10, "p": 1 }
+      "properties": { "n": "Norton Island Ledge", "c": "island", "mz": 13, "p": 4 }
     },
     {
       "type": "Feature",
@@ -31949,12 +31949,12 @@
     {
       "type": "Feature",
       "geometry": { "type": "Point", "coordinates": [-69.76616, 43.89258] },
-      "properties": { "n": "Alum Rock", "c": "island", "mz": 10, "p": 1 }
+      "properties": { "n": "Alum Rock", "c": "island", "mz": 13, "p": 4 }
     },
     {
       "type": "Feature",
       "geometry": { "type": "Point", "coordinates": [-69.79144, 44.0473] },
-      "properties": { "n": "Beef Rock", "c": "island", "mz": 10, "p": 1 }
+      "properties": { "n": "Beef Rock", "c": "island", "mz": 13, "p": 4 }
     },
     {
       "type": "Feature",
@@ -31964,22 +31964,22 @@
     {
       "type": "Feature",
       "geometry": { "type": "Point", "coordinates": [-69.78143, 43.90202] },
-      "properties": { "n": "Carleton Ledges", "c": "island", "mz": 10, "p": 1 }
+      "properties": { "n": "Carleton Ledges", "c": "island", "mz": 13, "p": 4 }
     },
     {
       "type": "Feature",
       "geometry": { "type": "Point", "coordinates": [-69.74255, 43.88897] },
-      "properties": { "n": "Castle Rock", "c": "island", "mz": 10, "p": 1 }
+      "properties": { "n": "Castle Rock", "c": "island", "mz": 13, "p": 4 }
     },
     {
       "type": "Feature",
       "geometry": { "type": "Point", "coordinates": [-69.70532, 43.8598] },
-      "properties": { "n": "Lobster Rock", "c": "island", "mz": 10, "p": 1 }
+      "properties": { "n": "Lobster Rock", "c": "island", "mz": 13, "p": 4 }
     },
     {
       "type": "Feature",
       "geometry": { "type": "Point", "coordinates": [-68.18751, 44.38508] },
-      "properties": { "n": "Porcupine Dry Ledge", "c": "island", "mz": 10, "p": 1 }
+      "properties": { "n": "Porcupine Dry Ledge", "c": "island", "mz": 13, "p": 4 }
     },
     {
       "type": "Feature",
@@ -31989,17 +31989,17 @@
     {
       "type": "Feature",
       "geometry": { "type": "Point", "coordinates": [-68.69225, 44.10425] },
-      "properties": { "n": "Scraggy Ledge", "c": "island", "mz": 10, "p": 1 }
+      "properties": { "n": "Scraggy Ledge", "c": "island", "mz": 13, "p": 4 }
     },
     {
       "type": "Feature",
       "geometry": { "type": "Point", "coordinates": [-68.77642, 44.01286] },
-      "properties": { "n": "Shag Rock", "c": "island", "mz": 10, "p": 1 }
+      "properties": { "n": "Shag Rock", "c": "island", "mz": 13, "p": 4 }
     },
     {
       "type": "Feature",
       "geometry": { "type": "Point", "coordinates": [-68.59169, 44.17147] },
-      "properties": { "n": "Sheldrake Ledge", "c": "island", "mz": 10, "p": 1 }
+      "properties": { "n": "Sheldrake Ledge", "c": "island", "mz": 13, "p": 4 }
     },
     {
       "type": "Feature",
@@ -32299,7 +32299,7 @@
     {
       "type": "Feature",
       "geometry": { "type": "Point", "coordinates": [-68.77503, 44.06453] },
-      "properties": { "n": "Gunning Rock", "c": "island", "mz": 10, "p": 1 }
+      "properties": { "n": "Gunning Rock", "c": "island", "mz": 13, "p": 4 }
     },
     {
       "type": "Feature",
@@ -32489,7 +32489,7 @@
     {
       "type": "Feature",
       "geometry": { "type": "Point", "coordinates": [-69.22866, 46.81476] },
-      "properties": { "n": "Rosies Rock", "c": "island", "mz": 10, "p": 1 }
+      "properties": { "n": "Rosies Rock", "c": "island", "mz": 13, "p": 4 }
     },
     {
       "type": "Feature",
@@ -32509,7 +32509,7 @@
     {
       "type": "Feature",
       "geometry": { "type": "Point", "coordinates": [-70.43088, 43.4887] },
-      "properties": { "n": "Cow Island Ledge", "c": "island", "mz": 10, "p": 1 }
+      "properties": { "n": "Cow Island Ledge", "c": "island", "mz": 13, "p": 4 }
     },
     {
       "type": "Feature",
@@ -32584,7 +32584,7 @@
     {
       "type": "Feature",
       "geometry": { "type": "Point", "coordinates": [-68.19946, 44.40008] },
-      "properties": { "n": "Bar Ledge", "c": "island", "mz": 10, "p": 1 }
+      "properties": { "n": "Bar Ledge", "c": "island", "mz": 13, "p": 4 }
     },
     {
       "type": "Feature",
@@ -32729,7 +32729,7 @@
     {
       "type": "Feature",
       "geometry": { "type": "Point", "coordinates": [-68.47169, 44.14842] },
-      "properties": { "n": "Sand Beach Ledge", "c": "island", "mz": 10, "p": 1 }
+      "properties": { "n": "Sand Beach Ledge", "c": "island", "mz": 13, "p": 4 }
     },
     {
       "type": "Feature",
@@ -32919,7 +32919,7 @@
     {
       "type": "Feature",
       "geometry": { "type": "Point", "coordinates": [-70.02866, 43.68814] },
-      "properties": { "n": "Drunker Ledge", "c": "island", "mz": 10, "p": 1 }
+      "properties": { "n": "Drunker Ledge", "c": "island", "mz": 13, "p": 4 }
     },
     {
       "type": "Feature",
@@ -33494,7 +33494,7 @@
     {
       "type": "Feature",
       "geometry": { "type": "Point", "coordinates": [-70.77996, 43.0977] },
-      "properties": { "n": "Boiling Rock", "c": "island", "mz": 10, "p": 1 }
+      "properties": { "n": "Boiling Rock", "c": "island", "mz": 13, "p": 4 }
     },
     {
       "type": "Feature",
