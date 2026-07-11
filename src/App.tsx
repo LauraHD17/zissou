@@ -1,13 +1,11 @@
+// Layout root: view-mode state + the three chrome regions. All background
+// concerns (theme, recorders, weather, tides, safety watches) live in
+// AppServices so a GPS tick never re-renders this tree.
+
 import { lazy, Suspense, useState } from 'react';
 import { StatusBar, type ViewMode } from './statusbar/StatusBar';
 import { AISPage } from './pages/AISPage';
-import { useApplyTheme } from './theme/useTheme';
-import { useAudioPriming } from './alarm/useAlarmAudio';
-import { useBreadcrumbRecorder } from './breadcrumbs/useBreadcrumbRecorder';
-import { useCruisingSpeedRecorder } from './prefs/useCruisingSpeedRecorder';
-import { useAnchorageDryingAlert } from './safety/useAnchorageDryingAlert';
-import { useWeatherAutoFetch } from './weather/useWeatherAutoFetch';
-import { useTideRefresh } from './utils/useTideRefresh';
+import { AppServices } from './AppServices';
 import { AlarmBanner } from './ui/AlarmBanner';
 import { ErrorBoundary } from './ui/ErrorBoundary';
 import { ChartDownloadPill } from './pwa/ChartDownloadPill';
@@ -20,16 +18,10 @@ const ChartPage = lazy(() => import('./pages/ChartPage'));
 
 export function App() {
   const [view, setView] = useState<ViewMode>('split');
-  useApplyTheme();
-  useAudioPriming();
-  useBreadcrumbRecorder();
-  useCruisingSpeedRecorder();
-  useAnchorageDryingAlert();
-  useWeatherAutoFetch();
-  useTideRefresh();
 
   return (
     <div className="app">
+      <AppServices />
       <AlarmBanner />
       <ChartDownloadPill />
       <StatusBar activeView={view} onViewChange={setView} />
