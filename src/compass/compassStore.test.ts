@@ -65,3 +65,35 @@ describe('pickOwnShipHeadingRad', () => {
     });
   });
 });
+
+describe('manual heading-mode override', () => {
+  it('forced GPS course ignores speed and fresh compass', () => {
+    expect(
+      pickOwnShipHeadingRad({ cogRad: 2.0, sogMs: 0, compass: fresh, nowMs: NOW, mode: 'cog' }),
+    ).toEqual({ headingRad: 2.0, source: 'cog' });
+  });
+
+  it('forced GPS course falls back to compass only when COG is dead', () => {
+    expect(
+      pickOwnShipHeadingRad({
+        cogRad: undefined,
+        sogMs: 3,
+        compass: fresh,
+        nowMs: NOW,
+        mode: 'cog',
+      }),
+    ).toEqual({ headingRad: 1.0, source: 'compass' });
+  });
+
+  it('forced compass ignores speed', () => {
+    expect(
+      pickOwnShipHeadingRad({ cogRad: 2.0, sogMs: 5, compass: fresh, nowMs: NOW, mode: 'compass' }),
+    ).toEqual({ headingRad: 1.0, source: 'compass' });
+  });
+
+  it('forced compass falls back to COG when the sensor goes stale', () => {
+    expect(
+      pickOwnShipHeadingRad({ cogRad: 2.0, sogMs: 5, compass: stale, nowMs: NOW, mode: 'compass' }),
+    ).toEqual({ headingRad: 2.0, source: 'cog' });
+  });
+});

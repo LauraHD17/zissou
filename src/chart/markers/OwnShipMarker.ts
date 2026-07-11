@@ -6,6 +6,7 @@ import { isPlausiblePosition } from '../../utils/geometry';
 import {
   pickOwnShipHeadingRad,
   useCompassReading,
+  useHeadingMode,
   type HeadingSource,
 } from '../../compass/compassStore';
 
@@ -19,6 +20,7 @@ export function useOwnShipMarker(
   // Compass (phone build): swings the triangle instantly at rest, where GPS
   // course is noise. Underway, COG wins — see pickOwnShipHeadingRad.
   const compass = useCompassReading();
+  const headingMode = useHeadingMode();
   // Hysteresis memory (which source steered last) + continuous unwrapped
   // angle so the CSS rotation transition always takes the short way around
   // (359°→1° must glide 2°, not spin 358° backwards).
@@ -52,6 +54,7 @@ export function useOwnShipMarker(
       compass,
       nowMs: Date.now(),
       prevSource: sourceRef.current,
+      mode: headingMode,
     });
     sourceRef.current = picked?.source ?? sourceRef.current;
 

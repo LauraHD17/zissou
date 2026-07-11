@@ -118,6 +118,22 @@ const COG_ABOVE_MS = 1.03; // 2.0 kn
 
 export type HeadingSource = 'cog' | 'compass';
 
+// Manual override for the arrow's heading source — the escape hatch when
+// the automatic speed-based handoff misbehaves (e.g. SOG not registering
+// keeps it stuck in compass mode). Persisted; applied instantly.
+export type HeadingMode = 'auto' | 'cog' | 'compass';
+const headingMode = defineStore<{ mode: HeadingMode }>('nav.headingSource.v1', 1, {
+  mode: 'auto',
+});
+
+export function useHeadingMode(): HeadingMode {
+  return headingMode.use().mode;
+}
+
+export function setHeadingMode(mode: HeadingMode): void {
+  headingMode.set({ mode });
+}
+
 export interface OwnShipHeading {
   headingRad: number;
   source: HeadingSource;
@@ -135,11 +151,26 @@ export function pickOwnShipHeadingRad(args: {
   compass: CompassReading | null;
   nowMs: number;
   prevSource?: HeadingSource;
+  /** Manual override; 'auto' (default) = speed-based handoff. */
+  mode?: HeadingMode;
 }): OwnShipHeading | null {
-  const { cogRad, sogMs, compass, nowMs, prevSource } = args;
+  const { cogRad, sogMs, compass, nowMs, prevSource, mode = 'auto' } = args;
   const cogValid = isValidCogRad(cogRad);
   const sogValid = isValidSogMs(sogMs);
   const compassFresh = compass != null && nowMs - compass.atMs <= COMPASS_FRESH_MS;
+
+  // Forced source: honor it whenever it's usable; fall back only when it's
+  // entirely dead (a frozen arrow is worse than a second-choice one).
+  if (mode === 'cog') {
+    if (cogValid) return { headingRad: cogRad as number, source: 'cog' };
+    if (compassFresh) return { headingRad: compass.headingRad, source: 'compass' };
+    return null;
+  }
+  if (mode === 'compass') {
+    if (compassFresh) return { headingRad: compass.headingRad, source: 'compass' };
+    if (cogValid) return { headingRad: cogRad as number, source: 'cog' };
+    return null;
+  }
 
   let wantCog: boolean;
   if (!sogValid) {

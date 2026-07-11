@@ -14,6 +14,7 @@ import { useSelf } from '../signalk/useSignalK';
 import { isPlausiblePosition } from '../utils/geometry';
 import { computeDetectedCruisingKn, useCruisingSpeedSamples } from '../prefs/cruisingSpeedStore';
 import { HelpContent } from '../help/HelpContent';
+import { setHeadingMode, useHeadingMode, type HeadingMode } from '../compass/compassStore';
 
 export function SettingsButton() {
   const [open, setOpen] = useState(false);
@@ -283,6 +284,15 @@ function SettingsForm({ onDone, onHelp }: { onDone: () => void; onHelp: () => vo
         </p>
       </section>
 
+      <section className="settings-form__section">
+        <h3 className="settings-form__section-title">Boat arrow points by</h3>
+        <HeadingModePicker />
+        <p className="settings-form__hint">
+          Auto uses GPS course underway and the compass when you're stopped. Force one source here
+          if the automatic handoff ever misbehaves — takes effect immediately, no Save needed.
+        </p>
+      </section>
+
       <div className="settings-form__buttons">
         <button type="button" className="action-sheet__btn" onClick={onDone}>
           Cancel
@@ -303,6 +313,30 @@ function SettingsForm({ onDone, onHelp }: { onDone: () => void; onHelp: () => vo
 // Deploy SHA baked in by the workflow — lets anyone confirm which version an
 // installed copy is running (iOS holds onto old PWA code between launches).
 const BUILD_ID = (import.meta.env.VITE_BUILD_ID as string | undefined) ?? '';
+
+function HeadingModePicker() {
+  const mode = useHeadingMode();
+  const options: { value: HeadingMode; label: string }[] = [
+    { value: 'auto', label: 'Auto (recommended)' },
+    { value: 'cog', label: 'GPS course' },
+    { value: 'compass', label: 'Compass' },
+  ];
+  return (
+    <div className="settings-form__row" role="group" aria-label="Boat arrow heading source">
+      {options.map((o) => (
+        <button
+          key={o.value}
+          type="button"
+          className={`tab${mode === o.value ? ' tab--active' : ''}`}
+          aria-pressed={mode === o.value}
+          onClick={() => setHeadingMode(o.value)}
+        >
+          {o.label}
+        </button>
+      ))}
+    </div>
+  );
+}
 
 function DimField({
   label,
