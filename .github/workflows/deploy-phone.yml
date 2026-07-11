@@ -50,6 +50,7 @@ jobs:
         env:
           VITE_SIGNALK_MODE: geo
           VITE_BASE: /${{ github.event.repository.name }}/
+          VITE_BUILD_ID: ${{ github.sha }}
       # Replace whatever the runner has (nothing — pmtiles are gitignored)
       # with the real chart files from the charts-v1 release, so Pages
       # serves them same-origin at /charts/.

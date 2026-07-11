@@ -71,7 +71,14 @@ export default defineConfig({
         maximumFileSizeToCacheInBytes: 15 * 1024 * 1024,
         runtimeCaching: [
           {
-            urlPattern: ({ url }) => url.pathname.endsWith('.pmtiles'),
+            // ONLY byte-range reads (MapLibre's tile access) go through the
+            // cache strategy. The one-time full-file download in chartCache.ts
+            // must bypass the SW: with a match on all .pmtiles requests,
+            // CacheFirst would race a second 290 MB write against the
+            // download's own cache.put — two concurrent full-size writes is
+            // exactly the kind of thing iOS storage falls over on.
+            urlPattern: ({ url, request }) =>
+              url.pathname.endsWith('.pmtiles') && request.headers.has('range'),
             handler: 'CacheFirst',
             options: {
               cacheName: 'charts', // must match CHART_CACHE_NAME in src/pwa/chartCache.ts

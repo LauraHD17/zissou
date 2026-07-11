@@ -12,11 +12,16 @@ import { chartsCached, chartsTotalBytes, downloadCharts } from './chartCache';
 type Phase = 'checking' | 'idle' | 'downloading' | 'done' | 'error' | 'hidden';
 
 const IS_PHONE_BUILD = import.meta.env.VITE_SIGNALK_MODE === 'geo';
+// Short commit SHA baked in by the deploy workflow — lets a user read off
+// which version their installed copy is actually running (iOS holds onto
+// old PWA code aggressively, which makes "did the update land?" guesswork).
+const BUILD_ID = (import.meta.env.VITE_BUILD_ID as string | undefined) ?? '';
 
 export function ChartDownloadPill() {
   const [phase, setPhase] = useState<Phase>('checking');
   const [fraction, setFraction] = useState<number | null>(null);
   const [totalMb, setTotalMb] = useState<number | null>(null);
+  const [errorDetail, setErrorDetail] = useState<string | null>(null);
 
   useEffect(() => {
     if (!IS_PHONE_BUILD || typeof caches === 'undefined') {
@@ -45,9 +50,10 @@ export function ChartDownloadPill() {
   const start = async () => {
     setPhase('downloading');
     try {
-      const ok = await downloadCharts((p) => setFraction(p.fraction));
-      setPhase(ok ? 'done' : 'error');
-    } catch {
+      await downloadCharts((p) => setFraction(p.fraction));
+      setPhase('done');
+    } catch (e) {
+      setErrorDetail(e instanceof Error ? e.message : String(e));
       setPhase('error');
     }
   };
@@ -80,11 +86,13 @@ export function ChartDownloadPill() {
           <span className="chart-download__text">
             Could not save the charts. Check free space (about 1 GB) and the connection.
           </span>
+          {errorDetail && <span className="chart-download__detail">{errorDetail}</span>}
           <button type="button" className="chart-download__button" onClick={start}>
             Try again
           </button>
         </>
       )}
+      {BUILD_ID && <span className="chart-download__detail">build {BUILD_ID.slice(0, 7)}</span>}
     </div>
   );
 }

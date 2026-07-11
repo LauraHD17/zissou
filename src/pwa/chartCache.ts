@@ -50,12 +50,14 @@ export interface DownloadProgress {
 }
 
 /**
- * Download every chart file into the SW-visible cache. Resolves true on
- * full success. Already-cached files are skipped, so a failed run resumes
- * at the file level on retry.
+ * Download every chart file into the SW-visible cache. Throws with a
+ * descriptive message on failure so the UI can show what actually went
+ * wrong. Already-cached files are skipped, so a failed run resumes at the
+ * file level on retry. Full-file fetches deliberately bypass the SW cache
+ * strategy (it only matches Range requests) — this is the sole writer.
  */
-export async function downloadCharts(onProgress: (p: DownloadProgress) => void): Promise<boolean> {
-  if (!cacheApiAvailable()) return false;
+export async function downloadCharts(onProgress: (p: DownloadProgress) => void): Promise<void> {
+  if (!cacheApiAvailable()) throw new Error('offline storage unavailable in this browser');
   const cache = await caches.open(CHART_CACHE_NAME);
   const total = await chartsTotalBytes();
   let received = 0;
@@ -64,8 +66,10 @@ export async function downloadCharts(onProgress: (p: DownloadProgress) => void):
     const url = chartUrl(f);
     if (await cache.match(url)) continue;
 
-    const res = await fetch(url);
-    if (!res.ok || !res.body) return false;
+    // no-store: don't let the HTTP cache buffer a second 290 MB copy.
+    const res = await fetch(url, { cache: 'no-store' });
+    if (!res.ok) throw new Error(`${f}: HTTP ${res.status}`);
+    if (!res.body) throw new Error(`${f}: empty response body`);
 
     // tee(): one branch streams to disk via cache.put, the other counts
     // progress — neither buffers the whole file in memory.
@@ -91,13 +95,12 @@ export async function downloadCharts(onProgress: (p: DownloadProgress) => void):
 
     try {
       await putPromise;
-    } catch {
+    } catch (e) {
       // Quota exceeded (not enough free space) or write failure — drop the
       // partial entry so a retry starts clean for this file.
       await cache.delete(url);
-      return false;
+      throw new Error(`${f}: ${e instanceof Error ? `${e.name} — ${e.message}` : String(e)}`);
     }
   }
   onProgress({ fraction: 1, receivedBytes: received });
-  return true;
 }
