@@ -14,7 +14,13 @@ import { stubHeightFt, stubNextEvent } from './tideStub';
 
 // Re-export the data-layer surface so consumers keep importing from './tides'.
 export { loadTides, readLoadedTides, writeTidesToIdb, __setTidesForTests } from './tideData';
-export type { TideKind, TideEvent, TidePayload, PreparedStation, PreparedPayload } from './tideData';
+export type {
+  TideKind,
+  TideEvent,
+  TidePayload,
+  PreparedStation,
+  PreparedPayload,
+} from './tideData';
 
 const FALLBACK_STATION = { lat: 44.3867, lon: -68.7967 }; // Castine, mid-bay
 

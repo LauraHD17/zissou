@@ -5,3 +5,6 @@ test-results
 tsconfig.tsbuildinfo
 package-lock.json
 public/charts
+
+# Committed golden fixtures stay minified (large machine-generated JSON)
+src/utils/__fixtures__/

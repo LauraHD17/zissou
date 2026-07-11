@@ -29,9 +29,9 @@ export function HelpContent({ onBack }: { onBack: () => void }) {
         <h3 className="settings-form__section-title">Reading the chart</h3>
         <p className="help__row">
           <span className="help__swatch help__swatch--shallow" aria-hidden="true" />
-          Red lines: less than 6 ft of water <strong>right now</strong>. Yellow: 6–20 ft. Green:
-          20 ft or more. The colors already account for the tide, so red means shallow at this
-          moment — no mental math. Spots that dry out completely at low tide stay red all day.
+          Red lines: less than 6 ft of water <strong>right now</strong>. Yellow: 6–20 ft. Green: 20
+          ft or more. The colors already account for the tide, so red means shallow at this moment —
+          no mental math. Spots that dry out completely at low tide stay red all day.
         </p>
         <p className="help__row">
           The small numbers are water depth in feet at that exact spot, <strong>right now</strong> —
@@ -123,9 +123,9 @@ export function HelpContent({ onBack }: { onBack: () => void }) {
           tide is in. The app does that addition for you everywhere a depth appears.
         </p>
         <p className="help__row">
-          Careful: a few times a month the tide drops <strong>below</strong> the charted low —
-          a "minus tide." A spot charted at 4 ft can briefly hold only 3. The app's warnings
-          account for this.
+          Careful: a few times a month the tide drops <strong>below</strong> the charted low — a
+          "minus tide." A spot charted at 4 ft can briefly hold only 3. The app's warnings account
+          for this.
         </p>
         <p className="help__row">
           Set your boat's draft (how deep it sits) in Settings. Warnings fire when the water gets
@@ -133,8 +133,8 @@ export function HelpContent({ onBack }: { onBack: () => void }) {
           specifically, may not fit through there right now."
         </p>
         <p className="help__row">
-          While anchored with a depth entered, the app watches the falling tide and warns you
-          hours ahead if the water will get too shallow under you — with the time it happens.
+          While anchored with a depth entered, the app watches the falling tide and warns you hours
+          ahead if the water will get too shallow under you — with the time it happens.
         </p>
         <p className="help__row">
           Tide times and heights are official NOAA predictions for the nearest station, stored on

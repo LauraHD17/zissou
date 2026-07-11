@@ -62,9 +62,7 @@ export function useOwnShipMarker(
     }
     continuousDegRef.current = continuousDeg;
 
-    const triangle = marker
-      .getElement()
-      .querySelector<SVGSVGElement>('.own-ship-marker__triangle');
+    const triangle = marker.getElement().querySelector<SVGSVGElement>('.own-ship-marker__triangle');
     if (triangle) triangle.style.transform = `rotate(${continuousDeg}deg)`;
     // Granular deps: self is copy-on-write per delta; we read position
     // lat/lon, cog, sog, plus the throttled compass reading.

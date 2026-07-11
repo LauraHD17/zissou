@@ -15,12 +15,7 @@
 
 import { describe, expect, it } from 'vitest';
 import SunCalc from 'suncalc';
-import {
-  haversineMeters,
-  bearingRadians,
-  projectPosition,
-  samplePolyline,
-} from './geometry';
+import { haversineMeters, bearingRadians, projectPosition, samplePolyline } from './geometry';
 import { closingSpeedMs } from './threat';
 import {
   msToKnots,
@@ -100,7 +95,11 @@ describe('geometry vs Vincenty/WGS84 (sphere-vs-ellipsoid divergence caps at ~0.
   const pairs: [string, typeof BAR_HARBOR, typeof BAR_HARBOR][] = [
     ['Bar Harbor → Castine (~25 nm)', BAR_HARBOR, CASTINE],
     ['Castine → Rockland (~20 nm)', CASTINE, ROCKLAND],
-    ['200 m apart at 44°N (threat-band scale)', CASTINE, { latitude: 44.3885, longitude: -68.7967 }],
+    [
+      '200 m apart at 44°N (threat-band scale)',
+      CASTINE,
+      { latitude: 44.3885, longitude: -68.7967 },
+    ],
     [
       'JFK → LHR (~3000 nm, worst-case for the spherical model)',
       { latitude: 40.6413, longitude: -73.7781 },

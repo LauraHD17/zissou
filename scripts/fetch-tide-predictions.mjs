@@ -187,8 +187,15 @@ const MAX_VERIFY_ERR_FT = 0.6; // app-measured max is ~0.15 ft; datum/unit/tz mi
 
 async function verifyPayload(payload, sampleYear) {
   // Four days spread across the seasons — springs and neaps both get hit.
-  const sampleDays = [ymd(sampleYear, 2, 15), ymd(sampleYear, 5, 15), ymd(sampleYear, 8, 15), ymd(sampleYear, 11, 15)];
-  console.log(`\nVerifying against NOAA's official 6-minute series (${sampleDays.length} days × ${payload.stations.length} stations)…`);
+  const sampleDays = [
+    ymd(sampleYear, 2, 15),
+    ymd(sampleYear, 5, 15),
+    ymd(sampleYear, 8, 15),
+    ymd(sampleYear, 11, 15),
+  ];
+  console.log(
+    `\nVerifying against NOAA's official 6-minute series (${sampleDays.length} days × ${payload.stations.length} stations)…`,
+  );
   let worst = { err: 0, where: '' };
   let minSeen = Infinity;
   let interpChecked = false;
@@ -201,7 +208,9 @@ async function verifyPayload(payload, sampleYear) {
       if (official === null) {
         // Hi/lo-only subordinate station — check event integrity instead.
         const nEvents = await verifyHiloEventsForDay(station, events, day);
-        process.stdout.write(`  ${station.name} ${day}: hi/lo-only station — ${nEvents} events match NOAA\n`);
+        process.stdout.write(
+          `  ${station.name} ${day}: hi/lo-only station — ${nEvents} events match NOAA\n`,
+        );
         continue;
       }
       let dayMax = 0;
@@ -214,9 +223,12 @@ async function verifyPayload(payload, sampleYear) {
         if (p.heightFt < minSeen) minSeen = p.heightFt;
         n++;
       }
-      if (n < 100) throw new Error(`verification ${station.name} ${day}: only ${n} comparable points`);
+      if (n < 100)
+        throw new Error(`verification ${station.name} ${day}: only ${n} comparable points`);
       interpChecked = true;
-      process.stdout.write(`  ${station.name} ${day}: max err ${dayMax.toFixed(2)} ft (${n} pts)\n`);
+      process.stdout.write(
+        `  ${station.name} ${day}: max err ${dayMax.toFixed(2)} ft (${n} pts)\n`,
+      );
       if (dayMax > worst.err) worst = { err: dayMax, where: `${station.name} ${day}` };
     }
   }
@@ -226,7 +238,9 @@ async function verifyPayload(payload, sampleYear) {
         'was never exercised. At least one harmonic station (Bar Harbor) is expected.',
     );
   }
-  console.log(`  Worst interpolation error: ${worst.err.toFixed(2)} ft at ${worst.where}; lowest official level seen ${minSeen.toFixed(1)} ft`);
+  console.log(
+    `  Worst interpolation error: ${worst.err.toFixed(2)} ft at ${worst.where}; lowest official level seen ${minSeen.toFixed(1)} ft`,
+  );
   if (worst.err > MAX_VERIFY_ERR_FT) {
     throw new Error(
       `VERIFICATION FAILED: interpolated heights differ from NOAA's official series by ` +
@@ -244,7 +258,9 @@ async function main() {
   const startYear = args[0] ? Number(args[0]) : new Date().getUTCFullYear();
   const span = args[1] ? Number(args[1]) : 2;
   if (!Number.isFinite(startYear) || !Number.isFinite(span) || span < 1) {
-    console.error('Usage: fetch-tide-predictions.mjs [startYear] [yearSpan=2] [--verify-only|--skip-verify]');
+    console.error(
+      'Usage: fetch-tide-predictions.mjs [startYear] [yearSpan=2] [--verify-only|--skip-verify]',
+    );
     process.exit(1);
   }
 
