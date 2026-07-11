@@ -11,7 +11,7 @@
 import { useSelf } from '../../signalk/useSignalK';
 import { useNow } from '../../utils/clock';
 import { FALLBACK_POS } from '../../utils/geometry';
-import { tideHeightFt } from '../../utils/tides';
+import { tideHeightNow } from '../../utils/tides';
 import { SlidePanel } from '../../ui/SlidePanel';
 import {
   buildNavaidNarrative,
@@ -39,15 +39,26 @@ export function NavaidDetailPanel({ feature, onClose }: Props) {
   // Sounding path: fully tide-aware, renders its own title + breakdown so
   // the chart number and the panel number always agree.
   if (sounding) {
+    // Live-tide title only when the tide source is authoritative. With only
+    // an estimate available, present the charted low-tide minimum — never a
+    // "right now" depth built on a fabricated tide height.
     return (
       <SlidePanel open onClose={onClose} labelledBy="navaid-detail-title">
         <article className="navaid-detail">
           <h2 id="navaid-detail-title" className="navaid-detail__title">
-            {sounding.nowFt} ft here right now
+            {sounding.isEstimate
+              ? `${sounding.lowFt} ft here at low tide`
+              : `${sounding.nowFt} ft here right now`}
           </h2>
-          <p className="navaid-detail__kind">Depth under your keel at this spot.</p>
+          <p className="navaid-detail__kind">
+            {sounding.isEstimate
+              ? 'Charted minimum depth — live tide is not available.'
+              : 'Depth under your keel at this spot.'}
+          </p>
           <p className="navaid-detail__breakdown">
-            Charted low-tide depth: {sounding.lowFt} ft · tide is {sounding.tideLabel} ft
+            {sounding.isEstimate
+              ? 'The real depth is this or deeper, depending on the tide.'
+              : `Charted low-tide depth: ${sounding.lowFt} ft · tide is ${sounding.tideLabel} ft`}
           </p>
           <p className="navaid-detail__pos">{sounding.position}</p>
         </article>
@@ -75,6 +86,7 @@ interface SoundingParts {
   nowFt: number;
   lowFt: number;
   tideLabel: string;
+  isEstimate: boolean;
   position: string;
 }
 
@@ -90,7 +102,8 @@ function useSoundingParts(feature: NavaidFeature): SoundingParts | null {
   const meters = feature.properties.VALSOU ?? feature.properties.DEPTH;
   if (meters == null) return null;
   const pos = self?.position ?? FALLBACK_POS;
-  const tideFt = tideHeightFt(now, pos);
+  const reading = tideHeightNow(now, pos);
+  const tideFt = reading.isEstimate ? 0 : reading.heightFt;
   const nowFt = Math.round(soundingNowFeet(meters, tideFt));
   const lowFt = Math.round(meters * 3.28084);
   const tideLabel = tideFt >= 0 ? `+${tideFt.toFixed(1)}` : tideFt.toFixed(1);
@@ -98,6 +111,7 @@ function useSoundingParts(feature: NavaidFeature): SoundingParts | null {
     nowFt,
     lowFt,
     tideLabel,
+    isEstimate: reading.isEstimate,
     position: formatLatLon(feature.lat, feature.lng),
   };
 }

@@ -8,6 +8,7 @@ import { useAnchorWatch } from '../anchor/anchorStore';
 import { useUserPrefs } from '../prefs/userPrefsStore';
 import { raiseAlarm, clearAlarm, useActiveAlarm } from '../alarm/alarmStore';
 import { useNow } from '../utils/clock';
+import { tidesAuthoritative } from '../utils/tides';
 import { assessAnchorageDrying } from './tideAlerts';
 
 const TICK_MS = 5 * 60 * 1000; // 5 min — tide changes slowly
@@ -20,6 +21,14 @@ export function useAnchorageDryingAlert(): void {
 
   useEffect(() => {
     if (!anchor || anchor.chartedDepthFt == null || prefs.vessel.draftFt == null) {
+      if (active?.kind === 'anchorage-drying') clearAlarm();
+      return;
+    }
+
+    // Project rule: bad data never drives warnings. When only the M2 stub is
+    // available its numbers can be feet off in either direction — stay quiet
+    // rather than alarm (or reassure) on fabricated tide heights.
+    if (!tidesAuthoritative(now, new Date(now.getTime() + 6 * 3600_000), anchor.drop)) {
       if (active?.kind === 'anchorage-drying') clearAlarm();
       return;
     }
@@ -42,8 +51,12 @@ export function useAnchorageDryingAlert(): void {
     } else if (active?.kind === 'anchorage-drying') {
       clearAlarm();
     }
+    // Granular anchor deps: the session object is stable per drop; the fields
+    // listed are the only ones the assessment reads.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [
     now,
+    active?.kind,
     anchor?.drop.latitude,
     anchor?.drop.longitude,
     anchor?.chartedDepthFt,

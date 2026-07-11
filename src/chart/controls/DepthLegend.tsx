@@ -6,7 +6,7 @@ import { useSelf } from '../../signalk/useSignalK';
 import { useNow } from '../../utils/clock';
 import { FALLBACK_POS } from '../../utils/geometry';
 import { metersToFeet } from '../../utils/units';
-import { tideHeightFt } from '../../utils/tides';
+import { tideHeightNow } from '../../utils/tides';
 import { DEPTH_BREAK_MODERATE_M, DEPTH_BREAK_SHALLOW_M } from '../style/marineStyle';
 
 // Non-dismissible — the depth key is a chart-reading reference, not a
@@ -15,7 +15,11 @@ export function DepthLegend() {
   const self = useSelf();
   const now = useNow(5 * 60 * 1000);
   const pos = self?.position ?? FALLBACK_POS;
-  const tideFt = tideHeightFt(now, pos);
+  const reading = tideHeightNow(now, pos);
+  // Estimated tide → show charted MLLW depths (zero shift), matching the
+  // untinted contours. A fabricated stub height must never move the numbers
+  // an operator compares against their keel.
+  const tideFt = reading.isEstimate ? 0 : reading.heightFt;
   const shallowFt = metersToFeet(DEPTH_BREAK_SHALLOW_M) + tideFt;
   const moderateFt = metersToFeet(DEPTH_BREAK_MODERATE_M) + tideFt;
 
@@ -31,7 +35,9 @@ export function DepthLegend() {
         />
         <Row color="deep" label={`${formatFtCompact(moderateFt)}+`} name="Deep" />
       </ul>
-      <span className="depth-legend__footer">tide +{tideFt.toFixed(1)}</span>
+      <span className="depth-legend__footer">
+        {reading.isEstimate ? 'tide unknown — charted depths' : `tide +${tideFt.toFixed(1)}`}
+      </span>
     </div>
   );
 }

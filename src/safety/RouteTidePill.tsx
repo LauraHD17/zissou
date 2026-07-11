@@ -20,7 +20,9 @@ export function RouteTidePill({ mapRef }: Props) {
   const { minEffectiveFt, requiredFt, severity, safeUntil, nextSafeFrom } = alert;
 
   let headline: string;
-  if (severity === 'warn' && safeUntil) {
+  if (alert.tideIsEstimate) {
+    headline = 'Shallow water on route — tide unknown';
+  } else if (severity === 'warn' && safeUntil) {
     headline = `Safe until ${formatLocalTime(safeUntil)}`;
   } else if (severity === 'warn') {
     headline = 'Shallow water — unsafe now';
@@ -41,11 +43,17 @@ export function RouteTidePill({ mapRef }: Props) {
       className={`route-tide route-tide--${severity}`}
       dismissKey={dismissKey}
       dismissLabel="Hide passage check"
-      ariaLabel={`Passage check: ${headline}. Lowest water ahead ${minEffectiveFt.toFixed(1)} ft; need ${requiredFt.toFixed(1)} ft.`}
+      ariaLabel={
+        alert.tideIsEstimate
+          ? `Passage check: ${headline}. Charted minimum ${minEffectiveFt.toFixed(1)} ft; need ${requiredFt.toFixed(1)} ft.`
+          : `Passage check: ${headline}. Lowest water ahead ${minEffectiveFt.toFixed(1)} ft; need ${requiredFt.toFixed(1)} ft.`
+      }
     >
       <span className="route-tide__primary">{headline}</span>
       <span className="route-tide__meta">
-        Min {minEffectiveFt.toFixed(1)} ft · need {requiredFt.toFixed(1)} ft
+        {alert.tideIsEstimate
+          ? `Charted ${minEffectiveFt.toFixed(1)} ft · need ${requiredFt.toFixed(1)} ft`
+          : `Min ${minEffectiveFt.toFixed(1)} ft · need ${requiredFt.toFixed(1)} ft`}
       </span>
     </OverlayPill>
   );
