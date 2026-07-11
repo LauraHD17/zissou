@@ -65,28 +65,14 @@ export default defineConfig({
       },
       workbox: {
         globPatterns: ['**/*.{js,css,html,woff2,png,svg,json,pbf}'],
-        // Chart files ship as release assets and use the runtime cache —
-        // precaching 300 MB would break install on every deploy.
+        // Chart files are never precached (300 MB would break install) and
+        // are NOT served through the SW at all: a custom pmtiles Source
+        // (src/chart/style/chartSource.ts) reads byte ranges directly from
+        // the chunked cache written by src/pwa/chartCache.ts. Single giant
+        // cache entries fail in real browsers ("Unexpected internal error"
+        // on put), which is why the chunked design exists.
         globIgnores: ['charts/**'],
         maximumFileSizeToCacheInBytes: 15 * 1024 * 1024,
-        runtimeCaching: [
-          {
-            // ONLY byte-range reads (MapLibre's tile access) go through the
-            // cache strategy. The one-time full-file download in chartCache.ts
-            // must bypass the SW: with a match on all .pmtiles requests,
-            // CacheFirst would race a second 290 MB write against the
-            // download's own cache.put — two concurrent full-size writes is
-            // exactly the kind of thing iOS storage falls over on.
-            urlPattern: ({ url, request }) =>
-              url.pathname.endsWith('.pmtiles') && request.headers.has('range'),
-            handler: 'CacheFirst',
-            options: {
-              cacheName: 'charts', // must match CHART_CACHE_NAME in src/pwa/chartCache.ts
-              rangeRequests: true,
-              cacheableResponse: { statuses: [0, 200] },
-            },
-          },
-        ],
       },
     }),
   ],

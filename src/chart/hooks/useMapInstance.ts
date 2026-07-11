@@ -4,8 +4,10 @@
 
 import { useEffect, useRef, useState } from 'react';
 import maplibregl from 'maplibre-gl';
-import { Protocol } from 'pmtiles';
+import { PMTiles, Protocol } from 'pmtiles';
 import type { MutableRefObject, RefObject } from 'react';
+import { CachedChartSource } from '../style/chartSource';
+import { CHART_FILES, chartUrl } from '../style/chartUrls';
 import type { Vessel } from '../../signalk/types';
 import { isPlausiblePosition } from '../../utils/geometry';
 import { applyMarineStyle } from '../style/marineStyle';
@@ -19,10 +21,17 @@ const FALLBACK_CENTER: [number, number] = [-68.8, 44.4]; // [lng, lat] mid-coast
 export const DEFAULT_ZOOM = 12;
 
 // Idempotent: pmtiles:// protocol only needs to be registered once per page.
+// Each chart file gets a CachedChartSource-backed PMTiles instance keyed by
+// its URL, so the style's pmtiles://<url> references read from the chunked
+// offline cache when present and fall back to HTTP ranges when not.
 let pmtilesProtocolRegistered = false;
 function ensurePmtilesProtocol() {
   if (pmtilesProtocolRegistered) return;
-  maplibregl.addProtocol('pmtiles', new Protocol().tile);
+  const protocol = new Protocol();
+  for (const f of CHART_FILES) {
+    protocol.add(new PMTiles(new CachedChartSource(chartUrl(f))));
+  }
+  maplibregl.addProtocol('pmtiles', protocol.tile);
   pmtilesProtocolRegistered = true;
 }
 
