@@ -139,6 +139,13 @@ export function buildOfflineStyle(): StyleSpecification {
         source: 'noaa-base',
         'source-layer': 'lndare',
         minzoom: 9,
+        // Retire land names at harbor zoom: large islands are tile-split
+        // into many polygon pieces, each wanting its own label — past z13
+        // the repeats outnumber the value (at that scale you know which
+        // island you're on; buoys/landmarks/soundings are the labels that
+        // matter). TODO(post-voyage): bake one centroid label point per
+        // named feature into build-base-charts.sh and label from that.
+        maxzoom: 13,
         // Show when the current chart scale (denominator ≈ 559e6 / 2^zoom)
         // is within the feature's SCAMIN. Features without SCAMIN wait for
         // approach zoom rather than cluttering the overview.
@@ -167,7 +174,9 @@ export function buildOfflineStyle(): StyleSpecification {
           'text-max-width': 8,
           'text-optional': true,
           'text-transform': 'uppercase',
-          'text-padding': 12,
+          // Collision padding widens with zoom so tile-split repeats of the
+          // same island name suppress each other for as long as possible.
+          'text-padding': ['interpolate', ['linear'], ['zoom'], 9, 16, 12, 96],
           // Larger-SCAMIN (bigger, more important) features win collisions.
           'symbol-sort-key': ['*', -1, ['to-number', ['coalesce', ['get', 'SCAMIN'], 0]]],
         },
@@ -184,6 +193,9 @@ export function buildOfflineStyle(): StyleSpecification {
         source: 'noaa-base',
         'source-layer': 'buaare',
         minzoom: 10,
+        // Same tile-split-repeat medicine as island names: retire past
+        // harbor zoom, where the harbor itself is the whole screen.
+        maxzoom: 14,
         filter: ['has', 'OBJNAM'],
         layout: {
           'text-field': ['get', 'OBJNAM'],
@@ -194,7 +206,7 @@ export function buildOfflineStyle(): StyleSpecification {
           'text-optional': true,
           // Wide collision padding: town polygons arrive split across tile
           // features, which would otherwise print the name twice side by side.
-          'text-padding': 32,
+          'text-padding': ['interpolate', ['linear'], ['zoom'], 10, 32, 13, 160],
         },
         paint: {
           'text-color': '#142038',
