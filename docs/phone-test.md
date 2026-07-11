@@ -48,16 +48,23 @@ assets: `gh release upload charts-v1 public/charts/*.pmtiles --clobber`.
 
 ## One-time phone setup (at home, on wifi)
 
-1. Open **https://laurahd17.github.io/zissou/** in **Safari**.
-2. Allow location access when asked ("While Using the App").
-3. Tap **Download charts (~300 MB)** in the bottom-left pill and leave the
+**iOS gotcha that governs the order:** Safari and the home-screen app are
+SEPARATE storage containers. Permissions, saved settings, and downloaded
+charts do NOT transfer between them — so install first, then do everything
+inside the installed app, and only ever use the icon from then on.
+
+1. Settings → Privacy & Security → **Location Services: ON** (often off on
+   an old/reset phone — if it's off, the app can never even ask).
+2. Open **https://laurahd17.github.io/zissou/** in **Safari** (a normal tab,
+   not Private) → Share button → **Add to Home Screen**.
+3. Launch from the **icon**. Allow location when asked ("While Using").
+4. Enter vessel info (name, draft, cruising speed) in Settings — inside the
+   icon app.
+5. Tap **Download charts (~300 MB)** in the bottom-left pill and leave the
    screen open until it says "Charts saved". This is the offline copy.
-4. Share button → **Add to Home Screen**. (Required — home-screen apps keep
-   their offline storage; a plain Safari tab can have it evicted after 7
-   days of disuse.)
-5. **Verify offline before boat day:** turn wifi off, launch from the home
-   screen icon, and confirm the chart renders and the GPS pill gets a fix
-   (stand near a window or outside — first fix can take 1–2 minutes).
+6. **Verify offline before boat day:** turn wifi off, relaunch from the
+   icon, and confirm the chart renders and the GPS pill gets a fix (stand
+   near a window or outside — first fix can take 1–2 minutes).
 
 ## Boat-day checklist
 
