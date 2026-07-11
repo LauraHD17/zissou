@@ -13,6 +13,7 @@ import { useSelf } from '../signalk/useSignalK';
 import { isPlausiblePosition } from '../utils/geometry';
 import type { AnchorRadiusFt } from '../types/nav';
 import { useActiveAlarm } from '../alarm/alarmStore';
+import { useSavedFlash } from '../ui/useSavedFlash';
 
 const RADII: AnchorRadiusFt[] = [50, 75, 100];
 
@@ -50,6 +51,7 @@ function ConfigPanel({ onClose }: { onClose: () => void }) {
   const [radius, setRadius] = useState<AnchorRadiusFt>(75);
   const [audioEnabled, setAudioEnabled] = useState(true);
   const [chartedDepth, setChartedDepth] = useState('');
+  const savedFlash = useSavedFlash(onClose);
 
   const canDrop = self?.position && isPlausiblePosition(self.position);
   const parsedDepth = parseFloat(chartedDepth);
@@ -120,7 +122,7 @@ function ConfigPanel({ onClose }: { onClose: () => void }) {
 
       <button
         type="button"
-        className="anchor-panel__drop"
+        className={`anchor-panel__drop${savedFlash.saved ? ' action-sheet__btn--saved' : ''}`}
         disabled={!canDrop}
         onClick={() => {
           if (!canDrop) return;
@@ -130,11 +132,14 @@ function ConfigPanel({ onClose }: { onClose: () => void }) {
             chartedDepthFt,
             audioEnabled,
           });
-          onClose();
+          savedFlash.trigger(); // "Anchor set ✓" flash, then close
         }}
       >
-        {canDrop ? 'Drop anchor' : 'Waiting for GPS fix…'}
+        {savedFlash.saved ? 'Anchor set ✓' : canDrop ? 'Drop anchor' : 'Waiting for GPS fix…'}
       </button>
+      <span className="sr-only" role="status">
+        {savedFlash.saved ? 'Anchor watch set' : ''}
+      </span>
     </div>
   );
 }

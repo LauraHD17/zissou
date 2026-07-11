@@ -126,6 +126,56 @@ export function buildOfflineStyle(): StyleSpecification {
           'line-width': 1.5,
         },
       },
+      // Island / land names — ENC land areas carry OBJNAM where NOAA named
+      // them (islands, ledges, points). These are how a mariner orients,
+      // so they show from overview zoom.
+      {
+        id: 'label-lndare',
+        type: 'symbol',
+        source: 'noaa-base',
+        'source-layer': 'lndare',
+        minzoom: 8,
+        filter: ['has', 'OBJNAM'],
+        layout: {
+          'text-field': ['get', 'OBJNAM'],
+          'text-font': ['Noto Sans Bold'],
+          'text-size': 13,
+          'text-letter-spacing': 0.08,
+          'text-max-width': 8,
+          'text-optional': true,
+          'text-transform': 'uppercase',
+        },
+        paint: {
+          'text-color': '#142038',
+          'text-halo-color': '#F0EBE0',
+          'text-halo-width': 1.5,
+        },
+      },
+      // Town / settlement names from built-up areas.
+      {
+        id: 'label-buaare',
+        type: 'symbol',
+        source: 'noaa-base',
+        'source-layer': 'buaare',
+        minzoom: 10,
+        filter: ['has', 'OBJNAM'],
+        layout: {
+          'text-field': ['get', 'OBJNAM'],
+          'text-font': ['Noto Sans Bold'],
+          'text-size': 12,
+          'text-letter-spacing': 0.04,
+          'text-max-width': 8,
+          'text-optional': true,
+          // Wide collision padding: town polygons arrive split across tile
+          // features, which would otherwise print the name twice side by side.
+          'text-padding': 32,
+        },
+        paint: {
+          'text-color': '#142038',
+          'text-halo-color': '#F0EBE0',
+          'text-halo-width': 1.5,
+        },
+      },
       // Landmark labels — lighthouses, towers, conspicuous features. Text
       // from OBJNAM, navy on sand halo. minzoom 13 so they only show when
       // the chart has room for them.

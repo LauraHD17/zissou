@@ -3277,3 +3277,11 @@ body,
      design speaks in solid ink and hard rectangles, not washed-out grays. */
   background: var(--text-on-card);
 }
+
+/* "Saved ✓" flash on form submit buttons — brief green confirmation before
+   the panel closes, so a save never just silently vanishes. */
+.action-sheet__btn--saved {
+  background: var(--ok) !important;
+  color: var(--bg-navy) !important;
+  border-color: var(--ok) !important;
+}

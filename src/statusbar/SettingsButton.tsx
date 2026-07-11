@@ -15,6 +15,7 @@ import { isPlausiblePosition } from '../utils/geometry';
 import { computeDetectedCruisingKn, useCruisingSpeedSamples } from '../prefs/cruisingSpeedStore';
 import { HelpContent } from '../help/HelpContent';
 import { setHeadingMode, useHeadingMode, type HeadingMode } from '../compass/compassStore';
+import { useSavedFlash } from '../ui/useSavedFlash';
 
 export function SettingsButton() {
   const [open, setOpen] = useState(false);
@@ -86,6 +87,8 @@ function SettingsForm({ onDone, onHelp }: { onDone: () => void; onHelp: () => vo
     nameRef.current?.select();
   }, []);
 
+  const savedFlash = useSavedFlash(onDone);
+
   const submit = (e: React.FormEvent) => {
     e.preventDefault();
     setBoatName(name);
@@ -114,7 +117,7 @@ function SettingsForm({ onDone, onHelp }: { onDone: () => void; onHelp: () => vo
       maxWindKn: parseOptional(maxWind),
       maxWaveFt: parseOptional(maxWave),
     });
-    onDone();
+    savedFlash.trigger(); // show "Saved ✓" briefly, then close
   };
 
   return (
@@ -126,6 +129,12 @@ function SettingsForm({ onDone, onHelp }: { onDone: () => void; onHelp: () => vo
       <button type="button" className="settings-form__secondary" onClick={onHelp}>
         Help — what the icons mean & how to use the app
       </button>
+      {/* Version pinned at the TOP: when something is broken enough that
+          scrolling misbehaves, the user must still be able to read off
+          which build they're on without scrolling. */}
+      <p className="settings-form__hint settings-form__hint--muted">
+        App version: {BUILD_ID ? `build ${BUILD_ID.slice(0, 7)}` : 'development'}
+      </p>
 
       <section className="settings-form__section">
         <h3 className="settings-form__section-title">Identity</h3>
@@ -297,9 +306,15 @@ function SettingsForm({ onDone, onHelp }: { onDone: () => void; onHelp: () => vo
         <button type="button" className="action-sheet__btn" onClick={onDone}>
           Cancel
         </button>
-        <button type="submit" className="action-sheet__btn action-sheet__btn--primary">
-          Save
+        <button
+          type="submit"
+          className={`action-sheet__btn action-sheet__btn--primary${savedFlash.saved ? ' action-sheet__btn--saved' : ''}`}
+        >
+          {savedFlash.saved ? 'Saved ✓' : 'Save'}
         </button>
+        <span className="sr-only" role="status">
+          {savedFlash.saved ? 'Settings saved' : ''}
+        </span>
       </div>
 
       <p className="settings-form__hint settings-form__hint--muted">

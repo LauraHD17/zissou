@@ -10,6 +10,7 @@ import { MarineKeypad } from '../ui/MarineKeypad';
 import type { Position } from '../signalk/types';
 import type { SavedWaypoint, WaypointCategory } from '../types/nav';
 import { addWaypoint, updateWaypoint } from './waypointStore';
+import { useSavedFlash } from '../ui/useSavedFlash';
 
 const CATEGORIES: { value: WaypointCategory; icon: IconName; label: string }[] = [
   { value: 'mooring', icon: 'mooringBuoy', label: 'Mooring' },
@@ -36,6 +37,8 @@ export function WaypointEditor(props: Props) {
   // Snapshot of the label at keypad-open, so Cancel reverts cleanly.
   const [labelAtOpen, setLabelAtOpen] = useState('');
 
+  const savedFlash = useSavedFlash(props.onClose);
+
   const submit = (e: React.FormEvent) => {
     e.preventDefault();
     const trimmed = label.trim();
@@ -50,11 +53,11 @@ export function WaypointEditor(props: Props) {
         category,
       });
     }
-    props.onClose();
+    savedFlash.trigger(); // show "Saved ✓" briefly, then close
   };
 
   const title = isEdit ? 'Edit waypoint' : 'Save this spot';
-  const submitText = isEdit ? 'Save changes' : 'Save spot';
+  const submitText = savedFlash.saved ? 'Saved ✓' : isEdit ? 'Save changes' : 'Save spot';
 
   return (
     <SlidePanel open onClose={props.onClose} labelledBy="wp-editor-title">
@@ -108,9 +111,16 @@ export function WaypointEditor(props: Props) {
           </div>
         </fieldset>
 
-        <button type="submit" className="save-wp__submit" disabled={!label.trim()}>
+        <button
+          type="submit"
+          className={`save-wp__submit${savedFlash.saved ? ' action-sheet__btn--saved' : ''}`}
+          disabled={!label.trim()}
+        >
           {submitText}
         </button>
+        <span className="sr-only" role="status">
+          {savedFlash.saved ? 'Waypoint saved' : ''}
+        </span>
       </form>
       <MarineKeypad
         open={keypadOpen}
