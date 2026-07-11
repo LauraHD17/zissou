@@ -115,6 +115,34 @@ for layer in "${LAYERS[@]}"; do
   fi
 done
 
+# Label CENTROID points for named land areas and towns — one point per
+# feature, placed inside the polygon (ST_PointOnSurface). Labeling the
+# polygons directly repeats the name once per tile-split piece ("North
+# Haven Island" printed all over the island); points fix it at the source.
+# Dedupe: the same island appears in multiple overlapping ENC cells, so
+# group by name + ~1km-rounded centroid, keeping the largest polygon's
+# point and the widest SCAMIN.
+echo "[base] Generating label points"
+for layer in LNDARE BUAARE; do
+  src="$WORK_DIR/${layer}.geojson"
+  [[ -s "$src" ]] || continue
+  out="$WORK_DIR/${layer}_LABEL.geojson"
+  ogr2ogr -f GeoJSON "$out" "$src" -dialect sqlite -sql "
+    SELECT ST_PointOnSurface(geometry) AS geometry,
+           OBJNAM,
+           MAX(SCAMIN) AS SCAMIN
+    FROM \"${layer}\"
+    WHERE OBJNAM IS NOT NULL AND OBJNAM != ''
+    GROUP BY OBJNAM,
+             ROUND(ST_X(ST_Centroid(geometry)), 2),
+             ROUND(ST_Y(ST_Centroid(geometry)), 2)
+  " 2>/dev/null || true
+  if [[ -s "$out" ]]; then
+    features="$(grep -c '"type": "Feature"' "$out" || true)"
+    echo "  - ${layer}_LABEL: ${features:-0} label points"
+  fi
+done
+
 echo "[base] Building $OUTPUT_FILE"
 tippecanoe_args=(
   -o "$OUTPUT_FILE"
@@ -123,7 +151,15 @@ tippecanoe_args=(
   --minimum-zoom=4
   --simplification=4
   --coalesce-densest-as-needed
+  -r1
 )
+
+for layer in LNDARE BUAARE; do
+  geo="$WORK_DIR/${layer}_LABEL.geojson"
+  [[ -s "$geo" ]] || continue
+  lower="$(echo "$layer" | tr '[:upper:]' '[:lower:]')_label"
+  tippecanoe_args+=(-L "${lower}:${geo}")
+done
 
 for layer in "${LAYERS[@]}"; do
   geo="$WORK_DIR/${layer}.geojson"

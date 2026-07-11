@@ -67,11 +67,15 @@ export async function chartsCached(): Promise<boolean> {
   return true;
 }
 
-/** Per-file byte sizes via HEAD requests. null if any is unknown. */
+/** Per-file byte sizes via HEAD requests, ONLY for files not yet cached —
+ *  the pill's size label and the progress denominator must reflect what
+ *  will actually download (e.g. a 13 MB base-chart update, not 300 MB). */
 async function chartSizes(): Promise<Map<string, number> | null> {
   try {
+    const cache = cacheApiAvailable() ? await caches.open(CHART_CACHE_NAME) : null;
     const sizes = new Map<string, number>();
     for (const f of CHART_FILES) {
+      if (cache && (await readMeta(cache, chartUrl(f)))) continue; // already complete
       const r = await fetch(chartUrl(f), { method: 'HEAD' });
       const len = Number(r.headers.get('content-length'));
       if (!r.ok || !Number.isFinite(len) || len <= 0) return null;
@@ -83,7 +87,7 @@ async function chartSizes(): Promise<Map<string, number> | null> {
   }
 }
 
-/** Total bytes to download. null if unknown. */
+/** Total bytes still to download. null if unknown. */
 export async function chartsTotalBytes(): Promise<number | null> {
   const sizes = await chartSizes();
   if (!sizes) return null;

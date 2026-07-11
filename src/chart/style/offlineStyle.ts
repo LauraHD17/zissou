@@ -49,6 +49,12 @@ export function buildOfflineStyle(): StyleSpecification {
         url: NOAA_BASE_URL,
         attribution: 'NOAA ENC',
       },
+      // GNIS place-name points — plain GeoJSON, precached with the app.
+      placenames: {
+        type: 'geojson',
+        data: `${import.meta.env.BASE_URL}labels/maine-places.json`,
+        attribution: 'USGS GNIS',
+      },
     },
     layers: [
       // Sand background — anywhere no polygon paints over it reads as land.
@@ -126,59 +132,49 @@ export function buildOfflineStyle(): StyleSpecification {
           'line-width': 1.5,
         },
       },
-      // Island / land names — ENC land areas carry OBJNAM where NOAA named
-      // them (islands, ledges, points). Progressive disclosure the way a
-      // real chart plotter does it: each feature's SCAMIN (NOAA's own
-      // "don't display below this scale" attribute) gates when its name
-      // appears — big islands label at overview zoom, little ledges wait
-      // until you're close. Text also scales with zoom, and bigger-scale
-      // features win label collisions.
+      // Place names — GNIS (USGS) label POINTS from public/labels/
+      // maine-places.json (built by scripts/build-place-labels.mjs; served
+      // with the app and precached by the service worker). One point per
+      // named place = no tile-split repeats, and it includes water names
+      // (bays, channels — "Fox Islands Thorofare") that ENC land polygons
+      // never had. Per-feature `mz` gates progressive disclosure: towns
+      // z9, islands/bays/channels z10, harbors z11, capes z12.
       {
-        id: 'label-lndare',
+        id: 'label-places-water',
         type: 'symbol',
-        source: 'noaa-base',
-        'source-layer': 'lndare',
-        minzoom: 9,
-        // Retire land names at harbor zoom: large islands are tile-split
-        // into many polygon pieces, each wanting its own label — past z13
-        // the repeats outnumber the value (at that scale you know which
-        // island you're on; buoys/landmarks/soundings are the labels that
-        // matter). TODO(post-voyage): bake one centroid label point per
-        // named feature into build-base-charts.sh and label from that.
-        maxzoom: 13,
-        // Show when the current chart scale (denominator ≈ 559e6 / 2^zoom)
-        // is within the feature's SCAMIN. Features without SCAMIN wait for
-        // approach zoom rather than cluttering the overview.
-        filter: [
-          'all',
-          ['has', 'OBJNAM'],
-          [
-            'any',
-            [
-              'all',
-              ['has', 'SCAMIN'],
-              [
-                '>=',
-                ['to-number', ['get', 'SCAMIN']],
-                ['step', ['zoom'], 2200000, 10, 550000, 11, 275000, 12, 140000, 13, 0],
-              ],
-            ],
-            ['all', ['!', ['has', 'SCAMIN']], ['>=', ['zoom'], 12]],
-          ],
-        ],
+        source: 'placenames',
+        filter: ['all', ['==', ['get', 'c'], 'water'], ['>=', ['zoom'], ['get', 'mz']]],
         layout: {
-          'text-field': ['get', 'OBJNAM'],
+          'text-field': ['get', 'n'],
           'text-font': ['Noto Sans Bold'],
-          'text-size': ['interpolate', ['linear'], ['zoom'], 9, 9, 11, 11, 14, 14],
+          'text-size': ['interpolate', ['linear'], ['zoom'], 10, 10, 14, 13],
+          'text-letter-spacing': 0.18,
+          'text-max-width': 9,
+          'text-optional': true,
+          'text-padding': 6,
+          'symbol-sort-key': ['get', 'p'],
+        },
+        paint: {
+          'text-color': '#142038',
+          'text-halo-color': '#F0EBE0',
+          'text-halo-width': 1.2,
+        },
+      },
+      {
+        id: 'label-places-island',
+        type: 'symbol',
+        source: 'placenames',
+        filter: ['all', ['==', ['get', 'c'], 'island'], ['>=', ['zoom'], ['get', 'mz']]],
+        layout: {
+          'text-field': ['get', 'n'],
+          'text-font': ['Noto Sans Bold'],
+          'text-size': ['interpolate', ['linear'], ['zoom'], 10, 10, 14, 14],
           'text-letter-spacing': 0.08,
           'text-max-width': 8,
           'text-optional': true,
           'text-transform': 'uppercase',
-          // Collision padding widens with zoom so tile-split repeats of the
-          // same island name suppress each other for as long as possible.
-          'text-padding': ['interpolate', ['linear'], ['zoom'], 9, 16, 12, 96],
-          // Larger-SCAMIN (bigger, more important) features win collisions.
-          'symbol-sort-key': ['*', -1, ['to-number', ['coalesce', ['get', 'SCAMIN'], 0]]],
+          'text-padding': 6,
+          'symbol-sort-key': ['get', 'p'],
         },
         paint: {
           'text-color': '#142038',
@@ -186,27 +182,20 @@ export function buildOfflineStyle(): StyleSpecification {
           'text-halo-width': 1.5,
         },
       },
-      // Town / settlement names from built-up areas.
       {
-        id: 'label-buaare',
+        id: 'label-places-town',
         type: 'symbol',
-        source: 'noaa-base',
-        'source-layer': 'buaare',
-        minzoom: 10,
-        // Same tile-split-repeat medicine as island names: retire past
-        // harbor zoom, where the harbor itself is the whole screen.
-        maxzoom: 14,
-        filter: ['has', 'OBJNAM'],
+        source: 'placenames',
+        filter: ['all', ['==', ['get', 'c'], 'town'], ['>=', ['zoom'], ['get', 'mz']]],
         layout: {
-          'text-field': ['get', 'OBJNAM'],
+          'text-field': ['get', 'n'],
           'text-font': ['Noto Sans Bold'],
-          'text-size': 12,
+          'text-size': ['interpolate', ['linear'], ['zoom'], 9, 11, 14, 14],
           'text-letter-spacing': 0.04,
           'text-max-width': 8,
           'text-optional': true,
-          // Wide collision padding: town polygons arrive split across tile
-          // features, which would otherwise print the name twice side by side.
-          'text-padding': ['interpolate', ['linear'], ['zoom'], 10, 32, 13, 160],
+          'text-padding': 6,
+          'symbol-sort-key': ['get', 'p'],
         },
         paint: {
           'text-color': '#142038',

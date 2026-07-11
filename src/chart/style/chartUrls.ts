@@ -12,6 +12,9 @@ const RAW_BASE =
   (import.meta.env.VITE_CHARTS_BASE as string | undefined) ?? `${import.meta.env.BASE_URL}charts`;
 export const CHARTS_BASE = RAW_BASE.replace(/\/$/, '');
 
+// NOTE: bumping a filename here (e.g. maine-base-v2.pmtiles) is the cache-
+// invalidation mechanism for chart updates on installed phones — the
+// download pill reappears and fetches only the changed file.
 export const CHART_FILES = ['maine-base.pmtiles', 'maine.pmtiles'] as const;
 
 export function chartUrl(file: (typeof CHART_FILES)[number]): string {
