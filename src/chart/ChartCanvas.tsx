@@ -79,6 +79,7 @@ export function ChartCanvas() {
   const pickModeRef = useRef(pickMode);
   pickModeRef.current = pickMode;
   const [saveAt, setSaveAt] = useState<Position | null>(null);
+  const [legendsOpen, setLegendsOpen] = useState(false);
   const [tappedWaypoint, setTappedWaypoint] = useState<SavedWaypoint | null>(null);
   const [tappedRouteWp, setTappedRouteWp] = useState<RouteWaypoint | null>(null);
   const [tappedVessel, setTappedVessel] = useState<Vessel | null>(null);
@@ -150,7 +151,18 @@ export function ChartCanvas() {
         <SafeReturnPill />
       </div>
       <ScaleBar mapRef={mapRef} />
-      <div className="chart-legend-stack">
+      {/* On phones the legends hide behind a "Key" toggle — a full legend
+          stack covers the chart exactly where an anchored operator is
+          watching their circle. Desktop/Pi always shows them (CSS). */}
+      <button
+        type="button"
+        className="chart-key-toggle"
+        aria-expanded={legendsOpen}
+        onClick={() => setLegendsOpen((v) => !v)}
+      >
+        {legendsOpen ? 'Key ✕' : 'Key'}
+      </button>
+      <div className={`chart-legend-stack${legendsOpen ? ' chart-legend-stack--open' : ''}`}>
         <DepthLegend />
         <SoundingLegend />
         <NavaidLegend />

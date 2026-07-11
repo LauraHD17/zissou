@@ -34,6 +34,10 @@ export function HelpContent({ onBack }: { onBack: () => void }) {
           Buoys and lights appear as their real chart symbols. Tap any of them for a plain-English
           description.
         </p>
+        <p className="help__row">
+          On a phone, the color/symbol key hides behind the <strong>KEY</strong> button at the
+          bottom-left of the chart — tap to show it, tap again to put it away.
+        </p>
       </section>
 
       <section className="settings-form__section">

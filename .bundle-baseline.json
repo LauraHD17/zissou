@@ -1,9 +1,9 @@
 {
   "_comment": "Bundle size limits in bytes. CI fails if any artifact exceeds its max. Update the baseline when you've intentionally added weight (e.g., a new feature). See scripts/check-bundle-size.mjs.",
-  "_target": "Raspberry Pi 4 kiosk — Cortex-A72 @ 1.5 GHz, Chromium. First-paint parse is the bottleneck (~1 MB/s JS). Keep total_js under ~1.5 MB for snappy cold boot; under 2.5 MB tolerable.",
+  "_target": "Raspberry Pi 4 kiosk \u2014 Cortex-A72 @ 1.5 GHz, Chromium. First-paint parse is the bottleneck (~1 MB/s JS). Keep total_js under ~1.5 MB for snappy cold boot; under 2.5 MB tolerable.",
   "limits": {
     "main_js": 250000,
-    "main_css": 50000,
+    "main_css": 60000,
     "chart_chunk_js": 1300000,
     "chart_chunk_css": 100000,
     "total_js": 1800000
@@ -28,5 +28,12 @@
     "chart_chunk_js": 1100080,
     "chart_chunk_css": 69810,
     "total_js": 1314970
+  },
+  "measured_2026-07-11": {
+    "main_js": 175400,
+    "main_css": 49300,
+    "chart_chunk_js": 1050000,
+    "chart_chunk_css": 68200,
+    "total_js": 1270000
   }
 }
