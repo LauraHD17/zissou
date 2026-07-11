@@ -127,23 +127,49 @@ export function buildOfflineStyle(): StyleSpecification {
         },
       },
       // Island / land names — ENC land areas carry OBJNAM where NOAA named
-      // them (islands, ledges, points). These are how a mariner orients,
-      // so they show from overview zoom.
+      // them (islands, ledges, points). Progressive disclosure the way a
+      // real chart plotter does it: each feature's SCAMIN (NOAA's own
+      // "don't display below this scale" attribute) gates when its name
+      // appears — big islands label at overview zoom, little ledges wait
+      // until you're close. Text also scales with zoom, and bigger-scale
+      // features win label collisions.
       {
         id: 'label-lndare',
         type: 'symbol',
         source: 'noaa-base',
         'source-layer': 'lndare',
-        minzoom: 8,
-        filter: ['has', 'OBJNAM'],
+        minzoom: 9,
+        // Show when the current chart scale (denominator ≈ 559e6 / 2^zoom)
+        // is within the feature's SCAMIN. Features without SCAMIN wait for
+        // approach zoom rather than cluttering the overview.
+        filter: [
+          'all',
+          ['has', 'OBJNAM'],
+          [
+            'any',
+            [
+              'all',
+              ['has', 'SCAMIN'],
+              [
+                '>=',
+                ['to-number', ['get', 'SCAMIN']],
+                ['step', ['zoom'], 2200000, 10, 550000, 11, 275000, 12, 140000, 13, 0],
+              ],
+            ],
+            ['all', ['!', ['has', 'SCAMIN']], ['>=', ['zoom'], 12]],
+          ],
+        ],
         layout: {
           'text-field': ['get', 'OBJNAM'],
           'text-font': ['Noto Sans Bold'],
-          'text-size': 13,
+          'text-size': ['interpolate', ['linear'], ['zoom'], 9, 9, 11, 11, 14, 14],
           'text-letter-spacing': 0.08,
           'text-max-width': 8,
           'text-optional': true,
           'text-transform': 'uppercase',
+          'text-padding': 12,
+          // Larger-SCAMIN (bigger, more important) features win collisions.
+          'symbol-sort-key': ['*', -1, ['to-number', ['coalesce', ['get', 'SCAMIN'], 0]]],
         },
         paint: {
           'text-color': '#142038',
