@@ -235,7 +235,11 @@ body,
   align-items: center;
   justify-content: space-between;
   gap: 12px;
-  padding: 10px 16px;
+  /* viewport-fit=cover draws under the iPhone notch/status bar — inset the
+     banner like the StatusBar does, or the message renders clipped. Insets
+     are 0 on the Pi/desktop, so this is a no-op there. */
+  padding: calc(10px + env(safe-area-inset-top, 0px)) calc(16px + env(safe-area-inset-right, 0px))
+    10px calc(16px + env(safe-area-inset-left, 0px));
   background: var(--bg-navy);
   color: var(--text-primary);
   border-bottom: 2px solid var(--alert-red);
@@ -246,6 +250,7 @@ body,
 
 .alarm-banner__message {
   flex: 1;
+  min-width: 0; /* let long messages wrap instead of forcing overflow */
 }
 
 .alarm-banner__ack {
@@ -260,6 +265,25 @@ body,
   letter-spacing: 0.05em;
   cursor: pointer;
   min-height: 44px;
+  flex: 0 0 auto; /* a long message must never crush the tap target */
+}
+
+/* Phone: message on its own line, Acknowledge full-width beneath — a big
+   easy target for a gloved hand on a bouncing deck. */
+@media (max-width: 700px) {
+  .alarm-banner {
+    flex-wrap: wrap;
+    row-gap: 8px;
+  }
+
+  .alarm-banner__message {
+    flex: 1 1 100%;
+  }
+
+  .alarm-banner__ack {
+    flex: 1 1 auto;
+    min-height: 48px;
+  }
 }
 
 /* Visually hidden but exposed to assistive tech. */
