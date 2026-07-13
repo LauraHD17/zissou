@@ -1,7 +1,8 @@
 import { useSyncExternalStore } from 'react';
-import type { SignalKDelta, Vessel, Position } from './types';
+import type { SignalKDelta, Vessel } from './types';
 import { createSignalKClient } from './client';
 import { createSpeedConsistencyChecker } from './speedConsistency';
+import { applyDerivedField, extractMMSI } from './deltaFields';
 
 const SELF_CONTEXT = 'vessels.self';
 
@@ -13,7 +14,6 @@ const EVICT_AFTER_MS = 30 * 60 * 1000; // drop targets silent for 30 min
 const EVICT_SWEEP_MS = 60 * 1000;
 const MAX_TARGETS = 500; // new contexts beyond this are ignored until eviction frees slots
 const MAX_PATHS_PER_VESSEL = 64;
-const MAX_NAME_CHARS = 40; // real AIS names cap at 20; anything longer is garbage
 const UNSAFE_PATH_KEYS = new Set(['__proto__', 'constructor', 'prototype']);
 
 const store: Map<string, Vessel> = new Map();
@@ -112,36 +112,10 @@ function sweep() {
   }
 }
 
-function applyDerivedField(v: Vessel, path: string, value: unknown): void {
-  switch (path) {
-    case 'name':
-      if (typeof value === 'string') v.name = value.slice(0, MAX_NAME_CHARS);
-      break;
-    case 'mmsi':
-      if (typeof value === 'string' || typeof value === 'number') v.mmsi = String(value);
-      break;
-    case 'navigation.position':
-      if (isPosition(value)) v.position = value;
-      break;
-    case 'navigation.speedOverGround':
-      if (typeof value === 'number') v.sog = value;
-      break;
-    case 'navigation.courseOverGroundTrue':
-      if (typeof value === 'number') {
-        v.cog = value;
-        warnIfCogLooksLikeDegrees(value);
-      }
-      break;
-    case 'navigation.state':
-      if (typeof value === 'string') v.navState = value;
-      break;
-  }
-}
-
-// Same "surface, never guess" policy as the COG warning below: own-ship SOG
-// is cross-checked against the speed implied by the GPS track, and a sustained
-// disagreement (a source emitting knots or km/h on the m/s field) is warned
-// once. Speeds stay raw — fix the source's units in SignalK.
+// Same "surface, never guess" policy as the COG warning (deltaFields.ts):
+// own-ship SOG is cross-checked against the speed implied by the GPS track,
+// and a sustained disagreement (a source emitting knots or km/h on the m/s
+// field) is warned once. Speeds stay raw — fix the source's units in SignalK.
 const speedChecker = createSpeedConsistencyChecker(({ reportedKn, derivedKn }) => {
   console.warn(
     `SignalK speed-over-ground disagrees with the GPS track: the wire reports ` +
@@ -151,42 +125,6 @@ const speedChecker = createSpeedConsistencyChecker(({ reportedKn, derivedKn }) =
       `server connection settings.`,
   );
 });
-
-// SignalK v1 specifies radians for COG, but some plugins emit degrees. There
-// is no safe automatic conversion (0–6.28 is valid in both units), so out-of-
-// range values are simply rejected by isValidCogRad at the consumers — which
-// silently degrades every bearing/threat feature. Surface the misconfiguration
-// instead of hiding it.
-let degreesLikeCogCount = 0;
-let warnedDegreesCog = false;
-function warnIfCogLooksLikeDegrees(cog: number) {
-  if (cog > Math.PI * 2 && cog <= 360) {
-    degreesLikeCogCount++;
-    if (degreesLikeCogCount >= 10 && !warnedDegreesCog) {
-      warnedDegreesCog = true;
-      console.warn(
-        'SignalK COG repeatedly exceeds 2π — a source is probably emitting DEGREES ' +
-          '(spec says radians). Headings and threat banding are degraded until the ' +
-          'source is fixed. Check the SignalK server connection settings.',
-      );
-    }
-  }
-}
-
-function isPosition(v: unknown): v is Position {
-  return (
-    typeof v === 'object' &&
-    v !== null &&
-    typeof (v as Position).latitude === 'number' &&
-    typeof (v as Position).longitude === 'number'
-  );
-}
-
-function extractMMSI(context: string): string | undefined {
-  // Format: vessels.urn:mrn:imo:mmsi:367123456
-  const match = context.match(/mmsi:(\d+)/);
-  return match?.[1];
-}
 
 function ensureClient() {
   if (!clientRef) {
