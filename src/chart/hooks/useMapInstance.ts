@@ -15,6 +15,7 @@ import { buildOfflineStyle } from '../style/offlineStyle';
 import { ensureHeadingVectorLayer } from '../markers/HeadingVector';
 import { ensureGoToRouteLayer } from '../markers/GoToRoute';
 import { ensureAnchorCircleLayers } from '../markers/AnchorCircle';
+import { ensureTrackLineLayer } from '../markers/TrackLine';
 import type { ChartMode } from './useChartMode';
 
 const FALLBACK_CENTER: [number, number] = [-68.8, 44.4]; // [lng, lat] mid-coast Maine
@@ -72,6 +73,9 @@ export function useMapInstance({ containerRef, mapRef, styleLoadedRef, modeRef, 
       if (modeRef.current === 'marine') {
         applyMarineStyle(map);
       }
+      // Track line first: it's history context and should render under the
+      // forward-looking heading vector and route lines.
+      ensureTrackLineLayer(map);
       ensureHeadingVectorLayer(map);
       ensureGoToRouteLayer(map);
       ensureAnchorCircleLayers(map);

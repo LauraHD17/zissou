@@ -77,7 +77,7 @@
   --font-sans:
     'Zalando Sans Expanded Variable', 'Zalando Sans Expanded', -apple-system, BlinkMacSystemFont,
     'Segoe UI', sans-serif;
-  --font-mono: 'Roboto Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
+  --font-mono: 'IBM Plex Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
 
   font-family: var(--font-sans);
   font-weight: 500;
@@ -264,7 +264,7 @@ body,
   font-size: 13px;
   letter-spacing: 0.05em;
   cursor: pointer;
-  min-height: 44px;
+  min-height: 64px; /* pressed under stress on a moving boat — biggest target in the app */
   flex: 0 0 auto; /* a long message must never crush the tap target */
 }
 
@@ -282,7 +282,7 @@ body,
 
   .alarm-banner__ack {
     flex: 1 1 auto;
-    min-height: 48px;
+    min-height: 64px;
   }
 }
 
@@ -713,6 +713,49 @@ body,
   letter-spacing: 0.02em;
 }
 
+/* Radio-call script — a read-aloud block, framed like a form field on the
+   datasheet. Hard rectangle, navy border, no fill change. */
+.ais-detail__vhf {
+  margin-top: 8px;
+  padding: 12px;
+  border: 1px solid var(--border-on-card);
+  border-radius: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.ais-detail__vhf-title {
+  font-family: var(--font-sans);
+  font-weight: 700;
+  font-size: 12px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  margin: 0;
+  color: var(--text-on-card-dim);
+}
+
+.ais-detail__vhf-line {
+  font-family: var(--font-sans);
+  font-weight: 500;
+  font-size: 15px;
+  line-height: 1.45;
+  margin: 0;
+  color: var(--text-on-card);
+}
+
+.ais-detail__vhf-hint {
+  font-family: var(--font-sans);
+  font-weight: 600;
+  font-size: 13px;
+  margin: 0;
+  padding: 4px 8px;
+  color: var(--text-on-card);
+  background: rgba(232, 184, 77, 0.22);
+  border-left: 3px solid var(--alert-amber);
+  border-radius: 0;
+}
+
 /* ── MOB chart marker (32 px red, labeled) ─────────────────────────── */
 
 .mob-marker {
@@ -806,7 +849,7 @@ body,
   border-radius: 0;
   cursor: pointer;
   min-width: 56px;
-  min-height: 44px; /* WCAG 2.5.5 AAA — 44×44 minimum */
+  min-height: 56px; /* above the 44px AAA floor — wet/gloved hands while underway */
 }
 
 .tab:hover {
@@ -1067,6 +1110,51 @@ body,
 }
 
 /* ── Route-build pill (mode indicator + Done) ──────────────────────── */
+
+/* Depth story — same bottom-center family as the route-build pill (they are
+   mutually exclusive: depth taps are suppressed while a pick mode is armed). */
+.depth-story-pill {
+  position: absolute;
+  bottom: 24px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 12;
+  display: inline-flex;
+  flex-direction: row-reverse; /* dismiss × on the right */
+  align-items: flex-start;
+  gap: 10px;
+  padding: 10px 8px 10px 14px;
+  background: rgba(20, 32, 56, 0.95);
+  color: var(--text-primary);
+  border: 1px solid var(--border-on-navy);
+  border-radius: 0;
+  font-family: var(--font-sans);
+  max-width: min(420px, calc(100% - 32px));
+}
+
+.depth-story-pill__body {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.depth-story-pill__headline {
+  font-weight: 700;
+  font-size: 15px;
+}
+
+.depth-story-pill__detail {
+  font-weight: 500;
+  font-size: 13px;
+  color: var(--text-dim);
+}
+
+.depth-story-pill__pos {
+  font-family: var(--font-mono);
+  font-weight: 400;
+  font-size: 11px;
+  color: var(--text-dim);
+}
 
 .route-build-pill {
   position: absolute;
@@ -1496,6 +1584,94 @@ body,
 }
 
 /* ── Anchor watch panel ────────────────────────────────────────────── */
+
+/* ── Ship's log (auto-generated day entries) ───────────────────────── */
+
+.logbook {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.logbook__title {
+  font-family: var(--font-sans);
+  font-weight: 700;
+  font-size: 18px;
+  margin: 0;
+  color: var(--text-on-card);
+}
+
+.logbook__empty {
+  font-family: var(--font-sans);
+  font-size: 14px;
+  line-height: 1.45;
+  color: var(--text-on-card-dim);
+  margin: 0;
+}
+
+.logbook__days {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.logbook__day {
+  border: 1px solid var(--border-on-card);
+  border-radius: 0;
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.logbook__day-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.logbook__day-title {
+  font-family: var(--font-sans);
+  font-weight: 700;
+  font-size: 15px;
+  margin: 0;
+  color: var(--text-on-card);
+}
+
+.logbook__share {
+  background: transparent;
+  color: var(--text-on-card);
+  border: 1px solid var(--border-on-card);
+  border-radius: 0;
+  padding: 8px 16px;
+  font-family: var(--font-sans);
+  font-weight: 600;
+  font-size: 13px;
+  cursor: pointer;
+  min-height: 44px;
+  min-width: 64px;
+}
+
+.logbook__lines {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.logbook__line {
+  font-family: var(--font-sans);
+  font-weight: 500;
+  font-size: 14px;
+  line-height: 1.4;
+  color: var(--text-on-card);
+}
 
 .anchor-panel {
   display: flex;
@@ -2385,7 +2561,7 @@ body,
   color: var(--text-primary);
   border: none;
   padding: 10px 16px;
-  min-height: 44px;
+  min-height: 56px; /* above the 44px AAA floor — wet/gloved hands while underway */
   min-width: 64px;
   font-family: var(--font-sans);
   font-weight: 600;
@@ -2419,6 +2595,15 @@ body,
 /* Compact variant — used in split-view 30% column. Trades raw-facts and
    typography density for fitting in a narrow lane. */
 .ais-panel--compact .ais-row {
+  padding: 12px;
+  gap: 4px;
+}
+
+.ais-panel--compact .ais-row--tappable {
+  padding: 0;
+}
+
+.ais-panel--compact .ais-row__btn {
   padding: 12px;
   gap: 4px;
 }
@@ -2489,6 +2674,30 @@ body,
   display: flex;
   flex-direction: column;
   gap: 6px;
+}
+
+/* Vessel rows are fully tappable: the card's padding moves onto the inner
+   button so the tap target is full-bleed edge to edge (no dead 16px frame).
+   Hazard rows keep the padding on the <li> — they have no detail panel. */
+.ais-row--tappable {
+  padding: 0;
+}
+
+.ais-row__btn {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  width: 100%;
+  min-height: 44px;
+  padding: 16px;
+  margin: 0;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  border: 0;
+  border-radius: 0;
+  cursor: pointer;
 }
 
 .ais-row--stale {
@@ -3164,6 +3373,12 @@ body,
     right: 68px;
     max-width: calc(100vw - 92px);
   }
+  /* Phone: at most two pills at once. Stack order is priority order (see
+     ChartCanvas), so the two that show are always the most important; when
+     one is dismissed it leaves the DOM and the next surfaces. */
+  .chart-overlay-stack > :nth-child(n + 3) {
+    display: none;
+  }
   .destination-widget {
     right: 68px;
     max-width: calc(100vw - 92px);
@@ -3198,6 +3413,10 @@ body,
   }
   .tab {
     padding: 8px 12px;
+    min-height: 44px; /* short viewport: back to the AAA floor so the chart keeps height */
+  }
+  .ais-filter-btn {
+    min-height: 44px;
   }
   /* Short viewport: reference legends yield to the chart. */
   .sounding-legend,

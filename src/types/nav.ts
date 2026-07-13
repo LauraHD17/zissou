@@ -90,6 +90,9 @@ export interface ChartLayerPrefs {
   navaids: boolean;
   lights: boolean;
   hazards: boolean;
+  /** Own-ship breadcrumb track (dotted orange line) — the one non-NOAA
+   *  entry; it's chart content the operator may want out of the way. */
+  track: boolean;
 }
 
 /** Hull dimensions, in feet. All optional — a partial spec still informs the

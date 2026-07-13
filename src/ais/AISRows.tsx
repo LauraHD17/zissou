@@ -7,11 +7,13 @@ import type { Vessel } from '../signalk/types';
 import type { ThreatBand } from '../utils/threat';
 import type { FilterMode, HazardRow, VesselRow } from './useAisRows';
 import type { InternetAisStatus } from './useInternetAis';
+import { selectVessel } from './vesselSelectionStore';
 
 export function VesselRowView({ row }: { row: VesselRow }) {
   const { vessel, narrative, isStale, threatBand } = row;
   const classes = [
     'ais-row',
+    'ais-row--tappable',
     isStale && 'ais-row--stale',
     threatBand === 'caution' && 'ais-row--caution',
     threatBand === 'danger' && 'ais-row--danger',
@@ -20,12 +22,23 @@ export function VesselRowView({ row }: { row: VesselRow }) {
     .join(' ');
   return (
     <li className={classes}>
-      {threatBand !== 'monitor' && <ThreatPill band={threatBand} />}
-      <div className="ais-row__name">{displayName(vessel)}</div>
-      <div className="ais-row__location">{narrative.location}</div>
-      {narrative.movement && <div className="ais-row__movement">{narrative.movement}</div>}
-      {narrative.qualifier && <div className="ais-row__qualifier">{narrative.qualifier}</div>}
-      <div className="ais-row__raw">{narrative.rawFacts}</div>
+      {/* Whole card is one button opening the detail panel — same panel a
+          chart-marker tap opens. Only the context string is captured; the
+          host resolves the live vessel (copy-on-write safe). */}
+      <button
+        type="button"
+        className="ais-row__btn"
+        onClick={() => selectVessel(vessel.context)}
+        aria-haspopup="dialog"
+        aria-label={`${displayName(vessel)} — details`}
+      >
+        {threatBand !== 'monitor' && <ThreatPill band={threatBand} />}
+        <div className="ais-row__name">{displayName(vessel)}</div>
+        <div className="ais-row__location">{narrative.location}</div>
+        {narrative.movement && <div className="ais-row__movement">{narrative.movement}</div>}
+        {narrative.qualifier && <div className="ais-row__qualifier">{narrative.qualifier}</div>}
+        <div className="ais-row__raw">{narrative.rawFacts}</div>
+      </button>
     </li>
   );
 }

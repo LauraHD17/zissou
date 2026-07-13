@@ -25,6 +25,7 @@ export const marineToken = {
   alertAmber: () => cssVar('--alert-amber', '#E8B84D'),
   alertRed: () => cssVar('--alert-red', '#8B1E12'),
   bgNavy: () => cssVar('--bg-navy', '#142038'),
+  boatIcon: () => cssVar('--boat-icon', '#FF6B35'),
   ownshipAccent: () => cssVar('--ownship-accent', '#CCFF00'),
 } as const;
 

@@ -20,6 +20,7 @@ const DEFAULT_CHART_LAYERS: ChartLayerPrefs = {
   navaids: true,
   lights: true,
   hazards: true,
+  track: true,
 };
 
 const DEFAULT_INTERNET_AIS: InternetAisPrefs = { enabled: false, apiKey: '' };
@@ -48,6 +49,10 @@ const store = defineStore<UserPrefs>('nav.userPrefs.v1', 1, INITIAL);
     loaded.propulsion == null ||
     loaded.weatherLimits == null ||
     loaded.chartLayers == null ||
+    // Fields added to chartLayers after v1 shipped need their own checks —
+    // an existing chartLayers object would otherwise never back-fill them
+    // and the layer would stay invisible forever.
+    loaded.chartLayers.track == null ||
     loaded.internetAis == null;
   if (needsMigrate) {
     // chartLabelPriority (tri-state balanced/place/depth) was removed with

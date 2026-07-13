@@ -4,6 +4,7 @@
 
 import { newId } from '../utils/id';
 import { defineStore } from '../storage/localStore';
+import { appendLogEvent } from '../logbook/logEventStore';
 import type { SavedWaypoint, WaypointCategory } from '../types/nav';
 
 interface Snapshot {
@@ -68,6 +69,13 @@ export function addWaypoint(input: AddInput): SavedWaypoint {
     createdAt: Date.now(),
   };
   store.update((prev) => ({ items: [...prev.items, wp] }));
+  appendLogEvent({
+    kind: 'waypoint-saved',
+    t: wp.createdAt,
+    lat: wp.lat,
+    lon: wp.lon,
+    label: wp.label,
+  });
   return wp;
 }
 

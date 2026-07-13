@@ -5,8 +5,8 @@ import { createRoot } from 'react-dom/client';
 // correct typography without any network round-trip. Replaces the former
 // Google Fonts CDN link in index.html.
 import '@fontsource-variable/zalando-sans-expanded';
-import '@fontsource/roboto-mono/400.css';
-import '@fontsource/roboto-mono/500.css';
+import '@fontsource/ibm-plex-mono/400.css';
+import '@fontsource/ibm-plex-mono/500.css';
 
 import { App } from './App';
 import { ErrorBoundary } from './ui/ErrorBoundary';

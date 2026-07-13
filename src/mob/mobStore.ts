@@ -2,6 +2,7 @@
 // announcing an emergency that may have been resolved hours ago).
 
 import { defineMemoryStore } from '../storage/localStore';
+import { appendLogEvent } from '../logbook/logEventStore';
 import type { Position } from '../signalk/types';
 
 export interface MOBState {
@@ -21,6 +22,8 @@ export function readMOB(): MOBState | null {
 
 export function activateMOB(position: Position): void {
   store.set({ position, activatedAt: Date.now() });
+  // Durable ship's-log trace — this store itself is wiped on reload.
+  appendLogEvent({ kind: 'mob', t: Date.now(), lat: position.latitude, lon: position.longitude });
 }
 
 export function clearMOB(): void {

@@ -18,6 +18,10 @@ import type { ChartLayerPrefs } from '../../types/nav';
 export const NOAA_LAYER_GROUPS: Record<keyof ChartLayerPrefs, readonly string[]> = {
   contours: ['noaa-depth-contour'],
   soundings: ['noaa-soundg-label'],
+  // Not a NOAA layer — the runtime own-track line (TrackLine.ts). Lives in
+  // this map so the Layers panel toggle drives it through the same
+  // visibility hook; it is NOT in NAVAID_TAPPABLE_LAYER_IDS.
+  track: ['own-track-line'],
   navaids: [
     'noaa-boylat-symbol',
     'noaa-boysaw-symbol',

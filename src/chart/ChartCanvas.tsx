@@ -11,6 +11,7 @@ import { useAISTargets, useSelf } from '../signalk/useSignalK';
 import { useOwnShipMarker } from './markers/OwnShipMarker';
 import { useAISMarkers } from './markers/AISMarkers';
 import { useHeadingVector } from './markers/HeadingVector';
+import { useTrackLine } from './markers/TrackLine';
 import { useDestinationMarker } from './markers/DestinationMarker';
 import { useGoToRoute } from './markers/GoToRoute';
 import { useWaypointMarkers } from './markers/WaypointMarkers';
@@ -22,6 +23,7 @@ import { useMapInstance, DEFAULT_ZOOM } from './hooks/useMapInstance';
 import { useChartPickMode } from './hooks/useChartPickMode';
 import { useTideAwareContours } from './hooks/useTideAwareContours';
 import { useNavaidTaps } from './hooks/useNavaidTaps';
+import { useDepthTaps, type DepthTapResult } from './hooks/useDepthTaps';
 import { useNavaidSpriteTheme } from './hooks/useNavaidSpriteTheme';
 import { useChartLayerVisibility } from './hooks/useChartLayerVisibility';
 import { ChartPanels } from './ChartPanels';
@@ -31,6 +33,7 @@ import { DepthLegend } from './controls/DepthLegend';
 import { NavaidLegend } from './controls/NavaidLegend';
 import { SoundingLegend } from './controls/SoundingLegend';
 import { DropPinButton } from './controls/DropPinButton';
+import { DepthStoryPill } from './controls/DepthStoryPill';
 import { SaveWaypointButton } from './controls/SaveWaypointButton';
 import { DestinationWidget } from './controls/DestinationWidget';
 import { RouteBuildPill } from './controls/RouteBuildPill';
@@ -39,8 +42,9 @@ import { SafeReturnPill } from '../safety/SafeReturnPill';
 import { RouteTidePill } from '../safety/RouteTidePill';
 import { WeatherPill } from '../weather/WeatherPill';
 import { appendWaypoint, removeWaypoint } from '../waypoints/routeStore';
+import { selectVessel } from '../ais/vesselSelectionStore';
 import type { NavaidFeature } from './detail/NavaidDetailPanel';
-import type { Vessel, Position } from '../signalk/types';
+import type { Position } from '../signalk/types';
 import type { RouteWaypoint, SavedWaypoint } from '../types/nav';
 
 export { DEFAULT_ZOOM };
@@ -82,12 +86,15 @@ export function ChartCanvas() {
   const [legendsOpen, setLegendsOpen] = useState(false);
   const [tappedWaypoint, setTappedWaypoint] = useState<SavedWaypoint | null>(null);
   const [tappedRouteWp, setTappedRouteWp] = useState<RouteWaypoint | null>(null);
-  const [tappedVessel, setTappedVessel] = useState<Vessel | null>(null);
   const [tappedNavaid, setTappedNavaid] = useState<NavaidFeature | null>(null);
+  const [depthTap, setDepthTap] = useState<DepthTapResult | null>(null);
 
   useOwnShipMarker(mapRef, self);
-  useAISMarkers(mapRef, targets, self, { onTap: setTappedVessel });
+  // Vessel detail opens via the app-level VesselDetailHost (shared with the
+  // AIS list) — only the context string leaves this handler.
+  useAISMarkers(mapRef, targets, self, { onTap: (v) => selectVessel(v.context) });
   useHeadingVector(mapRef, self);
+  useTrackLine(mapRef);
   useDestinationMarker(mapRef, { onTap: setTappedRouteWp });
   useGoToRoute(mapRef);
   useWaypointMarkers(mapRef, { onTap: setTappedWaypoint });
@@ -96,6 +103,7 @@ export function ChartCanvas() {
   useMOBMarker(mapRef);
   useNavaidSpriteTheme(mapRef);
   useNavaidTaps(mapRef, { onTap: setTappedNavaid, pickModeRef });
+  useDepthTaps(mapRef, { onResult: setDepthTap, pickModeRef });
   useChartLayerVisibility(mapRef);
   // Vias remove directly on tap — intermediate pins are cheap to re-drop and
   // an extra confirmation felt like noise. Destination removal still goes
@@ -145,10 +153,15 @@ export function ChartCanvas() {
         anchorSlot={<AnchorButton />}
       />
       <DestinationWidget />
+      {/* Overlay-pill priority: safety > navigation > weather > housekeeping.
+          Stack order IS priority — on phones CSS shows only the first two, so
+          the order here decides what survives on a small screen. (Navigation
+          = DestinationWidget top-right + RouteBuildPill bottom-center;
+          housekeeping = the bottom-left download/compass pills.) */}
       <div className="chart-overlay-stack">
         <RouteTidePill mapRef={mapRef} />
-        <WeatherPill />
         <SafeReturnPill />
+        <WeatherPill />
       </div>
       <ScaleBar mapRef={mapRef} />
       {/* On phones the legends hide behind a "Key" toggle — a full legend
@@ -168,15 +181,16 @@ export function ChartCanvas() {
         <NavaidLegend />
       </div>
       {pickMode === 'destination' && <RouteBuildPill onDone={() => setPickMode('idle')} />}
+      {depthTap && pickMode === 'idle' && (
+        <DepthStoryPill result={depthTap} onDismiss={() => setDepthTap(null)} />
+      )}
       <ChartPanels
         tappedWaypoint={tappedWaypoint}
         tappedRouteWp={tappedRouteWp}
-        tappedVessel={tappedVessel}
         tappedNavaid={tappedNavaid}
         saveAt={saveAt}
         onCloseWaypoint={() => setTappedWaypoint(null)}
         onCloseRouteWp={() => setTappedRouteWp(null)}
-        onCloseVessel={() => setTappedVessel(null)}
         onCloseNavaid={() => setTappedNavaid(null)}
         onCloseSave={() => setSaveAt(null)}
       />

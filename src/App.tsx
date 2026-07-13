@@ -7,6 +7,7 @@ import { StatusBar, type ViewMode } from './statusbar/StatusBar';
 import { AISPage } from './pages/AISPage';
 import { AppServices } from './AppServices';
 import { AlarmBanner } from './ui/AlarmBanner';
+import { VesselDetailHost } from './ais/VesselDetailHost';
 import { ErrorBoundary } from './ui/ErrorBoundary';
 import { ChartDownloadPill } from './pwa/ChartDownloadPill';
 import { CompassEnablePill } from './compass/CompassEnablePill';
@@ -24,6 +25,10 @@ export function App() {
     <div className="app">
       <AppServices />
       <AlarmBanner />
+      {/* Vessel detail panel is app-level (not chart-level) so AIS list rows
+          can open it in every view mode, including AIS-only where the lazy
+          chart bundle never loads. */}
+      <VesselDetailHost />
       <ChartDownloadPill />
       <CompassEnablePill />
       <StatusBar activeView={view} onViewChange={setView} />

@@ -18,6 +18,7 @@ import { WaypointActionSheet } from './WaypointActionSheet';
 import { WaypointEditor } from './WaypointEditor';
 import { useSuggestedWaypoints } from '../breadcrumbs/useSuggestedWaypoints';
 import { formatDwellDate, formatDwellDuration, type DwellTag } from '../breadcrumbs/dwellDetector';
+import { LogbookPanel } from '../logbook/LogbookPanel';
 
 interface Props {
   onClose: () => void;
@@ -30,8 +31,20 @@ export function WaypointsPanel({ onClose }: Props) {
   const self = useSelf();
   const [actionFor, setActionFor] = useState<SavedWaypoint | null>(null);
   const [saveAt, setSaveAt] = useState<Position | null>(null);
+  const [logbookOpen, setLogbookOpen] = useState(false);
 
   const canSaveCurrent = self?.position != null && isPlausiblePosition(self.position);
+
+  if (logbookOpen) {
+    return (
+      <LogbookPanel
+        onClose={() => {
+          setLogbookOpen(false);
+          onClose();
+        }}
+      />
+    );
+  }
 
   if (actionFor) {
     return (
@@ -94,6 +107,14 @@ export function WaypointsPanel({ onClose }: Props) {
           onClick={() => self?.position && setSaveAt(self.position)}
         >
           {canSaveCurrent ? 'Save current position' : 'Save current position (waiting for GPS)'}
+        </button>
+
+        <button
+          type="button"
+          className="wp-panel__save-current"
+          onClick={() => setLogbookOpen(true)}
+        >
+          Ship's log
         </button>
 
         {suggestions.length > 0 && (

@@ -47,6 +47,11 @@ const LAYERS: LayerRow[] = [
     title: 'Wrecks & obstructions',
     description: 'Things that will stop your boat.',
   },
+  {
+    key: 'track',
+    title: 'Your track',
+    description: 'Dotted line showing where you have been.',
+  },
 ];
 
 interface Props {

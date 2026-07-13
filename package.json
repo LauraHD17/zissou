@@ -19,7 +19,7 @@
   },
   "dependencies": {
     "@fontsource-variable/zalando-sans-expanded": "^5.2.2",
-    "@fontsource/roboto-mono": "^5.2.8",
+    "@fontsource/ibm-plex-mono": "^5.2.7",
     "maplibre-gl": "^5.23.0",
     "pmtiles": "^4.4.1",
     "react": "^18.3.1",
@@ -29,10 +29,10 @@
   "devDependencies": {
     "@eslint/js": "^10.0.1",
     "@playwright/test": "^1.59.1",
-    "@types/suncalc": "^1.9.2",
     "@testing-library/react": "^16.3.2",
     "@types/react": "^18.3.12",
     "@types/react-dom": "^18.3.1",
+    "@types/suncalc": "^1.9.2",
     "@vitejs/plugin-react": "^6.0.1",
     "eslint": "^10.2.1",
     "eslint-plugin-react-hooks": "^7.1.1",

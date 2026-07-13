@@ -9,6 +9,8 @@ import type { Vessel } from '../../signalk/types';
 import { buildVesselNarrative } from '../../utils/narrative';
 import { isVesselStale } from '../../signalk/types';
 import { computeThreatBand } from '../../utils/threat';
+import { buildVhfScript } from '../../utils/vhfScript';
+import { resolveBoatName, useUserPrefs } from '../../prefs/userPrefsStore';
 
 interface Props {
   vessel: Vessel;
@@ -17,6 +19,7 @@ interface Props {
 
 export function AISDetailPanel({ vessel, onClose }: Props) {
   const self = useSelf();
+  const prefs = useUserPrefs();
 
   const { narrative, isStale, band } = useMemo(() => {
     const now = Date.now();
@@ -27,6 +30,11 @@ export function AISDetailPanel({ vessel, onClose }: Props) {
       band: computeThreatBand(vessel, self, stale),
     };
   }, [vessel, self]);
+
+  const vhf = useMemo(
+    () => buildVhfScript(vessel, self, resolveBoatName(prefs.boatName, self?.name)),
+    [vessel, self, prefs.boatName],
+  );
 
   const displayName =
     vessel.name ?? (vessel.mmsi ? `Unnamed vessel (MMSI ${vessel.mmsi})` : 'Unknown vessel');
@@ -42,6 +50,17 @@ export function AISDetailPanel({ vessel, onClose }: Props) {
         {narrative.movement && <p className="ais-detail__movement">{narrative.movement}</p>}
         {narrative.qualifier && <p className="ais-detail__qualifier">{narrative.qualifier}</p>}
         <p className="ais-detail__raw">{narrative.rawFacts}</p>
+        <section className="ais-detail__vhf" aria-label="Radio call script">
+          <h3 className="ais-detail__vhf-title">Radio call — channel 16</h3>
+          {vhf.lines.map((line) => (
+            <p key={line} className="ais-detail__vhf-line">
+              {line}
+            </p>
+          ))}
+          {vhf.missingOwnName && (
+            <p className="ais-detail__vhf-hint">Set your boat name in Settings.</p>
+          )}
+        </section>
       </article>
     </SlidePanel>
   );
