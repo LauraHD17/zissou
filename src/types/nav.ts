@@ -126,6 +126,15 @@ export interface WeatherLimits {
   maxWaveFt?: number;
 }
 
+/** Internet AIS shore relay (aisstream.io) — supplementary, delayed traffic
+ *  data for a phone with cellular service and no receiver aboard. The key is
+ *  the operator's own free aisstream.io API key, stored only on this device.
+ *  Relayed targets are labeled and capped at 'monitor' threat band. */
+export interface InternetAisPrefs {
+  enabled: boolean;
+  apiKey: string;
+}
+
 export interface UserPrefs {
   /** Operator-set display name for the vessel. Shown as the StatusBar
    *  nameplate; overrides the SignalK-reported self.name when set. */
@@ -145,4 +154,6 @@ export interface UserPrefs {
   /** Per-group visibility for NOAA chart data. All default to true; toggled
    *  from the Layers panel when the operator wants a cleaner view. */
   chartLayers: ChartLayerPrefs;
+  /** Internet AIS shore relay — off by default; needs an operator API key. */
+  internetAis: InternetAisPrefs;
 }

@@ -47,12 +47,16 @@ export function buildVesselNarrative(
   const isStale = isVesselStale(vessel, now);
   const rawFacts = buildRawFacts(vessel);
   const staleLine = isStale ? staleQualifier(now - vessel.lastUpdated) : null;
+  // Shore-relayed reports carry a standing caveat — the position may be
+  // minutes old even when the report just arrived (see aisStream.ts).
+  const relayLine = vessel.relayed ? 'Via shore relay — position may be delayed' : null;
+  const qualifier = joinQualifiers(staleLine, relayLine);
 
   if (!vessel.position) {
     return {
       location: 'Position unknown — static-only report',
       movement: null,
-      qualifier: staleLine,
+      qualifier,
       rawFacts,
     };
   }
@@ -86,7 +90,12 @@ export function buildVesselNarrative(
 
   const movement = capitalize(describeMovement(vessel, selfPos));
 
-  return { location, movement, qualifier: staleLine, rawFacts };
+  return { location, movement, qualifier, rawFacts };
+}
+
+function joinQualifiers(...lines: (string | null)[]): string | null {
+  const present = lines.filter((l): l is string => l != null);
+  return present.length > 0 ? present.join(' · ') : null;
 }
 
 function describeMovement(vessel: Vessel, selfPos: Position | undefined): string {

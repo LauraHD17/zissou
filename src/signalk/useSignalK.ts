@@ -42,7 +42,7 @@ function targetCount(): number {
   return store.size - (store.has(SELF_CONTEXT) ? 1 : 0);
 }
 
-function ingest(delta: SignalKDelta) {
+function ingest(delta: SignalKDelta, opts?: { relayed?: boolean }) {
   const { context, updates } = delta;
   if (!context || !Array.isArray(updates)) return;
 
@@ -55,6 +55,11 @@ function ingest(delta: SignalKDelta) {
   const next: Vessel = prev
     ? { ...prev, paths: { ...prev.paths } }
     : { context, mmsi: extractMMSI(context), lastUpdated: 0, paths: {} };
+
+  // The freshest report wins the trust label: a shore-relayed delta marks the
+  // vessel relayed; a direct (receiver/server) delta clears it. So when the
+  // dAISy hears a boat the internet also reports, direct reception wins.
+  next.relayed = opts?.relayed === true;
 
   let touched = false;
   for (const update of updates) {
@@ -228,6 +233,18 @@ export function useSelf(): Vessel | undefined {
 
 export function useAISTargets(): Vessel[] {
   return useSyncExternalStore(subscribeTargets, () => targetsSnapshot);
+}
+
+/**
+ * Inject a delta from the supplementary internet-AIS relay (useInternetAis).
+ * Same bounded/defensive ingest as the primary client, but the vessel is
+ * marked `relayed` so threat banding caps it at 'monitor' and the UI labels
+ * it. Deltas only flow while at least one consumer holds the store open —
+ * matching the primary client's refcount lifecycle.
+ */
+export function ingestRelayedDelta(delta: SignalKDelta): void {
+  if (refCount === 0) return; // store torn down — drop, like a closed client
+  ingest(delta, { relayed: true });
 }
 
 // Escape hatch for debugging in devtools.

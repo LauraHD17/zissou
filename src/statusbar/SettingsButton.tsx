@@ -4,6 +4,7 @@ import { SlidePanel } from '../ui/SlidePanel';
 import {
   setBoatName,
   setHomeMooring,
+  setInternetAis,
   setPropulsion,
   setSafetyMargin,
   setVesselDims,
@@ -74,6 +75,8 @@ function SettingsForm({ onDone, onHelp }: { onDone: () => void; onHelp: () => vo
   const [homeLabel, setHomeLabel] = useState(prefs.homeMooring?.label ?? '');
   const [maxWind, setMaxWind] = useState(numInit(prefs.weatherLimits.maxWindKn));
   const [maxWave, setMaxWave] = useState(numInit(prefs.weatherLimits.maxWaveFt));
+  const [netAisEnabled, setNetAisEnabled] = useState(prefs.internetAis.enabled);
+  const [netAisKey, setNetAisKey] = useState(prefs.internetAis.apiKey);
   const nameRef = useRef<HTMLInputElement>(null);
 
   const useCurrentAsHome = () => {
@@ -117,6 +120,7 @@ function SettingsForm({ onDone, onHelp }: { onDone: () => void; onHelp: () => vo
       maxWindKn: parseOptional(maxWind),
       maxWaveFt: parseOptional(maxWave),
     });
+    setInternetAis({ enabled: netAisEnabled, apiKey: netAisKey.trim() });
     savedFlash.trigger(); // show "Saved ✓" briefly, then close
   };
 
@@ -290,6 +294,36 @@ function SettingsForm({ onDone, onHelp }: { onDone: () => void; onHelp: () => vo
         </p>
         <p className="settings-form__hint">
           Used for "Can I go?" forecast checks. Set to what you and your boat are comfortable with.
+        </p>
+      </section>
+
+      <section className="settings-form__section">
+        <h3 className="settings-form__section-title">Internet AIS (shore relay)</h3>
+        <label className="settings-form__field settings-form__field--checkbox">
+          <input
+            type="checkbox"
+            checked={netAisEnabled}
+            onChange={(e) => setNetAisEnabled(e.target.checked)}
+          />
+          <span>Show vessel traffic relayed from shore stations</span>
+        </label>
+        <label className="settings-form__field">
+          <span>aisstream.io API key</span>
+          <input
+            type="text"
+            autoCapitalize="none"
+            autoCorrect="off"
+            spellCheck={false}
+            value={netAisKey}
+            onChange={(e) => setNetAisKey(e.target.value)}
+            placeholder="paste your free key"
+          />
+        </label>
+        <p className="settings-form__hint">
+          Needs cellular data and a free key from aisstream.io (create an account, copy the key here
+          — it stays on this phone). Relayed positions can be minutes old, so these vessels are
+          marked "via shore relay" and never raise collision warnings. Traffic awareness, not
+          collision avoidance.
         </p>
       </section>
 

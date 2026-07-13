@@ -9,6 +9,7 @@ import { useNowMs } from '../utils/clock';
 import { haversineNm, isPlausiblePosition } from '../utils/geometry';
 import { buildHazardNarrative, buildVesselNarrative } from '../utils/narrative';
 import { computeHazardThreatBand, computeThreatBand, type ThreatBand } from '../utils/threat';
+import { useInternetAisStatus, type InternetAisStatus } from './useInternetAis';
 
 type FilterMode = 'all' | 'active';
 
@@ -108,15 +109,19 @@ export function AISList({ compact = false }: { compact?: boolean } = {}) {
 
   const visibleRows = filter === 'all' ? allRows : allRows.filter(isActive);
   const hiddenCount = allRows.length - visibleRows.length;
+  const netStatus = useInternetAisStatus();
 
   return (
     <div className={`ais-panel${compact ? ' ais-panel--compact' : ''}`}>
       <FilterBar filter={filter} onChange={setFilter} hiddenCount={hiddenCount} />
+      {netStatus !== 'off' && <NetStatusStrip status={netStatus} />}
       {visibleRows.length === 0 ? (
         <div className="ais-empty">
           {filter === 'active' && allRows.length > 0
             ? 'No active vessels or hazards — all reports are stale, invalid, or positionless.'
-            : 'No AIS targets yet — waiting for data…'}
+            : netStatus === 'offline'
+              ? 'No AIS targets — and the shore relay is offline, so this may not mean no traffic.'
+              : 'No AIS targets yet — waiting for data…'}
         </div>
       ) : (
         <ul className="ais-list">
@@ -176,6 +181,27 @@ function HazardRowView({ row }: { row: HazardRow }) {
       {narrative.qualifier && <div className="ais-row__qualifier">{narrative.qualifier}</div>}
       <div className="ais-row__raw">{narrative.rawFacts}</div>
     </li>
+  );
+}
+
+/** Connection state for the internet shore relay. Always visible while the
+ *  feature is on — an empty list with the relay down must not read as "no
+ *  traffic out there." */
+function NetStatusStrip({ status }: { status: Exclude<InternetAisStatus, 'off'> }) {
+  const text =
+    status === 'connected'
+      ? 'Shore AIS relay: receiving. Relayed positions may be delayed — treat as awareness, not collision avoidance.'
+      : status === 'connecting'
+        ? 'Shore AIS relay: connecting…'
+        : 'Shore AIS relay: offline — no cell signal or service unreachable.';
+  return (
+    <div
+      className={`ais-net-status${status === 'offline' ? ' ais-net-status--offline' : ''}`}
+      role="status"
+      aria-live="polite"
+    >
+      {text}
+    </div>
   );
 }
 

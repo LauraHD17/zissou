@@ -34,6 +34,10 @@ export function computeThreatBand(
   isStale: boolean,
 ): ThreatBand {
   if (isStale) return 'monitor';
+  // Shore-relayed (internet AIS) positions can be minutes old while looking
+  // fresh — never let them drive a caution/danger warning. Same conservative
+  // policy as stale/missing data.
+  if (vessel.relayed) return 'monitor';
   if (!vessel.position || !isPlausiblePosition(vessel.position)) return 'monitor';
   if (!self?.position) return 'monitor';
 

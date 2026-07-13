@@ -16,6 +16,10 @@ export interface SignalKClient {
 //          mode — an empty AIS list is the honest state for a phone with
 //          no AIS receiver. Requires a secure (HTTPS) origin on iOS.
 const MODE = (import.meta.env.VITE_SIGNALK_MODE ?? 'mock') as 'mock' | 'real' | 'geo';
+// Exported for the internet-AIS relay gate: the supplementary shore feed runs
+// in the on-water modes (geo/real) but never in mock — the mock fleet stays
+// hermetic and dev runs don't burn the aisstream connection.
+export const SIGNALK_MODE = MODE;
 const URL =
   import.meta.env.VITE_SIGNALK_URL ?? 'ws://localhost:3000/signalk/v1/stream?subscribe=all';
 

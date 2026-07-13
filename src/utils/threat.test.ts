@@ -54,6 +54,15 @@ describe('computeThreatBand — conservative on bad data', () => {
     expect(computeThreatBand(vessel({ position: north(50) }), undefined, false)).toBe('monitor');
     expect(computeThreatBand(vessel({ position: north(50) }), vessel(), false)).toBe('monitor');
   });
+
+  it('shore-relayed target is monitor even 50 m away and closing', () => {
+    // Internet-AIS positions can be minutes old — a relayed report must never
+    // drive a caution/danger warning no matter how close it looks.
+    const closing = vessel({ position: north(50), relayed: true, sog: 5, cog: SOUTH });
+    expect(computeThreatBand(closing, vessel({ position: BASE, sog: 0, cog: NORTH }), false)).toBe(
+      'monitor',
+    );
+  });
 });
 
 describe('computeThreatBand — distance thresholds', () => {

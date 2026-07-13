@@ -31,6 +31,12 @@ export interface Vessel {
   sog?: number;
   cog?: number;
   navState?: string;
+  /** True when the last report arrived via an internet shore relay
+   *  (aisstream.io) rather than a receiver on this boat. Relayed positions
+   *  can be minutes old, so threat banding caps these at 'monitor' and the
+   *  UI labels them — delayed data must never fire a danger warning. A
+   *  direct (receiver) report for the same vessel clears the flag. */
+  relayed?: boolean;
   lastUpdated: number;
   paths: Record<string, unknown>;
 }

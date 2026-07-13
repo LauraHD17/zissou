@@ -5,6 +5,7 @@ import { defineStore } from '../storage/localStore';
 import type {
   ChartLayerPrefs,
   HomeMooring,
+  InternetAisPrefs,
   PropulsionPrefs,
   UserPrefs,
   VesselDims,
@@ -21,6 +22,8 @@ const DEFAULT_CHART_LAYERS: ChartLayerPrefs = {
   hazards: true,
 };
 
+const DEFAULT_INTERNET_AIS: InternetAisPrefs = { enabled: false, apiKey: '' };
+
 const INITIAL: UserPrefs = {
   boatName: '',
   vessel: {},
@@ -30,6 +33,7 @@ const INITIAL: UserPrefs = {
   alarmVolumePct: 80,
   alarmTone: 'siren',
   chartLayers: DEFAULT_CHART_LAYERS,
+  internetAis: DEFAULT_INTERNET_AIS,
 };
 
 const store = defineStore<UserPrefs>('nav.userPrefs.v1', 1, INITIAL);
@@ -43,7 +47,8 @@ const store = defineStore<UserPrefs>('nav.userPrefs.v1', 1, INITIAL);
     loaded.safetyMarginFt == null ||
     loaded.propulsion == null ||
     loaded.weatherLimits == null ||
-    loaded.chartLayers == null;
+    loaded.chartLayers == null ||
+    loaded.internetAis == null;
   if (needsMigrate) {
     // chartLabelPriority (tri-state balanced/place/depth) was removed with
     // the WCAG depth-label rework. We intentionally do NOT strip stored
@@ -55,6 +60,7 @@ const store = defineStore<UserPrefs>('nav.userPrefs.v1', 1, INITIAL);
       propulsion: { cruisingSpeedKn: loaded.propulsion?.cruisingSpeedKn },
       weatherLimits: { ...(loaded.weatherLimits ?? {}) },
       chartLayers: { ...DEFAULT_CHART_LAYERS, ...(loaded.chartLayers ?? {}) },
+      internetAis: { ...DEFAULT_INTERNET_AIS, ...(loaded.internetAis ?? {}) },
     } as UserPrefs);
   }
 })();
@@ -92,6 +98,10 @@ export function setHomeMooring(home: HomeMooring | undefined) {
 
 export function setWeatherLimits(patch: Partial<WeatherLimits>) {
   store.update((p) => ({ ...p, weatherLimits: { ...p.weatherLimits, ...patch } }));
+}
+
+export function setInternetAis(patch: Partial<InternetAisPrefs>) {
+  store.update((p) => ({ ...p, internetAis: { ...p.internetAis, ...patch } }));
 }
 
 export function setChartLayerVisible(layer: keyof ChartLayerPrefs, visible: boolean) {

@@ -33,6 +33,12 @@ export function msToKnots(metersPerSec: number): number {
   return metersPerSec * MS_TO_KN;
 }
 
+/** Inverse of msToKnots — for sources that report speed in knots (AIS wire
+ *  format) feeding the store, which holds SignalK-spec m/s. */
+export function knotsToMs(knots: number): number {
+  return knots / MS_TO_KN;
+}
+
 export function msToMph(metersPerSec: number): number {
   return metersPerSec * MS_TO_MPH;
 }

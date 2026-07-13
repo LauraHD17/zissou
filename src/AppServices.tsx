@@ -14,6 +14,7 @@ import { useWeatherAutoFetch } from './weather/useWeatherAutoFetch';
 import { useTideRefresh } from './utils/useTideRefresh';
 import { useAnchorDragWatch } from './anchor/useAnchorDragWatch';
 import { useHazardProximityWatch } from './waypoints/useHazardProximityWatch';
+import { useInternetAis } from './ais/useInternetAis';
 
 export function AppServices() {
   useApplyTheme();
@@ -22,6 +23,7 @@ export function AppServices() {
   useCruisingSpeedRecorder();
   useWeatherAutoFetch();
   useTideRefresh();
+  useInternetAis();
   // Safety watches — always on, independent of the chart.
   useAnchorDragWatch();
   useHazardProximityWatch();
