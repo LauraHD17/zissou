@@ -77,6 +77,26 @@ inside the installed app, and only ever use the icon from then on.
   else (chart, tides, sun, GPS, alarms, waypoints, routes) works with no
   connection at all
 
+## On-water usability protocol
+
+The first real-water ride doubles as a guerrilla usability test (n=1 is fine —
+you're the only operator). Run each task while underway or at anchor, note
+pass/fail and anything that made you hesitate, and rate failures by severity
+(4 = couldn't complete, 3 = major difficulty, 2 = hesitation, 1 = cosmetic).
+
+| # | Task (realistic scenario, not instructions) | Success criteria |
+| --- | --- | --- |
+| 1 | An alarm fires while you're steering. Silence it one-handed without looking away from the water for more than a beat. | Acknowledged first try, wet/gloved hand, < 3 s |
+| 2 | Head for your home mooring: set it as destination from saved waypoints. | Done in ≤ 5 taps, < 30 s |
+| 3 | In glare at midday, answer from the StatusBar almanac: what's the tide doing and when's sunset? | Read correctly at arm's length without shading the screen |
+| 4 | You're nosing into a shallow cove. Tap ahead of the bow and say how much water is there right now. | Depth story appears and the charted-vs-now distinction is understood |
+| 5 | A vessel is converging. Open its details from the AIS list and read the radio hail aloud. | Panel opens first tap; script reads naturally on channel 16 |
+| 6 | At the end of the day, share the day's log entry to yourself. | Ship's log entry matches the day; share sheet works offline-composed |
+| 7 | Kill the app, put the phone in airplane mode, relaunch on the mooring. | Chart, tides, track, and waypoints all present; no blank tiles |
+
+Findings with severity ≥ 3 get fixed before the Pi install; log outcomes in
+DESIGN.md's change log so decisions trace back to observed behavior.
+
 ## What works on the phone vs the Pi
 
 | Feature                                                             | Phone (geo mode)                            | Pi (real mode)     |

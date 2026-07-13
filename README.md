@@ -1,4 +1,4 @@
-# Sisu Nav
+# GATOR
 
 A simple, plain-language marine navigation app for small boats on the Maine
 coast. Built for a 1978 Sisu 22 in Penobscot Bay; shared as-is for friends who

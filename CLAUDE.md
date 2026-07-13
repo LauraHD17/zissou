@@ -1,22 +1,28 @@
 # navigation-project
 
-Navigation UI for a Raspberry Pi 4 running on a 1978 Sisu 22 (diesel inboard, centerboard). Shallow-draft coastal use — depth awareness matters more than wind. React + TypeScript + Vite frontend that subscribes to a SignalK server over WebSocket.
+**App name: GATOR** (PWA manifest, `<title>`, iOS home-screen label, README — renamed from "Sisu Nav" 2026-07-13; the StatusBar nameplate is the *boat* name from Settings, unrelated). Navigation UI for a 1978 Sisu 22 (diesel inboard, centerboard). Shallow-draft coastal use — depth awareness matters more than wind. React + TypeScript + Vite frontend that speaks the SignalK delta shape.
+
+**Primary platform: an iPhone at the helm** — standalone offline PWA using the phone's own GPS (`geo` mode). A Raspberry Pi kiosk with a hardware AIS receiver is a possible future install (`real` mode is built and kept working), not the current deployment — decision 2026-07-13.
 
 ## Hardware
 
-- **Raspberry Pi 4** running OpenPlotter (Raspberry Pi OS + SignalK + OpenCPN preinstalled).
+**Current (on the water): iPhone 11, iOS 15+** — phone GPS feeds position/SOG/COG; charts cached on-device; no other hardware aboard.
+
+**Future Pi install (maybe, down the road)** — the `real`-mode path is built and documented for it:
+
+- **Raspberry Pi 4** running OpenPlotter (Raspberry Pi OS + SignalK + OpenCPN preinstalled). See [docs/pi-kiosk.md](docs/pi-kiosk.md).
 - **u-blox USB GPS dongle** — appears as `/dev/ttyACM0`. Feeds `navigation.position`, `navigation.speedOverGround`, `navigation.courseOverGroundTrue`.
 - **dAISy HAT** — AIS receiver on the GPIO UART (`/dev/serial0`). Requires Linux serial console disabled via `raspi-config` → Interface Options → Serial Port → "login shell: No, serial hardware: Yes".
-- **Standalone depth finder** — not wired into the Pi for v1.
+- **Standalone depth finder** — not wired in; upgrading it to NMEA output is what makes the Pi worth installing (see Deferred).
 
 ## Architecture
 
 - **SignalK delta shape is the data contract.** Three client modes in `src/signalk/client.ts`, switched via `VITE_SIGNALK_MODE`:
   - `mock` — laptop development; messy synthetic fleet from `mockData.ts`.
-  - `real` — SignalK server over WebSocket (the Pi; port 3000, `ws://localhost:3000/signalk/v1/stream`). Reconnects with capped exponential backoff (2 s → 30 s).
-  - `geo` — the device's own GPS via the browser Geolocation API (the phone build). **Real data only — no mock AIS ever runs in this mode**; the AIS panel stays honestly empty. Geolocation heading arrives in degrees and is converted to radians at the source.
+  - `geo` — the device's own GPS via the browser Geolocation API (**the phone build — the shipping mode**). **Real data only — no mock AIS ever runs in this mode**; the AIS panel stays honestly empty. Geolocation heading arrives in degrees and is converted to radians at the source.
+  - `real` — SignalK server over WebSocket (the future Pi; port 3000, `ws://localhost:3000/signalk/v1/stream`). Reconnects with capped exponential backoff (2 s → 30 s). Built and kept working, not currently deployed.
   - **Supplementary internet AIS (geo/real only, never `mock`)** — `src/signalk/aisStream.ts` + `src/ais/useInternetAis.ts` relay shore-station AIS from aisstream.io when enabled in Settings (operator's own free API key; needs cellular data). Real but **delayed and coverage-gapped**: vessels are flagged `relayed`, capped at `monitor` threat band (a possibly-minutes-old position must never fire a collision warning), labeled "via shore relay", and the AIS list shows relay connection status so an empty list while offline doesn't read as "no traffic". Wire units (knots/degrees) convert to SignalK SI at the source; a direct receiver report for the same vessel clears the flag.
-- **Two deployment targets:** the Pi kiosk (`real`) and a standalone offline PWA on an iPhone (`geo`) — see [docs/phone-test.md](docs/phone-test.md). Same codebase, same charts, same features minus AIS.
+- **Deployment:** the standalone offline PWA on an iPhone (`geo`) is the app — see [docs/phone-test.md](docs/phone-test.md). The Pi kiosk (`real`) is the same codebase, same charts, plus hardware AIS, if/when the Pi gets installed.
 - **Map library: MapLibre GL** with a fully self-contained offline style — local PMTiles for both the base map and the NOAA overlay, self-hosted fonts and sprites. Zero CDN dependencies at runtime (`scripts/verify-offline.mjs` enforces this).
 - **No depth, wind, or magnetic heading** — no sensors for them yet.
 
@@ -28,7 +34,8 @@ Feature-foldered — each feature owns its components, hooks, and store:
 src/
 ├── signalk/     # client (mock|real|geo), ingest store, mock data, types
 ├── chart/       # ChartCanvas + controls/, detail/, hooks/, markers/, style/
-├── ais/         # AISList
+├── ais/         # AISList, tappable rows, vessel selection store + detail host
+├── logbook/     # auto ship's log (event store, day-entry generator, panel)
 ├── pages/       # Route-level views (AISPage, ChartPage)
 ├── statusbar/   # StatusBar, ClockSunTide, MOB/Waypoints/Settings buttons
 ├── alarm/       # single-slot alarm store + audio
@@ -56,7 +63,7 @@ public/
 
 Three view modes, toggled from the StatusBar:
 
-- **Split (default)** — AIS list at 30% width on the left, Chart at 70% on the right. Designed for a 7–10" Pi touchscreen (1024×600 typical). AIS column clamps `min-width: 260px` / `max-width: 400px` so cards stay readable.
+- **Split (default)** — AIS list at 30% width on the left, Chart at 70% on the right. Sized for a landscape tablet / future 7–10" Pi touchscreen (1024×600 typical); phone media queries reflow it for 375px portrait and short landscape. AIS column clamps `min-width: 260px` / `max-width: 400px` so cards stay readable.
 - **AIS only** — full-width AIS list, max 720px centered.
 - **Chart only** — full-width chart.
 
@@ -89,7 +96,13 @@ In split mode, the AIS list renders with `compact={true}` → applies `.ais-pane
 
 **AIS + waypoint markers are real `<button>`s** (44×44 hit area, aria-labels, keyboard focusable — AAA 2.5.5/2.1.1). Threat band drives className (`ais-target-marker--monitor/caution/danger`); targets with COG render as oriented chevrons, anchored vessels as circles. Stale → 0.55 opacity. Markers tracked by `vessel.context`/waypoint id in a ref-map with add/update/remove diffing; **click handlers look up the CURRENT entity from the ref-map** — vessels are copy-on-write, so closing over the object at creation time would hand panels stale data.
 
-**Auto-recenter:** `map.setCenter()` on every own-ship position change. v1 — free-pan and explicit "Recenter" button deferred.
+**Auto-recenter / free-pan:** auto-recenter follows own-ship until the operator drags or zooms (`following` in `useMapInstance`); the Recenter map-control button re-engages it and shows a drift indicator while free-panning.
+
+**Tap-for-depth:** tapping open water (not a navaid/sounding symbol — those open NavaidDetailPanel) queries the nearest rendered spot sounding (60px radius), else the nearest depth contour (22px), and shows a bottom-center pill: "About 12 ft here now · Charted 4 ft at low water + 8.2 ft of tide". Estimated tide → charted-only wording, never a fabricated live depth (`src/utils/depthStory.ts`). No charted depth found → silence.
+
+**Track line + ship's log:** breadcrumbs draw as a dotted orange (`--boat-icon`) line (`src/chart/markers/TrackLine.ts`, toggle in the Layers panel; splits on >30 min / >1 nm gaps). `src/logbook/` turns breadcrumbs + dwells + a persisted action-event store (MOB/anchor/waypoint saves, recorded at the action sites) into narrative day entries ("Departed Castine mooring 9:12 AM · Distance run 14.2 nautical miles (16.3 miles)"), shareable from the Waypoints panel → Ship's log.
+
+**Overlay-pill priority:** safety > navigation > weather > housekeeping. The top-right stack order in ChartCanvas IS the priority (RouteTide → SafeReturn → Weather); on phones CSS caps the stack at the first two.
 
 **Resize handling:** `ResizeObserver` on the chart container calls `map.resize()` when CSS `display: none` toggling (split/chart-only mode switches) changes the visible size. MapLibre's built-in window resize listener doesn't catch display toggles.
 
@@ -101,7 +114,7 @@ The StatusBar's left section includes a glanceable time + sun + tide cluster (`s
 
 - **Time** — 12-hour, ticks at 60-second cadence (`src/utils/clock.ts`).
 - **Sun** — `suncalc` library, fully offline, takes lat/lon from `useSelf()` (falls back to mid-coast Maine when no fix yet). See `src/utils/sun.ts`.
-- **Tide** — pre-fetched NOAA hi/lo predictions for Bar Harbor / Castine / Rockland, shipped as `public/tides/<year>.json` and refreshed in the background by `useTideRefresh` when the Pi sees a network. Continuous water level via cosine interpolation between bracketing events; `nearestStation(pos)` picks the reference. M2 stub remains as a last-resort fallback when both IDB and the bundle are missing — UI dims and prefixes the pill with `~` in that case. Refresh annually with `node scripts/fetch-tide-predictions.mjs`. See [docs/tides.md](docs/tides.md).
+- **Tide** — pre-fetched NOAA hi/lo predictions for Bar Harbor / Castine / Rockland, shipped as `public/tides/<year>.json` and refreshed in the background by `useTideRefresh` when the device sees a network. Continuous water level via cosine interpolation between bracketing events; `nearestStation(pos)` picks the reference. M2 stub remains as a last-resort fallback when both IDB and the bundle are missing — UI dims and prefixes the pill with `~` in that case. Refresh annually with `node scripts/fetch-tide-predictions.mjs`. See [docs/tides.md](docs/tides.md).
 
 ## AIS threat banding
 
@@ -114,6 +127,8 @@ Thresholds:
 - **monitor** — everything else (no UI treatment, default sort by distance)
 
 `AISList` sorts by band first (danger → caution → monitor), then by distance within each band. Caution rows get an 8px amber left bar (inset shadow); danger rows get an 8px red left bar; both get an uppercase pill at the top of the card. When CPA/TCPA proper math is added, replace the heuristic in this one function — the UI layer doesn't need to change.
+
+**Vessel detail is shared:** AIS list rows are full-card buttons and chart markers both call `selectVessel(context)` (`src/ais/vesselSelectionStore.ts` — context string only, copy-on-write safe); the app-level `VesselDetailHost` resolves the live vessel each render and mounts `AISDetailPanel` (works in AIS-only mode; self-closes if the vessel is evicted). The panel includes a **VHF radio-call script** (`src/utils/vhfScript.ts` — callee twice, own boat name from prefs, position from the target's perspective, spoken-DDM readback; degraded identity falls back name → MMSI → position, and missing/implausible positions omit lines rather than guess).
 
 ## Alarm system (single-slot)
 
@@ -145,19 +160,21 @@ SignalK streams SI units: `navigation.speedOverGround` is **meters per second**;
 # Laptop dev (mock data; localhost only — add `-- --host` for cross-device)
 npm run dev
 
-# On the Pi (real SignalK)
+# Phone build — THE deployment (real GPS, offline PWA), built by
+# .github/workflows/deploy-phone.yml:
+#   VITE_SIGNALK_MODE=geo VITE_CHARTS_BASE=<release-assets URL> npm run build
+# Full walkthrough: docs/phone-test.md
+
+# On a future Pi (real SignalK) — kept working, not currently deployed
 VITE_SIGNALK_URL=ws://localhost:3000/signalk/v1/stream \
 VITE_SIGNALK_MODE=real \
 npm run dev
-
-# Phone build (real GPS, offline PWA) — built by .github/workflows/deploy-phone.yml:
-#   VITE_SIGNALK_MODE=geo VITE_CHARTS_BASE=<release-assets URL> npm run build
-# Full walkthrough: docs/phone-test.md
 ```
 
 ## Deferred (priority order)
 
-1. **Depth into SignalK** — high value given the centerboard + shallow-draft profile. Requires upgrading the standalone depth finder to one with NMEA 0183 output, then wiring into the Pi via a USB-serial adapter. Unlocks a depth readout in StatusBar and a configurable shallow-water alarm.
+1. **Pi kiosk install** — the whole `real`-mode hardware stack (Pi 4 + GPS dongle + dAISy AIS HAT) is deferred; the phone PWA is the deployment for now. The Pi becomes worth it when hardware AIS or a depth sensor matters enough.
+2. **Depth into SignalK** — high value given the centerboard + shallow-draft profile. Requires upgrading the standalone depth finder to one with NMEA 0183 output, then wiring into the Pi via a USB-serial adapter (i.e. depends on the Pi install). Unlocks a depth readout in StatusBar and a configurable shallow-water alarm.
 2. **Boat heading** — GPS COG is not heading (differ when drifting/anchored/against current). Needs a compass/AHRS. Matters for accurate chart orientation at slow speeds.
 3. **Engine telemetry** (RPM, coolant temp, fuel) — requires NMEA 2000 bus + engine gateway. Not planned.
 4. **Wind** — low priority for a power boat. Possible if cruising in exposed water and sea state prediction matters.
@@ -165,7 +182,7 @@ npm run dev
 ## Typography
 
 - **Zalando Sans Expanded** (sans) — primary family for headings, labels, button text, vessel names (600–700); body text (400–500); large display numerics like speed/heading (700–800 with `font-variant-numeric: tabular-nums`).
-- **Roboto Mono** — reserved for coordinates, distance values, and any readout where numeric width consistency matters (lat/lon in StatusBar, raw-facts line in AIS rows).
+- **IBM Plex Mono** — reserved for coordinates, distance values, and any readout where numeric width consistency matters (lat/lon in StatusBar, raw-facts line in AIS rows). Replaced Roboto Mono 2026-07 (avoid-ai-slop font audit); slightly wider metrics — check StatusBar Position fit when touching those styles. Chart tile labels are a separate stack (self-hosted Noto Sans Bold PBF glyphs), unrelated to `--font-mono`.
 - CSS variables: `--font-sans`, `--font-mono`. Always reference the variables, never hardcode the family.
 
 ## Design system — colors
@@ -208,7 +225,7 @@ This project targets **WCAG 2.2 Level AAA**. Apply by default — don't ship UI 
 Key constraints AAA imposes that bite hardest in this UI:
 
 - **Contrast 7:1** for normal text, 4.5:1 for large (≥18pt regular / 14pt bold). Verify every new text-on-surface pairing in the navy/sand palette.
-- **Touch targets ≥44×44 CSS px** (AAA, stricter than AA's 24×24). Tabs, buttons, any clickable row.
+- **Touch targets ≥44×44 CSS px** (AAA, stricter than AA's 24×24). Tabs, buttons, any clickable row. Underway controls go beyond the floor: view tabs + AIS filter 56px, alarm Acknowledge 64px, keypad 64–72px (wet/gloved hands, boat in motion); the `max-height: 500px` landscape block drops tabs/filter back to 44px so short phones keep chart height.
 - **Focus indicator ≥2px perimeter, 3:1 contrast change**, fully visible (not obscured by sticky StatusBar). Currently `--focus-ring` amber 3px outline + 2px offset + navy sandwich rings via `:focus-visible`.
 - **No `user-scalable=no`** in viewport meta — kiosk pinch-zoom must work for low-vision use.
 - **Plain language at lower-secondary reading level** (AAA 3.1.5) — already aligned with the "plain-language UI" principle above.
@@ -219,6 +236,6 @@ Run `/wcag` to audit before any visible release.
 
 ## Status
 
-**Built:** three-mode SignalK client (mock/real/geo) with backoff reconnect; bounded copy-on-write ingest store with split self/targets snapshots; MapLibre chart (offline PMTiles base + NOAA overlay, tide-aware depth contours + soundings, navaid sprites with day/night sheets); own-ship/AIS/waypoint/route/destination/MOB/anchor markers (AIS + waypoint markers are 44px buttons); AISList with threat banding + plain-language narrative; StatusBar (GPS pill, clock/sun/tide cluster with station name + estimate state, MOB, waypoints, settings, theme toggle, 3-mode tabs); single-slot alarm system (anchor drag, hazard proximity, anchorage drying) with episode/acknowledge semantics + regression tests; waypoints/routes with persisted stores + sanitized loads; breadcrumbs with dwell detection + debounced persistence; weather go/no-go (NWS); day/night/auto theme; error boundaries + crash reload; offline PWA with on-device chart caching for the phone build; navy/sand brutalist palette, WCAG 2.2 AAA re-verified 2026-07 (contrast math in the audit); self-hosted fonts; 134 unit tests + Playwright e2e.
+**Built:** three-mode SignalK client (mock/real/geo) with backoff reconnect; bounded copy-on-write ingest store with split self/targets snapshots; MapLibre chart (offline PMTiles base + NOAA overlay, tide-aware depth contours + soundings, navaid sprites with day/night sheets); own-ship/AIS/waypoint/route/destination/MOB/anchor markers (AIS + waypoint markers are 44px buttons) + dotted own-track line; AISList with threat banding + plain-language narrative + tappable rows sharing the vessel detail panel (with VHF radio-call script); tap-for-depth story; auto ship's log; StatusBar (GPS pill, clock/sun/tide cluster with station name + estimate state, MOB, waypoints, settings, theme toggle, 3-mode tabs); single-slot alarm system (anchor drag, hazard proximity, anchorage drying) with episode/acknowledge semantics + regression tests; waypoints/routes with persisted stores + sanitized loads; breadcrumbs with dwell detection + debounced persistence; weather go/no-go (NWS); day/night/auto theme; error boundaries + crash reload; offline PWA with on-device chart caching for the phone build; navy/sand brutalist palette, WCAG 2.2 AAA re-verified 2026-07 (contrast math in the audit); self-hosted fonts (Zalando Sans Expanded + IBM Plex Mono); 235 unit tests + Playwright e2e.
 
 **Not yet built:** depth/heading/wind sensors, real-Pi smoke test, real-water phone smoke test. Chart files must be generated locally once — install GDAL + tippecanoe, run `./scripts/build-charts.sh maine` (+ `build-base-charts.sh`). See [docs/charts.md](docs/charts.md), [docs/pi-kiosk.md](docs/pi-kiosk.md), [docs/phone-test.md](docs/phone-test.md), [docs/tides.md](docs/tides.md).
