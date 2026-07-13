@@ -1,6 +1,6 @@
 # navigation-project
 
-**App name: GATOR** (PWA manifest, `<title>`, iOS home-screen label, README — renamed from "Sisu Nav" 2026-07-13; the StatusBar nameplate is the *boat* name from Settings, unrelated). Navigation UI for a 1978 Sisu 22 (diesel inboard, centerboard). Shallow-draft coastal use — depth awareness matters more than wind. React + TypeScript + Vite frontend that speaks the SignalK delta shape.
+**App name: GATOR** (PWA manifest, `<title>`, iOS home-screen label, README — renamed from "Sisu Nav" 2026-07-13; the StatusBar nameplate is the _boat_ name from Settings, unrelated). Navigation UI for a 1978 Sisu 22 (diesel inboard, centerboard). Shallow-draft coastal use — depth awareness matters more than wind. React + TypeScript + Vite frontend that speaks the SignalK delta shape.
 
 **Primary platform: an iPhone at the helm** — standalone offline PWA using the phone's own GPS (`geo` mode). A Raspberry Pi kiosk with a hardware AIS receiver is a possible future install (`real` mode is built and kept working), not the current deployment — decision 2026-07-13.
 
@@ -175,9 +175,9 @@ npm run dev
 
 1. **Pi kiosk install** — the whole `real`-mode hardware stack (Pi 4 + GPS dongle + dAISy AIS HAT) is deferred; the phone PWA is the deployment for now. The Pi becomes worth it when hardware AIS or a depth sensor matters enough.
 2. **Depth into SignalK** — high value given the centerboard + shallow-draft profile. Requires upgrading the standalone depth finder to one with NMEA 0183 output, then wiring into the Pi via a USB-serial adapter (i.e. depends on the Pi install). Unlocks a depth readout in StatusBar and a configurable shallow-water alarm.
-2. **Boat heading** — GPS COG is not heading (differ when drifting/anchored/against current). Needs a compass/AHRS. Matters for accurate chart orientation at slow speeds.
-3. **Engine telemetry** (RPM, coolant temp, fuel) — requires NMEA 2000 bus + engine gateway. Not planned.
-4. **Wind** — low priority for a power boat. Possible if cruising in exposed water and sea state prediction matters.
+3. **Boat heading** — GPS COG is not heading (differ when drifting/anchored/against current). Needs a compass/AHRS. Matters for accurate chart orientation at slow speeds.
+4. **Engine telemetry** (RPM, coolant temp, fuel) — requires NMEA 2000 bus + engine gateway. Not planned.
+5. **Wind** — low priority for a power boat. Possible if cruising in exposed water and sea state prediction matters.
 
 ## Typography
 
