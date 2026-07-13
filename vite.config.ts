@@ -51,9 +51,9 @@ export default defineConfig({
       registerType: 'autoUpdate',
       includeAssets: ['icons/apple-touch-icon.png'],
       manifest: {
-        name: 'Sisu Nav',
-        short_name: 'Sisu Nav',
-        description: 'Chart, tides, and navigation display for the Sisu 22',
+        name: 'GATOR',
+        short_name: 'GATOR',
+        description: 'Chart, tides, and navigation display for small boats',
         display: 'standalone',
         background_color: '#142038',
         theme_color: '#142038',
