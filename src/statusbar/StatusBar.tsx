@@ -38,6 +38,15 @@ export function StatusBar({ activeView, onViewChange }: Props) {
   const touchStartY = useRef<number | null>(null);
 
   const onTouchStart = (e: React.TouchEvent) => {
+    // Touches inside an open slide panel must NOT drive the collapse
+    // gesture. Settings/MOB/theme/waypoints panels render inside this
+    // header, so their touches bubble here — scrolling Settings down
+    // (finger up) read as swipe-up, collapsed the bar, and UNMOUNTED the
+    // panel mid-read (the collapsed branch drops those buttons entirely).
+    if ((e.target as HTMLElement).closest?.('.slide-panel-root')) {
+      touchStartY.current = null;
+      return;
+    }
     touchStartY.current = e.touches[0]?.clientY ?? null;
   };
   const onTouchEnd = (e: React.TouchEvent) => {
