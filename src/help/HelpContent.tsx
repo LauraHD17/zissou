@@ -36,9 +36,10 @@ export function HelpContent({
           with no cell signal.
         </p>
         <p className="help__row">
-          Next to it: the time, tonight's sunset (or sunrise), and the tide — nearest station, which
-          way it's moving, and the next high or low. A ~ means live NOAA data isn't loaded — treat
-          depths cautiously.
+          Next to it: the time, tonight's sunset (or sunrise), and the tide — which way it's moving
+          and the next high or low, from the NOAA station nearest you. It switches automatically as
+          you travel; Settings shows which station is in use. A ~ means live NOAA data isn't loaded
+          — treat depths cautiously.
         </p>
         <p className="help__row">
           <strong>Split / AIS / Chart</strong> switch views: vessel list beside the chart, list

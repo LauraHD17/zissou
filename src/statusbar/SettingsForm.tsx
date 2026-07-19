@@ -15,6 +15,7 @@ import {
 } from '../prefs/userPrefsStore';
 import { useSelf } from '../signalk/useSignalK';
 import { validPosition } from '../utils/geometry';
+import { currentTideStationName } from '../utils/tides';
 import { computeDetectedCruisingKn, useCruisingSpeedSamples } from '../prefs/cruisingSpeedStore';
 import { useSavedFlash } from '../ui/useSavedFlash';
 import { DimField, HeadingModePicker } from './settingsFields';
@@ -262,6 +263,18 @@ export function SettingsForm({ onDone, onHelp }: { onDone: () => void; onHelp: (
         </p>
         <p className="settings-form__hint">
           Used for "Can I go?" forecast checks. Set to what you and your boat are comfortable with.
+        </p>
+      </section>
+
+      <section className="settings-form__section">
+        <h3 className="settings-form__section-title">Tide station</h3>
+        <p className="settings-form__hint">
+          {(() => {
+            const station = currentTideStationName(validPosition(self) ?? undefined);
+            return station
+              ? `Using NOAA predictions from ${station} — the nearest station to your position. It switches automatically as you travel; nothing to set.`
+              : 'No NOAA station data loaded yet — tide values are approximate (shown with a ~) until the app can fetch predictions.';
+          })()}
         </p>
       </section>
 

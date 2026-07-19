@@ -437,9 +437,9 @@ body,
   color: var(--text-dim);
 }
 
-/* Tiny station-name label inside the tide segment ("Castine · High 4:15 PM").
-   Dimmer than the event itself — the operator's eye should land on the
-   high/low time first, station is supporting context. */
+/* Tiny station-name label inside the tide segment. No longer rendered in
+   the StatusBar (station moved to Settings, 2026-07-19) — kept for any
+   future surface that wants the dimmed station treatment. */
 .statusbar__tide-station {
   color: var(--text-dim);
   font-weight: 500;
