@@ -330,7 +330,8 @@ export function HelpContent({
         </p>
         <p className="help__row">
           Getting it on a phone: open the site in Safari → Share → <strong>Add to Home Screen</strong>.
-          It runs full-screen like a regular app, and updates itself when opened with signal.
+          It runs full-screen like a regular app. Updates download quietly when you have signal,
+          then a banner offers them — the app never restarts itself while you're using it.
         </p>
       </section>
 

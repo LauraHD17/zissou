@@ -333,8 +333,10 @@ export function SettingsForm({ onDone, onHelp }: { onDone: () => void; onHelp: (
       </div>
 
       <p className="settings-form__hint settings-form__hint--muted">
-        App version: {BUILD_ID ? `build ${BUILD_ID.slice(0, 7)}` : 'development'}. Updates install
-        automatically when the app is opened with internet — close and reopen to apply.
+        App version: {BUILD_ID ? `build ${BUILD_ID.slice(0, 7)}` : 'development'}. Updates download
+        in the background when the app is open with internet, then wait — an "update ready" banner
+        offers them, and they never apply themselves mid-use. Fully closing and reopening the app
+        also applies a waiting update.
       </p>
     </form>
   );
