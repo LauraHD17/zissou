@@ -43,6 +43,8 @@ export const ICON_PATHS = {
   pin: 'M 12 2 c 4 0 7 3 7 7 c 0 5 -7 13 -7 13 c 0 0 -7 -8 -7 -13 c 0 -4 3 -7 7 -7 M 12 9 m -2 0 a 2 2 0 1 0 4 0 a 2 2 0 1 0 -4 0',
   // Three-dot kebab — "more" entry to waypoints panel.
   more: 'M 12 5 m -1 0 a 1 1 0 1 0 2 0 a 1 1 0 1 0 -2 0 M 12 12 m -1 0 a 1 1 0 1 0 2 0 a 1 1 0 1 0 -2 0 M 12 19 m -1 0 a 1 1 0 1 0 2 0 a 1 1 0 1 0 -2 0',
+  // Question mark — the StatusBar Help button.
+  help: 'M 8.8 8.8 a 3.2 3.2 0 1 1 5 2.6 c -1.2 0.8 -1.8 1.5 -1.8 3 M 12 18.2 v 0.01',
 
   // ── Waypoint category icons (sage when rendered on chart) ──────────
   // Mooring buoy — small ball + vertical stem with eye on top.

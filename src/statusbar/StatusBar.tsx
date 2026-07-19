@@ -6,6 +6,7 @@ import { formatCompassBearing } from '../utils/bearings';
 import { useNowMs } from '../utils/clock';
 import { FALLBACK_POS } from '../utils/geometry';
 import { formatLat, formatLon, formatSpeedKnMph } from '../utils/units';
+import { HelpButton } from '../help/HelpButton';
 import { ClockSunTide } from './ClockSunTide';
 import { MOBButton } from './MOBButton';
 import { SettingsButton } from './SettingsButton';
@@ -111,6 +112,7 @@ export function StatusBar({ activeView, onViewChange }: Props) {
             </>
           }
         />
+        <HelpButton />
         <button
           type="button"
           className="statusbar__collapse"
