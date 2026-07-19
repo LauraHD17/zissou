@@ -21,11 +21,19 @@ interface StationDef {
   lon: number;
 }
 
-const FALLBACK_STATIONS: StationDef[] = [
+/** The canonical station set. Adding a station HERE is all it takes: the
+ *  refresh hook notices the loaded data is missing it and pulls predictions
+ *  on the next online check — no bundle regeneration needed on-device (still
+ *  run scripts/fetch-tide-predictions.mjs when convenient so fresh installs
+ *  have it offline from day one; keep that script's list in sync). */
+const CANONICAL_STATIONS: StationDef[] = [
   { id: '8413320', name: 'Bar Harbor', lat: 44.3922, lon: -68.2043 },
   { id: '8414672', name: 'Castine', lat: 44.3867, lon: -68.7967 },
   { id: '8415490', name: 'Rockland', lat: 44.105, lon: -69.1017 },
   { id: '8414856', name: 'North Haven', lat: 44.1267, lon: -68.8733 },
+  // Carver's Harbor — the Fox Islands' south side; without it everything on
+  // Vinalhaven reads the North Haven (Thorofare) predictions.
+  { id: '8414776', name: 'Vinalhaven', lat: 44.0422, lon: -68.8257 },
 ];
 
 const NOAA = 'https://api.tidesandcurrents.noaa.gov/api/prod/datagetter';
@@ -94,15 +102,27 @@ function shouldRefresh(): boolean {
   const now = Date.now();
   if (data.validToMs - now < STALE_VALID_TO_MS) return true;
   if (now - data.fetchedAtMs > STALE_FETCHED_AT_MS) return true;
+  // A canonical station the loaded data doesn't know about (added in an app
+  // update, e.g. Vinalhaven) — refresh even though the data is fresh, so
+  // nearest-station selection can actually use it.
+  const known = new Set(data.stations.map((s) => s.id));
+  if (CANONICAL_STATIONS.some((s) => !known.has(s.id))) return true;
   return false;
 }
 
+/** Canonical list first (its names/coords win for shared ids), plus any
+ *  extra stations the loaded data carries that the code doesn't know. */
 function pickStations(): StationDef[] {
+  const merged = [...CANONICAL_STATIONS];
+  const ids = new Set(merged.map((s) => s.id));
   const loaded = readLoadedTides();
-  if (loaded && loaded.stations.length > 0) {
-    return loaded.stations.map((s) => ({ id: s.id, name: s.name, lat: s.lat, lon: s.lon }));
+  for (const s of loaded?.stations ?? []) {
+    if (!ids.has(s.id)) {
+      ids.add(s.id);
+      merged.push({ id: s.id, name: s.name, lat: s.lat, lon: s.lon });
+    }
   }
-  return FALLBACK_STATIONS;
+  return merged;
 }
 
 async function refreshOnce(): Promise<void> {
