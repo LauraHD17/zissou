@@ -3626,13 +3626,23 @@ body,
   bottom: calc(120px + env(safe-area-inset-bottom, 0px));
 }
 
-/* Grab handle at the top of slide panels — the only swipe-to-close zone
-   (scrolling a long form must never dismiss the panel). Hard rectangle
-   per the design system. */
+/* Grab strip at the top of slide panels — its own element, and the ONLY
+   swipe-to-close zone (scrolling a long form must never dismiss the panel).
+   touch-action: none stops the browser from converting the drag into a
+   scroll mid-gesture. Bleeds over the panel's 20px padding so the whole
+   top band is grabbable. */
+.slide-panel__handle-zone {
+  margin: -20px -20px 4px;
+  padding: 14px 20px 12px;
+  touch-action: none;
+  cursor: grab;
+  flex-shrink: 0;
+}
+
 .slide-panel__handle {
   width: 48px;
   height: 5px;
-  margin: 2px auto 10px;
+  margin: 0 auto;
   /* Full-strength panel ink (navy on sand by day, warm red at night) — the
      design speaks in solid ink and hard rectangles, not washed-out grays. */
   background: var(--text-on-card);

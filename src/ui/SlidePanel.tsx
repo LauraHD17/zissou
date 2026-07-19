@@ -44,10 +44,15 @@ export function SlidePanel({ open, onClose, labelledBy, returnFocusTo, children 
 
     // Focus the first focusable inside the panel — skipping the focus-trap
     // sentinels: the leading sentinel's onFocus redirects to the LAST
-    // control, which opened every long panel scrolled to the bottom.
+    // control, which opened every long panel scrolled to the bottom. Focus
+    // without scrolling, then pin the panel to its top: content must always
+    // open at the start regardless of where the first control sits.
     const panel = panelRef.current;
     if (panel) {
-      focusFirstIn(panel);
+      const items = panel.querySelectorAll<HTMLElement>(FOCUSABLE_SELECTOR);
+      const real = Array.from(items).filter((el) => !el.hasAttribute('data-focus-sentinel'));
+      real[0]?.focus({ preventScroll: true });
+      panel.scrollTop = 0;
     }
 
     // Lock body scroll while panel is open.
@@ -71,15 +76,14 @@ export function SlidePanel({ open, onClose, labelledBy, returnFocusTo, children 
     [onClose],
   );
 
-  // Swipe-down to close — armed ONLY from the grab-handle zone at the top
-  // of the panel. Arming from anywhere meant every scroll of a long form
-  // (Settings on a phone) dismissed the panel mid-read. The overlay handles
+  // Swipe-down to close — armed ONLY from the dedicated handle strip (its
+  // own element, `touch-action: none`), never from the content. A y-range
+  // check on the whole panel used to overlap the title/first controls, so
+  // starting a SCROLL near the top read as a swipe-away — long panels
+  // (Settings, Help) became unreadable on the phone. The overlay handles
   // tap-outside separately; Escape and the buttons remain as alternatives.
-  const GRAB_ZONE_PX = 48;
   const onPointerDown = (e: PointerEvent<HTMLDivElement>) => {
     if (e.pointerType !== 'touch' && e.pointerType !== 'pen') return;
-    const rect = panelRef.current?.getBoundingClientRect();
-    if (!rect || e.clientY - rect.top > GRAB_ZONE_PX) return;
     dragStateRef.current = { startY: e.clientY, startTime: performance.now() };
     (e.target as HTMLElement).setPointerCapture(e.pointerId);
   };
@@ -104,6 +108,13 @@ export function SlidePanel({ open, onClose, labelledBy, returnFocusTo, children 
       panel.style.transform = '';
     }
   };
+  // The browser reclaimed the gesture (e.g. it became a scroll) — that is an
+  // abort, NOT a release: treating it as one dismissed panels mid-scroll.
+  const onPointerCancel = () => {
+    dragStateRef.current = null;
+    const panel = panelRef.current;
+    if (panel) panel.style.transform = '';
+  };
 
   if (!open) return null;
 
@@ -117,13 +128,20 @@ export function SlidePanel({ open, onClose, labelledBy, returnFocusTo, children 
         role="dialog"
         aria-modal="true"
         aria-labelledby={labelledBy}
-        onPointerDown={onPointerDown}
-        onPointerMove={onPointerMove}
-        onPointerUp={onPointerUp}
-        onPointerCancel={onPointerUp}
       >
-        {/* Visible grab handle — the only zone that arms swipe-to-close. */}
-        <div className="slide-panel__handle" aria-hidden="true" />
+        {/* Grab strip — the ONLY zone that arms swipe-to-close. Its
+            touch-action: none keeps the browser from turning the drag into
+            a scroll; the content below scrolls natively, un-dismissably. */}
+        <div
+          className="slide-panel__handle-zone"
+          aria-hidden="true"
+          onPointerDown={onPointerDown}
+          onPointerMove={onPointerMove}
+          onPointerUp={onPointerUp}
+          onPointerCancel={onPointerCancel}
+        >
+          <div className="slide-panel__handle" />
+        </div>
         {/* Sentinels: focusable elements must not be aria-hidden (axe
             aria-hidden-focus) — marked with a data attribute instead so the
             wrap helpers can skip them. They redirect focus immediately, so
