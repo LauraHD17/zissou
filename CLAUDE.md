@@ -67,6 +67,10 @@ Three view modes, toggled from the StatusBar:
 - **AIS only** — full-width AIS list, max 720px centered.
 - **Chart only** — full-width chart.
 
+**Phone chrome compaction (max-width 700px / max-height 500px):** the boat nameplate and POSITION/SPEED/HEADING labels go screen-reader-only, metric fonts step down from helm scale, tabs drop to a 44px min-width (from 56px) so the full control row holds one line at 375px, and the ?/collapse buttons dock to the right edge of the metrics block instead of taking their own line. StatusBar chrome measured 330px tall at 390px wide before this pass; ~190px after. Verify with Playwright screenshots when touching StatusBar styles.
+
+**Help:** the `?` button in the StatusBar metrics row (all viewports, visible even with controls collapsed) opens `src/help/HelpContent.tsx` — the app's full plain-language manual, also reachable from Settings. It documents every feature; keep it in sync when shipping user-visible behavior. It has a Close button at top AND bottom — the top one is what makes the panel open scrolled to the start (SlidePanel focuses the first non-sentinel control).
+
 In split mode, the AIS list renders with `compact={true}` → applies `.ais-panel--compact`, which drops the dense raw-facts mono line and tightens typography for the narrow lane. The full row design returns in AIS-only mode where there's room for it. Both columns always render in the DOM; CSS `display: none` controls visibility per mode so component state (filter, scroll) survives toggling.
 
 ## Principles

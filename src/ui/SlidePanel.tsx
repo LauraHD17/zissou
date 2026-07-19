@@ -42,11 +42,12 @@ export function SlidePanel({ open, onClose, labelledBy, returnFocusTo, children 
     const trigger = returnFocusTo ?? (document.activeElement as HTMLElement | null);
     lastFocusedRef.current = trigger;
 
-    // Focus the first focusable inside the panel.
+    // Focus the first focusable inside the panel — skipping the focus-trap
+    // sentinels: the leading sentinel's onFocus redirects to the LAST
+    // control, which opened every long panel scrolled to the bottom.
     const panel = panelRef.current;
     if (panel) {
-      const firstFocusable = panel.querySelector<HTMLElement>(FOCUSABLE_SELECTOR);
-      firstFocusable?.focus();
+      focusFirstIn(panel);
     }
 
     // Lock body scroll while panel is open.

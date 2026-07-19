@@ -3298,7 +3298,7 @@ body,
   }
 
   .statusbar__row--metrics {
-    gap: 8px 18px;
+    gap: 8px 12px;
   }
 
   /* The full control row — 3 tabs, 3 icon buttons, MOB — must fit ONE line
@@ -3311,6 +3311,56 @@ body,
   .tab {
     padding: 10px 6px;
     font-size: 11px;
+    /* Width floor drops to the 44px AAA minimum (from the 56px tablet size):
+       56px-wide tabs are exactly what pushed MOB onto a lonely wrapped line
+       at 390px. Height keeps the 56px underway target. */
+    min-width: 44px;
+  }
+  /* The boat nameplate's display line is a luxury a phone can't afford —
+     keep it in the accessibility tree (it's the page h1) but out of layout.
+     The name still lives in Settings and on the ship's log. */
+  .statusbar__nameplate {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+  }
+  /* GPS pill and the clock share the first line: let the almanac flex into
+     the remaining width (instead of claiming a full-width max-content line)
+     and wrap internally — clock + sun beside the pill, tide beneath. */
+  .statusbar__almanac {
+    flex: 1 1 220px;
+  }
+  /* Metrics compact to ~two short lines: the units say what each value is
+     ("44.39° N", "4.3 knots", "090° E"), so the POSITION/SPEED/HEADING
+     labels go screen-reader-only and the helm-scale fonts step down —
+     this row was three tall lines of tablet-sized type on a phone. */
+  .statusbar__metric-label {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+  }
+  .statusbar__metric-value {
+    /* 17px keeps speed + heading together on one line down to 375px wide. */
+    font-size: 17px;
+  }
+  .statusbar__metric-value--mono {
+    font-size: 13px;
+  }
+  .heading-glyph {
+    width: 16px;
+    height: 16px;
   }
   .statusbar__settings-toggle,
   .statusbar__waypoints-toggle,
@@ -3474,7 +3524,8 @@ body,
 /* ── StatusBar collapse toggle — tap to hide/show the controls line
    (tabs, icon buttons, MOB). The clock/tide and position/speed/heading
    lines always remain. Swiping up/down on the bar does the same. ── */
-.statusbar__collapse {
+.statusbar__collapse,
+.statusbar__help {
   width: 44px;
   height: 44px;
   padding: 0;
@@ -3486,6 +3537,13 @@ body,
   line-height: 1;
   cursor: pointer;
   flex-shrink: 0;
+}
+
+/* "?" Help — one tap to the full guide, from every view, even collapsed. */
+.statusbar__help {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
 }
 
 /* Display-Zoom iPhones (~375px): last few px so the whole control row —
@@ -3526,6 +3584,29 @@ body,
 }
 
 @media (max-width: 700px), (max-height: 500px) {
+  /* Phones (either orientation): the metric values flow left and the ? and
+     ▴ buttons dock to the right edge — instead of the pair taking a
+     centered line of chrome all to itself (reserved by padding-right).
+     Desktop/Pi keeps them inline in the centered row. */
+  .statusbar__row--metrics {
+    position: relative;
+    justify-content: flex-start;
+    padding-right: 94px;
+    min-height: 48px;
+  }
+  .statusbar__row--metrics .statusbar__help,
+  .statusbar__row--metrics .statusbar__collapse {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+  }
+  .statusbar__row--metrics .statusbar__collapse {
+    right: 0;
+  }
+  .statusbar__row--metrics .statusbar__help {
+    right: 46px;
+  }
+
   .chart-key-toggle {
     display: inline-flex;
     align-items: center;
