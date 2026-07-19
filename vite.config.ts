@@ -49,7 +49,12 @@ export default defineConfig({
     // and the rangeRequests plugin below serves MapLibre's byte-range reads
     // from that full cached copy when offline.
     VitePWA({
-      registerType: 'autoUpdate',
+      // 'prompt', NOT 'autoUpdate': autoUpdate reloads the page the moment a
+      // new service worker activates — the app restarting itself ~10s after
+      // launch, mid-read or (worse) mid-passage. The UpdatePill surfaces
+      // "update ready" and the operator applies it when THEY choose; a plain
+      // close-and-reopen still applies it too.
+      registerType: 'prompt',
       includeAssets: ['icons/apple-touch-icon.png'],
       manifest: {
         name: 'GATOR',

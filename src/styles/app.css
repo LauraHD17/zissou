@@ -3238,6 +3238,28 @@ body,
 
 /* Chart offline-download pill — phone/PWA build only (remote chart origin).
    Bottom-left so it never covers the StatusBar or the chart controls. */
+/* "Update ready" banner — bottom-center, amber border like the download
+   pill. A staged update waits for this tap (or the next cold start); it
+   must be an offer, not an interruption. */
+.update-pill {
+  position: fixed;
+  bottom: calc(16px + env(safe-area-inset-bottom, 0px));
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 40;
+  min-height: 44px;
+  max-width: calc(100vw - 24px);
+  padding: 10px 16px;
+  background: rgba(20, 32, 56, 0.95);
+  color: var(--text-primary);
+  border: 1px solid var(--alert-amber);
+  border-radius: 0;
+  font-family: var(--font-sans);
+  font-weight: 700;
+  font-size: 13px;
+  cursor: pointer;
+}
+
 .chart-download {
   position: fixed;
   bottom: calc(16px + env(safe-area-inset-bottom, 0px));

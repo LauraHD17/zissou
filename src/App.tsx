@@ -10,6 +10,7 @@ import { AlarmBanner } from './ui/AlarmBanner';
 import { VesselDetailHost } from './ais/VesselDetailHost';
 import { ErrorBoundary } from './ui/ErrorBoundary';
 import { ChartDownloadPill } from './pwa/ChartDownloadPill';
+import { UpdatePill } from './pwa/UpdatePill';
 import { CompassEnablePill } from './compass/CompassEnablePill';
 import './styles/app.css';
 import './theme/night.css';
@@ -31,6 +32,7 @@ export function App() {
       <VesselDetailHost />
       <ChartDownloadPill />
       <CompassEnablePill />
+      <UpdatePill />
       <StatusBar activeView={view} onViewChange={setView} />
       <main className={`app__main app__main--${view}`}>
         <div className="ais-column">
