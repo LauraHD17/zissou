@@ -76,10 +76,12 @@ export function NetStatusStrip({ status }: { status: Exclude<InternetAisStatus, 
       ? 'Shore AIS relay: receiving. Relayed positions may be delayed — treat as awareness, not collision avoidance.'
       : status === 'connecting'
         ? 'Shore AIS relay: connecting…'
-        : 'Shore AIS relay: offline — no cell signal or service unreachable.';
+        : status === 'rejected'
+          ? 'Shore AIS relay: aisstream.io refused the API key — check it in Settings against your aisstream.io account.'
+          : 'Shore AIS relay: offline — no cell signal or service unreachable.';
   return (
     <div
-      className={`ais-net-status${status === 'offline' ? ' ais-net-status--offline' : ''}`}
+      className={`ais-net-status${status === 'offline' || status === 'rejected' ? ' ais-net-status--offline' : ''}`}
       role="status"
       aria-live="polite"
     >

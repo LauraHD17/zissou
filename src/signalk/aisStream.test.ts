@@ -1,5 +1,5 @@
-import { describe, expect, it } from 'vitest';
-import { aisStreamMessageToDelta } from './aisStream';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { aisStreamMessageToDelta, startAisStream, type AisStreamStatus } from './aisStream';
 import { knotsToMs } from '../utils/units';
 
 const MMSI = 368045130;
@@ -27,6 +27,80 @@ function pathValue(
 ) {
   return delta.updates[0].values.find((v) => v.path === path)?.value;
 }
+
+class FakeWebSocket {
+  static instances: FakeWebSocket[] = [];
+  onopen: (() => void) | null = null;
+  onmessage: ((ev: { data: string }) => void) | null = null;
+  onclose: (() => void) | null = null;
+  onerror: (() => void) | null = null;
+  sent: string[] = [];
+  constructor(public url: string) {
+    FakeWebSocket.instances.push(this);
+  }
+  send(data: string) {
+    this.sent.push(data);
+  }
+  close() {
+    this.onclose?.();
+  }
+}
+
+describe('startAisStream — connection lifecycle', () => {
+  beforeEach(() => {
+    vi.useFakeTimers();
+    FakeWebSocket.instances = [];
+    vi.stubGlobal('WebSocket', FakeWebSocket);
+    vi.spyOn(console, 'warn').mockImplementation(() => {});
+  });
+  afterEach(() => {
+    vi.unstubAllGlobals();
+    vi.useRealTimers();
+    vi.restoreAllMocks();
+  });
+
+  function start() {
+    const statuses: AisStreamStatus[] = [];
+    const stop = startAisStream({
+      apiKey: 'test-key',
+      center: { latitude: 44.1, longitude: -68.8 },
+      onDelta: () => {},
+      onStatus: (s) => statuses.push(s),
+    });
+    return { statuses, stop };
+  }
+
+  it('subscribes with the API key on open and reports connected', () => {
+    const { statuses, stop } = start();
+    const ws = FakeWebSocket.instances[0];
+    ws.onopen!();
+    expect(statuses).toEqual(['connecting', 'connected']);
+    expect(JSON.parse(ws.sent[0]).APIKey).toBe('test-key');
+    stop();
+  });
+
+  it('reconnects after a plain close (coverage drop) with backoff', () => {
+    const { statuses, stop } = start();
+    FakeWebSocket.instances[0].onclose!();
+    expect(statuses).toEqual(['connecting', 'offline']);
+    vi.advanceTimersByTime(2000);
+    expect(FakeWebSocket.instances).toHaveLength(2);
+    stop();
+  });
+
+  it('reports rejected on an {"error": ...} frame and stops reconnecting', () => {
+    const { statuses, stop } = start();
+    const ws = FakeWebSocket.instances[0];
+    ws.onopen!();
+    ws.onmessage!({ data: JSON.stringify({ error: 'Api Key Is Not Valid' }) });
+    ws.onclose!(); // server closes after the error frame
+    expect(statuses).toEqual(['connecting', 'connected', 'rejected']);
+    // A bad key can't fix itself — no reconnect churn against the service.
+    vi.advanceTimersByTime(120_000);
+    expect(FakeWebSocket.instances).toHaveLength(1);
+    stop();
+  });
+});
 
 describe('aisStreamMessageToDelta — position reports', () => {
   it('converts a full report with SignalK units and mmsi context', () => {

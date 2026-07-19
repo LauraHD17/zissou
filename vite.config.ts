@@ -15,9 +15,10 @@ const CSP = [
   "font-src 'self'",
   "worker-src 'self' blob:", // MapLibre spawns blob: workers
   "manifest-src 'self'",
-  // ws://localhost:3000 = SignalK on the Pi; NOAA + NWS APIs. Charts are
+  // ws://localhost:3000 = SignalK on the Pi; NOAA + NWS APIs; aisstream.io =
+  // the internet AIS shore relay (src/signalk/aisStream.ts). Charts are
   // same-origin ('self') — release assets can't be browser-fetched (no CORS).
-  "connect-src 'self' ws://localhost:3000 https://api.weather.gov https://api.tidesandcurrents.noaa.gov",
+  "connect-src 'self' ws://localhost:3000 wss://stream.aisstream.io https://api.weather.gov https://api.tidesandcurrents.noaa.gov",
 ].join('; ');
 
 export default defineConfig({

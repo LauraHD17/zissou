@@ -35,7 +35,10 @@ const BOX_HALF_LON_DEG = 1.0;
 const SOG_UNAVAILABLE_KN = 102.3;
 const COG_UNAVAILABLE_DEG = 360;
 
-export type AisStreamStatus = 'connecting' | 'connected' | 'offline';
+/** `rejected` = the service refused the subscription (bad API key, malformed
+ *  box). Deterministic — retrying the same subscription fails the same way —
+ *  so the client stops reconnecting until Settings change restarts it. */
+export type AisStreamStatus = 'connecting' | 'connected' | 'offline' | 'rejected';
 
 export interface AisStreamOptions {
   apiKey: string;
@@ -60,10 +63,11 @@ export function startAisStream({
   let ws: WebSocket | null = null;
   let reconnectTimer: ReturnType<typeof setTimeout> | null = null;
   let closed = false;
+  let rejected = false;
   let backoffMs = 2000;
 
   const scheduleReconnect = () => {
-    if (closed) return;
+    if (closed || rejected) return;
     onStatus('offline');
     reconnectTimer = setTimeout(connect, backoffMs);
     backoffMs = Math.min(backoffMs * 2, 60_000);
@@ -102,6 +106,16 @@ export function startAisStream({
       } catch {
         return; // non-JSON frame — ignore
       }
+      // aisstream answers a refused subscription with {"error": "..."} and
+      // then closes. Without this branch that close is indistinguishable
+      // from a coverage drop and gets mislabeled "no cell signal" — a
+      // mistyped API key must say so instead.
+      if (isErrorFrame(raw)) {
+        rejected = true;
+        onStatus('rejected');
+        console.warn(`aisstream.io rejected the subscription: ${raw.error}`);
+        return;
+      }
       const delta = aisStreamMessageToDelta(raw);
       if (delta) onDelta(delta);
     };
@@ -116,6 +130,14 @@ export function startAisStream({
     if (reconnectTimer) clearTimeout(reconnectTimer);
     ws?.close();
   };
+}
+
+function isErrorFrame(raw: unknown): raw is { error: string } {
+  return (
+    typeof raw === 'object' &&
+    raw !== null &&
+    typeof (raw as { error?: unknown }).error === 'string'
+  );
 }
 
 // ── Message conversion (pure — unit-tested) ────────────────────────────
