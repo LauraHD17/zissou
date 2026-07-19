@@ -12,6 +12,9 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
     <meta name="apple-mobile-web-app-title" content="GATOR" />
     <link rel="apple-touch-icon" href="/icons/apple-touch-icon.png" />
+    <!-- Without this, browsers request /favicon.ico and 404 (console noise
+         that trips the smoke test's no-errors gate in full-Chrome runs). -->
+    <link rel="icon" type="image/png" href="/icons/icon-192.png" />
     <title>GATOR</title>
     <!--
       Fonts are bundled via @fontsource packages and imported from src/main.tsx

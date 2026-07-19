@@ -110,8 +110,8 @@ export function HelpContent({
         </p>
         <p className="help__row">
           Relayed boats are labeled <strong>"via shore relay"</strong> and never raise
-          danger/caution flags — their positions can be minutes old, so treat them as awareness,
-          not collision avoidance. A strip above the list shows the relay's state:{' '}
+          danger/caution flags — their positions can be minutes old, so treat them as awareness, not
+          collision avoidance. A strip above the list shows the relay's state:{' '}
           <strong>receiving</strong> (working), <strong>connecting</strong>,{' '}
           <strong>offline</strong> (no signal — an empty list may not mean no traffic), or{' '}
           <strong>refused</strong> (the API key is wrong — re-copy it in Settings).
@@ -206,9 +206,9 @@ export function HelpContent({
           <span className="help__icon" aria-hidden="true">
             <Icon name="more" size={20} />
           </span>
-          The three-dot button opens your saved spots and routes: rename, delete, or set one as
-          your destination. The ship's log lives here too. The app also quietly suggests spots
-          where you linger (a favorite gunkhole gets remembered).
+          The three-dot button opens your saved spots and routes: rename, delete, or set one as your
+          destination. The ship's log lives here too. The app also quietly suggests spots where you
+          linger (a favorite gunkhole gets remembered).
         </p>
         <p className="help__row">
           <span className="help__icon" aria-hidden="true">
@@ -329,9 +329,10 @@ export function HelpContent({
           yearly tide refresh — all degrade gracefully without it.
         </p>
         <p className="help__row">
-          Getting it on a phone: open the site in Safari → Share → <strong>Add to Home Screen</strong>.
-          It runs full-screen like a regular app. Updates download quietly when you have signal,
-          then a banner offers them — the app never restarts itself while you're using it.
+          Getting it on a phone: open the site in Safari → Share →{' '}
+          <strong>Add to Home Screen</strong>. It runs full-screen like a regular app. Updates
+          download quietly when you have signal, then a banner offers them — the app never restarts
+          itself while you're using it.
         </p>
       </section>
 
