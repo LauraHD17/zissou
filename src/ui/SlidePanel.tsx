@@ -14,7 +14,14 @@
 // Animation gated behind prefers-reduced-motion — under reduced motion the
 // panel just appears (no slide / no fade).
 
-import { useCallback, useEffect, useRef, type KeyboardEvent, type ReactNode } from 'react';
+import {
+  useCallback,
+  useEffect,
+  useRef,
+  type FocusEvent,
+  type KeyboardEvent,
+  type ReactNode,
+} from 'react';
 
 interface Props {
   open: boolean;
@@ -73,10 +80,24 @@ export function SlidePanel({ open, onClose, labelledBy, returnFocusTo, children 
     [onClose],
   );
 
+  // iOS: the software keyboard covers the bottom half of this bottom-anchored
+  // sheet, and older iOS doesn't reliably scroll a focused field into view
+  // inside an overflow container — typing into a low field (e.g. the AIS API
+  // key) happened blind. Nudge the field to the visible middle once the
+  // keyboard has had time to animate in.
+  const onFocusIn = (e: FocusEvent<HTMLDivElement>) => {
+    const t = e.target as HTMLElement;
+    if (!t.matches?.('input, textarea, select')) return;
+    window.setTimeout(() => {
+      const reduce = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
+      t.scrollIntoView({ block: 'center', behavior: reduce ? 'auto' : 'smooth' });
+    }, 350);
+  };
+
   if (!open) return null;
 
   return (
-    <div className="slide-panel-root" onKeyDown={handleKeyDown}>
+    <div className="slide-panel-root" onKeyDown={handleKeyDown} onFocus={onFocusIn}>
       {/* Tap-outside to close — overlay catches the tap, not the panel. */}
       <div className="slide-panel-overlay" onClick={onClose} aria-hidden="true" />
       <aside
