@@ -307,8 +307,10 @@ export function HelpContent({
         <h3 className="settings-form__section-title">Weather</h3>
         <p className="help__row">
           The weather pill on the chart is a go/no-go read of the official NOAA forecast against
-          your limits (max wind and wave height, set in Settings). Tap it for the details. Needs
-          cell signal to refresh; it shows the last fetched forecast with its age when offline.
+          your max-wind limit (set in Settings). It currently judges <strong>wind only</strong> —
+          this forecast source has no wave heights, so the wave field in Settings waits for a marine
+          forecast source. Tap the pill for details. Needs cell signal to refresh; offline it shows
+          the last fetched forecast with its age.
         </p>
       </section>
 
