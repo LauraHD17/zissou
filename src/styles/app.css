@@ -3352,11 +3352,17 @@ body,
     white-space: nowrap;
     border: 0;
   }
-  /* GPS pill and the clock share the first line: let the almanac flex into
-     the remaining width (instead of claiming a full-width max-content line)
-     and wrap internally — clock + sun beside the pill, tide beneath. */
+  /* One CENTERED flow for the pill + clock + sun + tide: dissolving the
+     almanac wrapper (display: contents — font styles inherit) makes its
+     segments direct flex items of the left group, so everything wraps and
+     centers together: pill + clock + sun on line one, tide beneath — no
+     pill stranded low-left of a floating clock. */
+  .statusbar__left {
+    flex: 1 1 100%;
+    justify-content: center;
+  }
   .statusbar__almanac {
-    flex: 1 1 220px;
+    display: contents;
   }
   /* Metrics compact to ~two short lines: the units say what each value is
      ("44.39° N", "4.3 knots", "090° E"), so the POSITION/SPEED/HEADING
