@@ -58,14 +58,9 @@ export function ClockSunTide({ pos }: Props) {
             ? 'tide rising, next high at '
             : 'tide falling, next low at '}
         </span>
-        {tideStation && (
-          <>
-            <span className="statusbar__tide-station">{tideStation}</span>
-            <span className="statusbar__tide-sub-sep" aria-hidden="true">
-              ·
-            </span>
-          </>
-        )}
+        {/* Station name intentionally NOT rendered visibly — it crowded the
+            phone bar. Provenance stays in the tooltip + sr-only text above,
+            and Settings shows the active station (decision 2026-07-19). */}
         {tide.kind === 'high' ? 'High' : 'Low'} {formatLocalTime(tide.time)}
       </span>
     </div>
