@@ -51,7 +51,10 @@ export function SlidePanel({ open, onClose, labelledBy, returnFocusTo, children 
     if (panel) {
       const items = panel.querySelectorAll<HTMLElement>(FOCUSABLE_SELECTOR);
       const real = Array.from(items).filter((el) => !el.hasAttribute('data-focus-sentinel'));
-      real[0]?.focus({ preventScroll: true });
+      // No real controls (a read-only panel like the AIS detail)? Focus the
+      // dialog itself (tabIndex={-1}) — focus must land INSIDE the panel or
+      // the Escape-to-close keydown never reaches it.
+      (real[0] ?? panel).focus({ preventScroll: true });
       panel.scrollTop = 0;
     }
 
@@ -128,6 +131,7 @@ export function SlidePanel({ open, onClose, labelledBy, returnFocusTo, children 
         role="dialog"
         aria-modal="true"
         aria-labelledby={labelledBy}
+        tabIndex={-1}
       >
         {/* Grab strip — the ONLY zone that arms swipe-to-close. Its
             touch-action: none keeps the browser from turning the drag into

@@ -7,6 +7,11 @@ test.describe('smoke', () => {
     page.on('console', (m) => {
       if (m.type() !== 'error') return;
       const t = m.text();
+      // External-API failures (NOAA tide refresh, NWS weather) are the test
+      // environment's network, not app bugs — Chromium's console TEXT for a
+      // failed resource has no URL, so judge by the resource's origin.
+      const src = m.location()?.url ?? '';
+      if (src && !src.includes('localhost')) return;
       // Tile 404s and OpenFreeMap network noise are environmental, not app bugs.
       if (/openfreemap|\.pbf|tile|maplibre|maine-nh-ma\.pmtiles/i.test(t)) return;
       errors.push(`console: ${t}`);

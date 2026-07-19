@@ -18,5 +18,19 @@ export default defineConfig({
     timeout: 60_000,
     reuseExistingServer: !process.env.CI,
   },
-  projects: [{ name: 'chromium', use: devices['Desktop Chrome'] }],
+  projects: [
+    {
+      name: 'chromium',
+      use: {
+        ...devices['Desktop Chrome'],
+        // Escape hatch for environments with a system Chromium but no
+        // Playwright-downloaded browsers (e.g. sandboxed CI-less runners):
+        //   CHROMIUM_EXECUTABLE=/path/to/chrome npm run test:e2e
+        // Unset (the normal case, incl. GitHub CI) → Playwright's own build.
+        launchOptions: process.env.CHROMIUM_EXECUTABLE
+          ? { executablePath: process.env.CHROMIUM_EXECUTABLE }
+          : {},
+      },
+    },
+  ],
 });
