@@ -3654,26 +3654,27 @@ body,
   bottom: calc(120px + env(safe-area-inset-bottom, 0px));
 }
 
-/* Grab strip at the top of slide panels — its own element, and the ONLY
-   swipe-to-close zone (scrolling a long form must never dismiss the panel).
-   touch-action: none stops the browser from converting the drag into a
-   scroll mid-gesture. Bleeds over the panel's 20px padding so the whole
-   top band is grabbable. */
-.slide-panel__handle-zone {
-  margin: -20px -20px 4px;
-  padding: 14px 20px 12px;
-  touch-action: none;
-  cursor: grab;
-  flex-shrink: 0;
-}
-
-.slide-panel__handle {
-  width: 48px;
-  height: 5px;
-  margin: 0 auto;
-  /* Full-strength panel ink (navy on sand by day, warm red at night) — the
-     design speaks in solid ink and hard rectangles, not washed-out grays. */
-  background: var(--text-on-card);
+/* Pinned ✕ on every slide panel — sticky inside the scroll container so it
+   stays reachable however far the panel is scrolled. This replaced the
+   swipe-to-close gesture entirely (two implementations both misread real
+   iOS scrolls as dismissals); scrolling can no longer close a panel. */
+.slide-panel__close {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  margin: -8px -8px 4px auto;
+  background: var(--surface-sand);
+  color: var(--text-on-card);
+  border: 1px solid var(--bg-navy);
+  border-radius: 0;
+  font-size: 18px;
+  line-height: 1;
+  cursor: pointer;
 }
 
 /* "Saved ✓" flash on form submit buttons — brief green confirmation before

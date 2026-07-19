@@ -3,20 +3,18 @@
 //   - role="dialog" + aria-modal
 //   - focus trap via sentinel divs (Tab/Shift-Tab cycles within panel)
 //   - return focus to trigger element on close
-//   - Escape, tap-outside, and swipe-down all dismiss
-//   - swipe-down requires Escape/tap-outside as alternatives (WCAG 2.5.7)
+//   - Escape, tap-outside, and the pinned ✕ button all dismiss
+//
+// There is deliberately NO swipe-to-close gesture. Two generations of it
+// (whole-panel y-range, then a dedicated touch-action:none handle strip)
+// both kept reading real-device scrolls as dismissals on iOS. Scrolling a
+// panel must never be able to close it, so the gesture is gone; the pinned
+// ✕ (sticky, stays visible while scrolling) is the guaranteed touch close.
 //
 // Animation gated behind prefers-reduced-motion — under reduced motion the
 // panel just appears (no slide / no fade).
 
-import {
-  useCallback,
-  useEffect,
-  useRef,
-  type KeyboardEvent,
-  type PointerEvent,
-  type ReactNode,
-} from 'react';
+import { useCallback, useEffect, useRef, type KeyboardEvent, type ReactNode } from 'react';
 
 interface Props {
   open: boolean;
@@ -28,13 +26,9 @@ interface Props {
   children: ReactNode;
 }
 
-const DISMISS_DY_PX = 80;
-const DISMISS_VELOCITY = 0.4; // px/ms
-
 export function SlidePanel({ open, onClose, labelledBy, returnFocusTo, children }: Props) {
   const panelRef = useRef<HTMLDivElement>(null);
   const lastFocusedRef = useRef<HTMLElement | null>(null);
-  const dragStateRef = useRef<{ startY: number; startTime: number } | null>(null);
 
   // Capture the trigger element when opening so we can return focus on close.
   useEffect(() => {
@@ -79,46 +73,6 @@ export function SlidePanel({ open, onClose, labelledBy, returnFocusTo, children 
     [onClose],
   );
 
-  // Swipe-down to close — armed ONLY from the dedicated handle strip (its
-  // own element, `touch-action: none`), never from the content. A y-range
-  // check on the whole panel used to overlap the title/first controls, so
-  // starting a SCROLL near the top read as a swipe-away — long panels
-  // (Settings, Help) became unreadable on the phone. The overlay handles
-  // tap-outside separately; Escape and the buttons remain as alternatives.
-  const onPointerDown = (e: PointerEvent<HTMLDivElement>) => {
-    if (e.pointerType !== 'touch' && e.pointerType !== 'pen') return;
-    dragStateRef.current = { startY: e.clientY, startTime: performance.now() };
-    (e.target as HTMLElement).setPointerCapture(e.pointerId);
-  };
-  const onPointerMove = (e: PointerEvent<HTMLDivElement>) => {
-    const drag = dragStateRef.current;
-    if (!drag) return;
-    const dy = Math.max(0, e.clientY - drag.startY);
-    const panel = panelRef.current;
-    if (panel) panel.style.transform = `translateY(${dy}px)`;
-  };
-  const onPointerUp = (e: PointerEvent<HTMLDivElement>) => {
-    const drag = dragStateRef.current;
-    dragStateRef.current = null;
-    if (!drag) return;
-    const dy = e.clientY - drag.startY;
-    const dt = performance.now() - drag.startTime;
-    const velocity = dy / dt;
-    const panel = panelRef.current;
-    if (dy > DISMISS_DY_PX || velocity > DISMISS_VELOCITY) {
-      onClose();
-    } else if (panel) {
-      panel.style.transform = '';
-    }
-  };
-  // The browser reclaimed the gesture (e.g. it became a scroll) — that is an
-  // abort, NOT a release: treating it as one dismissed panels mid-scroll.
-  const onPointerCancel = () => {
-    dragStateRef.current = null;
-    const panel = panelRef.current;
-    if (panel) panel.style.transform = '';
-  };
-
   if (!open) return null;
 
   return (
@@ -133,25 +87,23 @@ export function SlidePanel({ open, onClose, labelledBy, returnFocusTo, children 
         aria-labelledby={labelledBy}
         tabIndex={-1}
       >
-        {/* Grab strip — the ONLY zone that arms swipe-to-close. Its
-            touch-action: none keeps the browser from turning the drag into
-            a scroll; the content below scrolls natively, un-dismissably. */}
-        <div
-          className="slide-panel__handle-zone"
-          aria-hidden="true"
-          onPointerDown={onPointerDown}
-          onPointerMove={onPointerMove}
-          onPointerUp={onPointerUp}
-          onPointerCancel={onPointerCancel}
-        >
-          <div className="slide-panel__handle" />
-        </div>
         {/* Sentinels: focusable elements must not be aria-hidden (axe
             aria-hidden-focus) — marked with a data attribute instead so the
             wrap helpers can skip them. They redirect focus immediately, so
             they're never announced. */}
         {/* Shift-tab from here wraps to the end of the panel. */}
         <div tabIndex={0} data-focus-sentinel onFocus={() => focusLastIn(panelRef.current)} />
+        {/* Pinned close — sticky, so it stays reachable however far the
+            panel is scrolled. The guaranteed touch dismissal on phones
+            (no Escape key there) for panels without their own buttons. */}
+        <button
+          type="button"
+          className="slide-panel__close"
+          onClick={onClose}
+          aria-label="Close panel"
+        >
+          ✕
+        </button>
         {children}
         {/* Tab from here wraps to the start. */}
         <div tabIndex={0} data-focus-sentinel onFocus={() => focusFirstIn(panelRef.current)} />
